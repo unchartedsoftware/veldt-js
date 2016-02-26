@@ -2,7 +2,6 @@
 
     'use strict';
 
-    var _ = require('lodash');
     var $ = require('jquery');
     var LiveTileLayer = require('./LiveTileLayer');
 
@@ -13,7 +12,8 @@
             if (!options.rendererClass) {
                 console.warn('No `rendererClass` option found, this layer will not render any data.');
             } else {
-                _.extend(this, options.rendererClass);
+                // recursively extend
+                $.extend(true, this, options.rendererClass);
             }
             L.setOptions(this, options);
         },
@@ -47,10 +47,6 @@
         },
 
         onClick: function() {
-            // override
-        },
-
-        renderTile: function() {
             // override
         }
 

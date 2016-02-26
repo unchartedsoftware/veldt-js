@@ -2,18 +2,27 @@
 
     'use strict';
 
+    // canvas renderers
+    var Canvas = {
+        Heatmap: require('./canvas/renderer/Heatmap')
+    };
+
     // html renderers
-    var WordCloud = require('./html/renderer/WordCloud');
-    var WordHistogram = require('./html/renderer/WordHistogram');
-    var Heatmap = require('./html/renderer/Heatmap');
     var HTML = {
-        WordCloud: WordCloud,
-        WordHistogram: WordHistogram,
-        Heatmap: Heatmap
+        WordCloud: require('./html/renderer/WordCloud'),
+        WordHistogram: require('./html/renderer/WordHistogram'),
+        Heatmap: require('./html/renderer/Heatmap')
+    };
+
+    // webgl renderers
+    var WebGL = {
+        Heatmap: require('./webgl/renderer/Heatmap')
     };
 
     module.exports = {
-        HTML: HTML
+        HTML: HTML,
+        Canvas: Canvas,
+        WebGL: WebGL
     };
 
 }());
