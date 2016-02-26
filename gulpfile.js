@@ -46,7 +46,7 @@
     function build( root, output, minify ) {
         var b = browserify( root, {
             debug: !minify,
-            standalone: 'name'
+            standalone: name
         });
         return ( minify ) ? bundleMin( b, output ) : bundle( b, output );
     }
