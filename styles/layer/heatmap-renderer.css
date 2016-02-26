@@ -1,0 +1,10 @@
+.heatmap-pixel {
+    position: absolute;
+    cursor: pointer;
+}
+
+.heatmap-pixel:hover,
+.heatmap-pixel.highlight {
+    position: absolute;
+    border: 1px solid #fff;
+}

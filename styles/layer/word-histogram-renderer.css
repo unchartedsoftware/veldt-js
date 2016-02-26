@@ -1,0 +1,89 @@
+.word-histograms {
+	position: relative;
+	display: inline-block;
+}
+
+.word-histogram-entry {
+	position: relative;
+	width: 236px;
+	left: 10px;
+	z-index: 1;
+	cursor: pointer;
+}
+
+.word-histogram-left {
+	position: relative;
+	float: left;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	width: 162px;
+	height: 100%;
+    box-sizing: border-box;
+}
+
+.word-histogram-right {
+	position: relative;
+	float: right;
+	width: 74px;
+	height: 100%;
+}
+
+.word-histogram-label {
+	position: relative;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding-bottom: 5px;
+}
+
+.word-histogram-bar {
+	position: relative;
+	float: left;
+	bottom: 0px;
+	border: 1px solid #000;
+	margin-left: -1px;
+    box-sizing: border-box;
+}
+
+.word-histogram-label-100{color:#F8D9AC;}
+.word-histogram-label-90{color:#ECCB9C;}
+.word-histogram-label-80{color:#E0BE8C;}
+.word-histogram-label-70{color:#D5B17C;}
+.word-histogram-label-60{color:#C9A36D;}
+.word-histogram-label-50{color:#BE965D;}
+.word-histogram-label-40{color:#B2894D;}
+.word-histogram-label-30{color:#A67B3E;}
+.word-histogram-label-20{color:#9B6E2E;}
+.word-histogram-label-10{color:#8F611E;}
+.word-histogram-label-0{color:#84540F;}
+
+.word-histogram-bar-100{background-color:#F8D9AC;}
+.word-histogram-bar-90{background-color:#ECCB9C;}
+.word-histogram-bar-80{background-color:#E0BE8C;}
+.word-histogram-bar-70{background-color:#D5B17C;}
+.word-histogram-bar-60{background-color:#C9A36D;}
+.word-histogram-bar-50{background-color:#BE965D;}
+.word-histogram-bar-40{background-color:#B2894D;}
+.word-histogram-bar-30{background-color:#A67B3E;}
+.word-histogram-bar-20{background-color:#9B6E2E;}
+.word-histogram-bar-10{background-color:#8F611E;}
+.word-histogram-bar-0{background-color:#84540F;}
+
+.highlight .word-histogram-label,
+.highlight .word-histogram-bar {
+    opacity: 0.5;
+}
+
+.word-histogram-entry:hover .word-histogram-bar,
+.word-histogram-entry.hover .word-histogram-bar,
+.word-histogram-entry.highlight .word-histogram-bar {
+    background-color: #fe9;
+    opacity: 1;
+}
+
+.word-histogram-entry:hover .word-histogram-label,
+.word-histogram-entry.hover .word-histogram-label,
+.word-histogram-entry.highlight .word-histogram-label {
+    color: #fe9;
+    opacity: 1;
+}
