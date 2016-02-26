@@ -1,9 +1,9 @@
 # Prism-Client
 
 ## Dependencies
-]
+
 - [NodeJS](http://nodejs.org/) JavaScript runtime.
-- [Bower](http://bower.io/) package manager (npm install bower -g).]
+- [Bower](http://bower.io/) package manager (npm install bower -g).
 
 ## Installation
 
