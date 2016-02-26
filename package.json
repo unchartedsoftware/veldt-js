@@ -2,8 +2,8 @@
   "name": "prism-client",
   "version": "0.1.1",
   "author": "Kevin Birk <birk.kevin@gmail.com>",
-  "main": ".build/prism-client.js",
-  "style": "build/prism-client.css",
+  "main": "build/prism.js",
+  "style": "build/prism.css",
   "license": "MIT",
   "repository": {
     "type": "git",
