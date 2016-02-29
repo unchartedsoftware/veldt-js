@@ -3,19 +3,9 @@
     'use strict';
 
     var _ = require('lodash');
-    var ImageLayer = require('./Image');
-    var Live = require('../mixins/Live');
+    var Image = require('../../layer/core/Image');
 
-    var LiveTileLayer = ImageLayer.extend({
-
-        includes: [
-            Live
-        ],
-
-        initialize: function(meta, options) {
-            Live.initialize.apply(this, arguments);
-            L.setOptions(this, options);
-        },
+    var DOM = Image.extend({
 
         onAdd: function(map) {
             L.TileLayer.prototype.onAdd.call(this, map);
@@ -161,6 +151,6 @@
 
     });
 
-    module.exports = LiveTileLayer;
+    module.exports = DOM;
 
 }());

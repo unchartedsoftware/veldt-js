@@ -2,17 +2,9 @@
 
     'use strict';
 
-    var _ = require('lodash');
+    var Canvas = require('../../core/Canvas');
 
-    module.exports = {
-
-        extractExtrema: function(data) {
-            var bins = new Float64Array(data);
-            return {
-                min: _.min(bins),
-                max: _.max(bins)
-            };
-        },
+    var Heatmap = Canvas.extend({
 
         renderCanvas: function(bins, resolution, rampFunc, type) {
             var canvas = document.createElement('canvas');
@@ -23,8 +15,10 @@
             var data = imageData.data;
             var self = this;
             var color = [0, 0, 0, 0];
-            bins.forEach(function(bin, index) {
-                var val = self.transformValue(bin, type);
+            var val, bin, i;
+            for (i=0; i<bins.length; i++) {
+                bin = bins[i];
+                val = self.transformValue(bin, type);
                 val = Math.max(0, Math.min(1, val));
                 if (val === 0) {
                     color[0] = 0;
@@ -34,11 +28,11 @@
                 } else {
                     rampFunc(val, color);
                 }
-                data[index * 4] = color[0];
-                data[index * 4 + 1] = color[1];
-                data[index * 4 + 2] = color[2];
-                data[index * 4 + 3] = color[3];
-            });
+                data[i * 4] = color[0];
+                data[i * 4 + 1] = color[1];
+                data[i * 4 + 2] = color[2];
+                data[i * 4 + 3] = color[3];
+            }
             ctx.putImageData(imageData, 0, 0);
             return canvas;
         },
@@ -61,6 +55,8 @@
                 canvas.width, canvas.height);
         }
 
-    };
+    });
+
+    module.exports = Heatmap;
 
 }());

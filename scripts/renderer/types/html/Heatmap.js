@@ -3,24 +3,18 @@
     'use strict';
 
     var $ = require('jquery');
-    var _ = require('lodash');
+    var HTML = require('../../core/HTML');
 
     var TILE_SIZE = 256;
 
-    module.exports = {
+    var Heatmap = HTML.extend({
 
         onClick: function(e) {
             var target = $(e.originalEvent.target);
             $('.heatmap-pixel').removeClass('highlight');
-            target.addClass('highlight');
-        },
-
-        extractExtrema: function(data) {
-            var bins = new Float64Array(data);
-            return {
-                min: _.min(bins),
-                max: _.max(bins)
-            };
+            if ( target.hasClass('heatmap-pixel') ) {
+                target.addClass('highlight');
+            }
         },
 
         renderTile: function(container, data) {
@@ -59,6 +53,8 @@
             container.innerHTML = html;
         }
 
-    };
+    });
+
+    module.exports = Heatmap;
 
 }());

@@ -2,11 +2,9 @@
 
     'use strict';
 
-    var $ = require('jquery');
     var _ = require('lodash');
     var alfador = require('alfador');
     var esper = require('esper');
-    var Live = require('../mixins/Live');
 
     // TODO:
     //     - fix zoom transition animation bug
@@ -15,8 +13,7 @@
     var WebGL = L.Class.extend({
 
         includes: [
-            L.Mixin.Events,
-            Live
+            L.Mixin.Events
         ],
 
         options: {
@@ -33,14 +30,7 @@
         },
 
         initialize: function(meta, options) {
-            Live.initialize.apply(this, arguments);
-            if (!options.rendererClass) {
-                console.warn('No `rendererClass` option found, this layer will not render any data.');
-            } else {
-                // recursively extend
-                $.extend(true, this, options.rendererClass);
-            }
-            L.setOptions(this, options);
+            console.log('WebGL initialize');
             options = L.setOptions(this, options);
             if (options.bounds) {
                 options.bounds = L.latLngBounds(options.bounds);

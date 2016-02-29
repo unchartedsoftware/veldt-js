@@ -4,7 +4,8 @@
 
     var $ = require('jquery');
     var _ = require('lodash');
-    var sentiment = require('./Sentiment');
+    var HTML = require('../../core/HTML');
+    var sentiment = require('../../sentiment/Sentiment');
     var sentimentFunc = sentiment.getClassFunc(-1, 1);
 
     var TILE_SIZE = 256;
@@ -83,7 +84,7 @@
         return false;
     };
 
-    module.exports = {
+    var WordCloud = HTML.extend({
 
         onHover: function(e) {
             var target = $(e.originalEvent.target);
@@ -250,6 +251,8 @@
             container.innerHTML = html;
         }
 
-    };
+    });
+
+    module.exports = WordCloud;
 
 }());

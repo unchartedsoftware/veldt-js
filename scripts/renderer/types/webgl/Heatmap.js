@@ -2,26 +2,18 @@
 
     'use strict';
 
-    var _ = require('lodash');
+    var WebGL = require('../../core/WebGL');
 
     // TODO:
     //     - update to preceptual color ramps (layer is currently broken)
 
-    module.exports = {
+    var Heatmap = WebGL.extend({
 
         options: {
             shaders: {
                 vert: '../../shaders/heatmap.vert',
                 frag: '../../shaders/heatmap.frag',
             }
-        },
-
-        extractExtrema: function(data) {
-            var bins = new Float64Array(data);
-            return {
-                min: _.min(bins),
-                max: _.max(bins)
-            };
         },
 
         beforeDraw: function() {
@@ -33,6 +25,8 @@
             this._shader.setUniform('uColorRampTo', ramp(1.0, color));
         }
 
-    };
+    });
+
+    module.exports = Heatmap;
 
 }());

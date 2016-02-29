@@ -3,24 +3,13 @@
     'use strict';
 
     var $ = require('jquery');
-    var LiveTileLayer = require('./LiveTileLayer');
+    var DOM = require('./DOM');
 
-    var HTML = LiveTileLayer.extend({
-
-        initialize: function(meta, options) {
-            LiveTileLayer.prototype.initialize.apply(this, arguments);
-            if (!options.rendererClass) {
-                console.warn('No `rendererClass` option found, this layer will not render any data.');
-            } else {
-                // recursively extend
-                $.extend(true, this, options.rendererClass);
-            }
-            L.setOptions(this, options);
-        },
+    var HTML = DOM.extend({
 
         onAdd: function(map) {
             var self = this;
-            LiveTileLayer.prototype.onAdd.call(this, map);
+            DOM.prototype.onAdd.call(this, map);
             map.on('click', this.onClick, this);
             $(this._container).on('mouseover', function(e) {
                 self.onHover(e);
@@ -30,7 +19,7 @@
         onRemove: function(map) {
             map.off('click', this.onClick);
             $(this._container).off('mouseover');
-            LiveTileLayer.prototype.onRemove.call(this, map);
+            DOM.prototype.onRemove.call(this, map);
         },
 
         _createTile: function() {
