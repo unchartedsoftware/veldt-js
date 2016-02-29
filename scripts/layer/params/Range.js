@@ -39,6 +39,7 @@
                 console.warn('Range with `field` of `' + field + '` already exists, used `updateRange` instead.');
                 return;
             }
+            this._params.range = this._params.range || [];
             this._params.range.push({
                 field: field,
                 from: from,

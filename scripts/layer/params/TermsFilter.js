@@ -51,6 +51,7 @@
                 console.warn('TermsFilter with `field` of `' + field + '` already exists, used `updateRange` instead.');
                 return;
             }
+            this._params.terms_filter = this._params.terms_filter || [];
             this._params.terms_filter.push({
                 field: field,
                 terms: normalizeTerms(terms)
