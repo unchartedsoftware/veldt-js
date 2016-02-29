@@ -23,11 +23,12 @@
     var Pending = {
         Blink: require('./types/pending/Blink'),
         Spin: require('./types/pending/Spin'),
+        BlinkSpin: require('./types/pending/BlinkSpin'),
     };
 
     // pending layer renderers
     var Debug = {
-        TileCoord: require('./types/debug/TileCoord')
+        Coord: require('./types/debug/Coord')
     };
 
     module.exports = {

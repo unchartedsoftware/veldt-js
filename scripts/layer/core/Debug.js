@@ -17,7 +17,7 @@
             }
             L.setOptions(this, {
                 unloadInvisibleTiles: true,
-                zIndex: 5000
+                zIndex: 4999
             });
         },
 

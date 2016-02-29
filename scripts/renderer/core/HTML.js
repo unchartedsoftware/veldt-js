@@ -7,11 +7,6 @@
 
     var HTML = DOM.extend({
 
-        initialize: function(meta, options) {
-            DOM.prototype.initialize.apply(this, arguments);
-            L.setOptions(this, options);
-        },
-
         onAdd: function(map) {
             var self = this;
             DOM.prototype.onAdd.call(this, map);

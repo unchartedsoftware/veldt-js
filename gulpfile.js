@@ -22,7 +22,7 @@
     };
 
     var GO_PATH = process.env.GOPATH;
-    var COPY_PATH = GO_PATH + '/src/github.com/unchartedsoftware/prism-app-template/app/';
+    var COPY_PATH = GO_PATH + '/src/github.com/unchartedsoftware/prism-app-template/build/public/';
 
     gulp.task('copy-build', function() {
         return gulp.src([

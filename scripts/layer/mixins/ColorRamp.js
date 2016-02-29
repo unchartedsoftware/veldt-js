@@ -57,7 +57,6 @@
     // Interpolate between a set of colors using even perceptual distance and interpolation in CIE L*a*b* space
     var buildPerceptualLookupTable = function(baseColors) {
         var outputGradient = [];
-
         // Calculate perceptual spread in L*a*b* space
         var labs = _.map(baseColors, function(color) {
             return rgb2lab([color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 255]);
@@ -65,7 +64,6 @@
         var distances = _.map(labs, function(color, index, colors) {
             return index > 0 ? distance(color, colors[index - 1]) : 0;
         });
-
         // Calculate cumulative distances in [0,1]
         var totalDistance = _.reduce(distances, function(a, b) {
             return a + b;
@@ -73,13 +71,11 @@
         distances = _.map(distances, function(d) {
             return d / totalDistance;
         });
-
         var distanceTraversed = 0;
         var key = 0;
         var progress;
         var stepProgress;
         var rgb;
-
         for (var i = 0; i < GRADIENT_STEPS; i++) {
             progress = i / (GRADIENT_STEPS - 1);
             if (progress > distanceTraversed + distances[key + 1] && key + 1 < labs.length - 1) {
@@ -87,21 +83,21 @@
                 distanceTraversed += distances[key];
             }
             stepProgress = (progress - distanceTraversed) / distances[key + 1];
-
             rgb = lab2rgb([
                 labs[key][0] + (labs[key + 1][0] - labs[key][0]) * stepProgress,
                 labs[key][1] + (labs[key + 1][1] - labs[key][1]) * stepProgress,
                 labs[key][2] + (labs[key + 1][2] - labs[key][2]) * stepProgress,
                 labs[key][3] + (labs[key + 1][3] - labs[key][3]) * stepProgress
             ]);
-
-            outputGradient.push([Math.round(rgb[0] * 255), Math.round(rgb[1] * 255), Math.round(rgb[2] * 255), Math.round(rgb[3] * 255)]);
+            outputGradient.push([
+                Math.round(rgb[0] * 255),
+                Math.round(rgb[1] * 255),
+                Math.round(rgb[2] * 255),
+                Math.round(rgb[3] * 255)
+            ]);
         }
-
         return outputGradient;
     };
-
-
 
     var COOL = buildPerceptualLookupTable([
         [0x04, 0x20, 0x40, 0x50],
@@ -141,7 +137,7 @@
     ]);
 
     var SPECTRAL = buildPerceptualLookupTable([
-        [0x26, 0x1A, 0x40, 0x50],
+        [0x26, 0x1a, 0x40, 0x50],
         [0x44, 0x2f, 0x72, 0x7f],
         [0xe1, 0x2b, 0x02, 0xff],
         [0x02, 0xdc, 0x01, 0xff],

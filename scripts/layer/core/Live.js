@@ -14,11 +14,13 @@
             if (!options.rendererClass) {
                 console.warn('No `rendererClass` option found, this layer will not render any data.');
             } else {
-                // recursively extend
-                $.extend(true, this, options.rendererClass);
-                if (options.rendererClass.prototype.initialize) {
-                    console.log('derp');
+                // recursively extend and initialize
+                if (options.rendererClass.prototype) {
+                    $.extend(true, this, options.rendererClass.prototype);
                     options.rendererClass.prototype.initialize.apply(this, arguments);
+                } else {
+                    $.extend(true, this, options.rendererClass);
+                    options.rendererClass.initialize.apply(this, arguments);
                 }
             }
             // set options

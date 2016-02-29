@@ -12,7 +12,9 @@
         onClick: function(e) {
             var target = $(e.originalEvent.target);
             $('.heatmap-pixel').removeClass('highlight');
-            target.addClass('highlight');
+            if ( target.hasClass('heatmap-pixel') ) {
+                target.addClass('highlight');
+            }
         },
 
         renderTile: function(container, data) {

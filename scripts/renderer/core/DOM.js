@@ -4,18 +4,8 @@
 
     var _ = require('lodash');
     var Image = require('../../layer/core/Image');
-    var Live = require('../../layer/core/Live');
 
     var DOM = Image.extend({
-
-        includes: [
-            Live
-        ],
-
-        initialize: function(meta, options) {
-            Live.prototype.initialize.apply(this, arguments);
-            L.setOptions(this, options);
-        },
 
         onAdd: function(map) {
             L.TileLayer.prototype.onAdd.call(this, map);
