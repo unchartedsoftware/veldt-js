@@ -44,14 +44,15 @@
         }
         var meta = this._meta[field];
         if (checkField(meta, field)) {
-            var filter = _.find(this._params.prefixes_filter, function(filter) {
+            var filter = _.find(this._params.prefix_filter, function(filter) {
                 return filter.field === field;
             });
             if (filter) {
                 console.warn('Range with `field` of `' + field + '` already exists, used `updateRange` instead.');
                 return;
             }
-            this._params.prefixes_filter.push({
+            this._params.prefix_filter = this._params.prefix_filter || [];
+            this._params.prefix_filter.push({
                 field: field,
                 prefixes: normalizeTerms(prefixes)
             });
@@ -61,7 +62,7 @@
     };
 
     var updatePrefixFilter = function(field, prefixes) {
-        var filter = _.find(this._params.prefixes_filter, function(filter) {
+        var filter = _.find(this._params.prefix_filter, function(filter) {
             return filter.field === field;
         });
         if (!filter) {
@@ -76,14 +77,14 @@
     };
 
     var removePrefixFilter = function(field) {
-        var filter = _.find(this._params.prefixes_filter, function(filter) {
+        var filter = _.find(this._params.prefix_filter, function(filter) {
             return filter.field === field;
         });
         if (!filter) {
             console.warn('Range with `field` of `' + field + '` does not exist. Ignoring command.');
             return;
         }
-        this._params.prefixes_filter = _.filter(this._params.prefixes_filter, function(filter) {
+        this._params.prefix_filter = _.filter(this._params.prefix_filter, function(filter) {
             return filter.field !== field;
         });
         this.clearExtrema();
@@ -91,7 +92,7 @@
     };
 
     var getPrefixFilter = function() {
-        return this._params.prefixes_filter;
+        return this._params.prefix_filter;
     };
 
     module.exports = {
