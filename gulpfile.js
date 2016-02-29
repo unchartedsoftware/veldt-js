@@ -21,16 +21,6 @@
         build: 'build'
     };
 
-    var GO_PATH = process.env.GOPATH;
-    var COPY_PATH = GO_PATH + '/src/github.com/unchartedsoftware/prism-app-template/build/public/';
-
-    gulp.task('copy-build', function() {
-        return gulp.src([
-            paths.build + '/' + name + '.js',
-            paths.build + '/' + name + '.css',
-        ]).pipe( gulp.dest( COPY_PATH ) );
-    });
-
     function bundle( b, output ) {
         return b.bundle()
             .on( 'error', function( err ) {
@@ -91,7 +81,6 @@
         runSequence(
             [ 'clean', 'lint' ],
             [ 'build-scripts', 'build-min-scripts', 'build-styles' ],
-            [ 'copy-build' ],
             done );
     });
 
