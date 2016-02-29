@@ -2,7 +2,7 @@
 
     'use strict';
 
-    var HTML = require('../core/HTML');
+    var Live = require('../core/Live');
     var Tiling = require('../params/Tiling');
     var TopTerms = require('../params/TopTerms');
     var TermsFilter = require('../params/TermsFilter');
@@ -11,9 +11,10 @@
     var DateHistogram = require('../params/DateHistogram');
     var Histogram = require('../params/Histogram');
 
-    var TopFrequency = HTML.extend({
+    var TopFrequency = Live.extend({
 
         includes: [
+            // params
             Tiling,
             TopTerms,
             TermsFilter,

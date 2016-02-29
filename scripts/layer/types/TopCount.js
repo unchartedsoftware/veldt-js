@@ -2,7 +2,7 @@
 
     'use strict';
 
-    var HTML = require('../core/HTML');
+    var Live = require('../core/Live');
     var Tiling = require('../params/Tiling');
     var TermsFilter = require('../params/TermsFilter');
     var PrefixFilter = require('../params/PrefixFilter');
@@ -10,9 +10,10 @@
     var Range = require('../params/Range');
     var Histogram = require('../params/Histogram');
 
-    var TopCount = HTML.extend({
+    var TopCount = Live.extend({
 
         includes: [
+            // params
             Tiling,
             TopTerms,
             TermsFilter,

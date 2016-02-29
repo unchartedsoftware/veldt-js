@@ -2,12 +2,19 @@
 
     'use strict';
 
-    var ImageLayer = require('./Image');
+    var $ = require('jquery');
+    var Image = require('./Image');
 
-    var Debug = ImageLayer.extend({
+    var Debug = Image.extend({
 
-        initialize: function() {
-            this._pendingTiles = {};
+        initialize: function(options) {
+            // set renderer
+            if (!options.rendererClass) {
+                console.warn('No `rendererClass` option found, this layer will not render any data.');
+            } else {
+                // recursively extend
+                $.extend(true, this, options.rendererClass);
+            }
             L.setOptions(this, {
                 unloadInvisibleTiles: true,
                 zIndex: 5000

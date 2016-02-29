@@ -2,9 +2,7 @@
 
     'use strict';
 
-    var Pending = require('../core/Pending');
-
-    var Spin = Pending.extend({
+    module.exports = {
 
         renderTile: function(elem) {
             var delay = -(Math.random() * 1200) + 'ms';
@@ -18,8 +16,6 @@
                 '</div>';
         }
 
-    });
-
-    module.exports = Spin;
+    };
 
 }());

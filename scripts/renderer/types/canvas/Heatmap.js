@@ -2,17 +2,9 @@
 
     'use strict';
 
-    var _ = require('lodash');
+    var Canvas = require('../../core/Canvas');
 
-    module.exports = {
-
-        extractExtrema: function(data) {
-            var bins = new Float64Array(data);
-            return {
-                min: _.min(bins),
-                max: _.max(bins)
-            };
-        },
+    var Heatmap = Canvas.extend({
 
         renderCanvas: function(bins, resolution, rampFunc, type) {
             var canvas = document.createElement('canvas');
@@ -61,6 +53,8 @@
                 canvas.width, canvas.height);
         }
 
-    };
+    });
+
+    module.exports = Heatmap;
 
 }());

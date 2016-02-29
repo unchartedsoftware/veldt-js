@@ -4,7 +4,8 @@
 
     var $ = require('jquery');
     var _ = require('lodash');
-    var sentiment = require('./Sentiment');
+    var HTML = require('../../core/HTML');
+    var sentiment = require('../../sentiment/Sentiment');
     var sentimentFunc = sentiment.getClassFunc(-1, 1);
 
     var TILE_SIZE = 256;
@@ -73,7 +74,7 @@
         };
     };
 
-    module.exports = {
+    var WordHistogram = HTML.extend({
 
         onHover: function(e) {
             var target = $(e.originalEvent.target);
@@ -204,6 +205,8 @@
             $html.css('top', HALF_SIZE - (totalHeight / 2));
             container.innerHTML = $html[0].outerHTML;
         }
-    };
+    });
+
+    module.exports = WordHistogram;
 
 }());
