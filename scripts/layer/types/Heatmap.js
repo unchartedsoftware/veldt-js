@@ -5,6 +5,7 @@
     var _ = require('lodash');
     var Live = require('../core/Live');
     var Binning = require('../params/Binning');
+    var MetricAgg = require('../params/MetricAgg');
     var TermsFilter = require('../params/TermsFilter');
     var PrefixFilter = require('../params/PrefixFilter');
     var Range = require('../params/Range');
@@ -15,6 +16,7 @@
         includes: [
             // params
             Binning,
+            MetricAgg,
             TermsFilter,
             PrefixFilter,
             Range,
