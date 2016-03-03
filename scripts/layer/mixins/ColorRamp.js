@@ -2,8 +2,6 @@
 
     'use strict';
 
-    var _ = require('lodash');
-
     function rgb2lab(rgb) {
         var r = rgb[0] > 0.04045 ? Math.pow((rgb[0] + 0.055) / 1.055, 2.4) : rgb[0] / 12.92;
         var g = rgb[1] > 0.04045 ? Math.pow((rgb[1] + 0.055) / 1.055, 2.4) : rgb[1] / 12.92;

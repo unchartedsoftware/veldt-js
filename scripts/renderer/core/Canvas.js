@@ -3,7 +3,6 @@
     'use strict';
 
     var DOM = require('./DOM');
-    var L = require('leaflet');
 
     var Canvas = DOM.extend({
 

@@ -2,8 +2,6 @@
 
     'use strict';
 
-    var _ = require('lodash');
-
     var checkField = function(meta, field) {
         if (meta) {
             if (meta.type === 'string') {

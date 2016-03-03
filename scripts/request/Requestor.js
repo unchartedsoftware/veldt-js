@@ -2,8 +2,6 @@
 
     'use strict';
 
-    var $ = require('jquery');
-
     function getHost() {
         var loc = window.location;
         var new_uri;

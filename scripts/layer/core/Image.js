@@ -2,9 +2,6 @@
 
     'use strict';
 
-    var $ = require('jquery');
-    var L = require('leaflet');
-
     var Image = L.TileLayer.extend({
 
         getOpacity: function() {

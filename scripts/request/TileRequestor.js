@@ -2,7 +2,6 @@
 
     'use strict';
 
-    var _ = require('lodash');
     var Requestor = require('./Requestor');
 
     function TileRequestor() {

@@ -2,8 +2,6 @@
 
     'use strict';
 
-    var $ = require('jquery');
-
     module.exports = {
 
         renderTile: function(elem, coord) {

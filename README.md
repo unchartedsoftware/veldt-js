@@ -2,10 +2,18 @@
 
 ## Dependencies
 
-- [NodeJS](http://nodejs.org/) JavaScript runtime.
-- [Bower](http://bower.io/) package manager (npm install bower -g).
+- [jQuery ~2.2.1](https://jquery.com/)
+- [lodash ~4.5.1](https://lodash.com/)
+- [Leaflet ~0.7.7](http://leafletjs.com)
+
+The above dependencies **_must_** be loaded prior to **prism.js**.
 
 ## Installation
+
+Requires (either):
+
+- [NodeJS](http://nodejs.org/) JavaScript runtime.
+- [Bower](http://bower.io/) package manager (npm install bower -g).
 
 ```bash
 npm install git+https://github.com/unchartedsoftware/prism-client.git

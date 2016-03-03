@@ -16,8 +16,13 @@
     var name = 'prism';
     var paths = {
         root: 'scripts/exports.js',
-        styles: [ 'node_modules/leaflet/dist/leaflet.css', 'styles/**/*.css' ],
-        scripts: [ 'scripts/**/*.js' ],
+        styles: [
+            'styles/main.css',
+            'styles/**/*.css'
+        ],
+        scripts: [
+            'scripts/**/*.js'
+        ],
         build: 'build'
     };
 

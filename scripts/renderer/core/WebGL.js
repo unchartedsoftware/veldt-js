@@ -2,10 +2,37 @@
 
     'use strict';
 
-    var _ = require('lodash');
-    var L = require('leaflet');
-    var alfador = require('alfador');
     var esper = require('esper');
+
+    function translationMatrix(translation) {
+        return new Float32Array([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            translation[0], translation[1], translation[2], 1
+        ]);
+    }
+
+    function orthoMatrix(left, right, bottom, top, near, far) {
+        var mat = new Float32Array(16);
+        mat[0] = 2 / ( right - left );
+        mat[1] = 0;
+        mat[2] = 0;
+        mat[3] = 0;
+        mat[4] = 0;
+        mat[5] = 2 / ( top - bottom );
+        mat[6] = 0;
+        mat[7] = 0;
+        mat[8] = 0;
+        mat[9] = 0;
+        mat[10] = -2 / ( far - near );
+        mat[11] = 0;
+        mat[12] = -( ( right + left ) / ( right - left ) );
+        mat[13] = -( ( top + bottom ) / ( top - bottom ) );
+        mat[14] = -( ( far + near ) / ( far - near ) );
+        mat[15] = 1;
+        return mat;
+    }
 
     // TODO:
     //     - fix zoom transition animation bug
@@ -583,7 +610,7 @@
         _getProjection: function() {
             var bounds = this._map.getPixelBounds();
             var dim = Math.pow(2, this._map.getZoom()) * 256;
-            return alfador.Mat44.ortho(
+            return orthoMatrix(
                 bounds.min.x,
                 bounds.max.x,
                 (dim - bounds.max.y),
@@ -668,7 +695,7 @@
                     var x = parseInt(kArr[0], 10);
                     var y = parseInt(kArr[1], 10);
                     // create model matrix
-                    var model = new alfador.Mat44.translation([
+                    var model = new translationMatrix([
                         256 * x,
                         dim - (256 * y),
                         0

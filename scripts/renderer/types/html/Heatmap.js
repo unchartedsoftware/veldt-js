@@ -2,7 +2,6 @@
 
     'use strict';
 
-    var $ = require('jquery');
     var HTML = require('../../core/HTML');
 
     var TILE_SIZE = 256;

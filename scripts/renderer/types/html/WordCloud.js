@@ -2,8 +2,6 @@
 
     'use strict';
 
-    var $ = require('jquery');
-    var _ = require('lodash');
     var HTML = require('../../core/HTML');
     var sentiment = require('../../sentiment/Sentiment');
     var sentimentFunc = sentiment.getClassFunc(-1, 1);

@@ -2,7 +2,6 @@
 
     'use strict';
 
-    var _ = require('lodash');
     var Live = require('../core/Live');
     var Binning = require('../params/Binning');
     var MetricAgg = require('../params/MetricAgg');

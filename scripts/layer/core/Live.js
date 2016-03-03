@@ -2,9 +2,6 @@
 
     'use strict';
 
-    var $ = require('jquery');
-    var _ = require('lodash');
-    var L = require('leaflet');
     var MIN = Number.MAX_VALUE;
     var MAX = 0;
 
