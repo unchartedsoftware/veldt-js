@@ -16,27 +16,26 @@
     var name = 'prism';
     var paths = {
         root: 'scripts/exports.js',
-        styles: 'styles/**/*.css',
-        scripts: 'scripts/**/*.js',
+        styles: [ 'node_modules/leaflet/dist/leaflet.css', 'styles/**/*.css' ],
+        scripts: [ 'scripts/**/*.js' ],
         build: 'build'
     };
 
+    function handleError( err ) {
+        console.log( err );
+        this.emit( 'end' );
+    }
+
     function bundle( b, output ) {
         return b.bundle()
-            .on( 'error', function( err ) {
-                console.log( err );
-                this.emit( 'end' );
-            })
+            .on( 'error', handleError )
             .pipe( source( output ) )
             .pipe( gulp.dest( paths.build ) );
     }
 
     function bundleMin( b, output ) {
         return b.bundle()
-            .on( 'error', function( err ) {
-                console.log( err );
-                this.emit( 'end' );
-            })
+            .on( 'error', handleError )
             .pipe( source( output ) )
             .pipe( buffer() )
             .pipe( uglify() )
@@ -57,7 +56,6 @@
 
     gulp.task('lint', function() {
         return gulp.src( paths.scripts )
-            .pipe( jshint() )
             .pipe( jshint('.jshintrc') )
             .pipe( jshint.reporter('jshint-stylish') );
     });

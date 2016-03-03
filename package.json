@@ -1,8 +1,8 @@
 {
   "name": "prism-client",
-  "version": "0.2.4",
-  "author": "Kevin Birk <birk.kevin@gmail.com>",
-  "main": "build/prism.js",
+  "version": "0.2.5",
+  "author": "Kevin Birk <kbirk@uncharted.software>",
+  "main": "scripts/exports.js",
   "style": "build/prism.css",
   "license": "MIT",
   "repository": {
@@ -14,9 +14,10 @@
     "styles"
   ],
   "dependencies": {
-    "alfador": "0.4.10",
+    "alfador": "0.5.0",
     "esper": "0.6.13",
     "jquery": "2.1.4",
+    "leaflet": "0.7.7",
     "lodash": "4.5.1"
   },
   "devDependencies": {

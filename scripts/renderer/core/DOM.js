@@ -3,6 +3,7 @@
     'use strict';
 
     var _ = require('lodash');
+    var L = require('leaflet');
     var Image = require('../../layer/core/Image');
 
     var DOM = Image.extend({

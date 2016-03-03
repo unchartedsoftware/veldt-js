@@ -3,6 +3,7 @@
     'use strict';
 
     var $ = require('jquery');
+    var L = require('leaflet');
     var Image = require('./Image');
 
     var Debug = Image.extend({

@@ -3,6 +3,7 @@
     'use strict';
 
     var $ = require('jquery');
+    var L = require('leaflet');
     var DOM = require('./DOM');
 
     var HTML = DOM.extend({

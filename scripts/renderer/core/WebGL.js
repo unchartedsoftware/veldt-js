@@ -3,6 +3,7 @@
     'use strict';
 
     var _ = require('lodash');
+    var L = require('leaflet');
     var alfador = require('alfador');
     var esper = require('esper');
 
