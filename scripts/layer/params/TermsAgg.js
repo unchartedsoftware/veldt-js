@@ -2,8 +2,6 @@
 
     'use strict';
 
-    var _ = require('lodash');
-
     var checkField = function(meta, field) {
         if (meta) {
             if (meta.type === 'string') {
@@ -18,9 +16,6 @@
     };
 
     var normalizeTerms = function(terms) {
-        terms = _.map(terms, function(t) {
-            return t.toLowerCase();
-        });
         terms.sort(function(a, b) {
             if (a < b) {
                 return -1;

@@ -18,9 +18,6 @@
     };
 
     var normalizeTerms = function(terms) {
-        terms = _.map(terms, function(t) {
-            return t.toLowerCase();
-        });
         terms.sort(function(a, b) {
             if (a < b) {
                 return -1;

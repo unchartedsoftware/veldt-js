@@ -18,9 +18,6 @@
     };
 
     var normalizeTerms = function(prefixes) {
-        prefixes = _.map(prefixes, function(t) {
-            return t.toLowerCase();
-        });
         prefixes.sort(function(a, b) {
             if (a < b) {
                 return -1;
