@@ -1,0 +1,21 @@
+{
+  "name": "prism-client",
+  "version": "0.2.5",
+  "author": "Kevin Birk <kbirk@uncharted.software>",
+  "main": [
+    "build/prism.js",
+    "build/prism.css"
+  ],
+  "moduleType": [
+    "globals"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "scripts",
+    "styles",
+    "gulpfile.js",
+    "package.json"
+  ]
+}
