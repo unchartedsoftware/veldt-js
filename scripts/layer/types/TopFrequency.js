@@ -10,6 +10,7 @@
     var Range = require('../params/Range');
     var DateHistogram = require('../params/DateHistogram');
     var Histogram = require('../params/Histogram');
+    var ValueTransform = require('../mixins/ValueTransform');
 
     var TopFrequency = Live.extend({
 
@@ -21,10 +22,18 @@
             PrefixFilter,
             Range,
             DateHistogram,
-            Histogram
+            Histogram,
+            // mixins
+            ValueTransform
         ],
 
-        type: 'top_frequency'
+        type: 'top_frequency',
+
+        initialize: function() {
+            ValueTransform.initialize.apply(this, arguments);
+            // base
+            Live.prototype.initialize.apply(this, arguments);
+        },
 
     });
 

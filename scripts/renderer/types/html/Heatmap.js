@@ -28,13 +28,13 @@
             var color = [0, 0, 0, 0];
             var html = '';
             bins.forEach(function(bin, index) {
-                var left = (index % resolution);
-                var top = Math.floor(index / resolution);
-                var val = self.transformValue(bin, 'log');
-                val = Math.max(0, Math.min(1, val));
-                if (val === 0) {
+                var val, left, top;
+                if (bin === 0) {
                     return;
                 } else {
+                    left = (index % resolution);
+                    top = Math.floor(index / resolution);
+                    val = self.transformValue(bin);
                     rampFunc(val, color);
                 }
                 var rgba = 'rgba(' +

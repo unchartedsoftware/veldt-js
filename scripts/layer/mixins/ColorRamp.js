@@ -158,15 +158,19 @@
         [0xff, 0xff, 0xff, 0xff]
     ]);
 
-    var POLAR = buildPerceptualLookupTable([
+    var POLAR_HOT = buildPerceptualLookupTable([
         [ 0xff, 0x44, 0x00, 0xff ],
-        [ 0xbd, 0xbd, 0xbd, 0x50 ],
+        [ 0xbd, 0xbd, 0xbd, 0xb0 ]
+    ]);
+
+    var POLAR_COLD = buildPerceptualLookupTable([
+        [ 0xbd, 0xbd, 0xbd, 0xb0 ],
         [ 0x32, 0xa5, 0xf9, 0xff ]
     ]);
 
     var buildLookupFunction = function(RAMP) {
         return function(scaledValue, inColor) {
-            var color = RAMP[Math.floor(scaledValue * (GRADIENT_STEPS - 1))];
+            var color = RAMP[Math.floor(scaledValue * (RAMP.length - 1))];
             inColor[0] = color[0];
             inColor[1] = color[1];
             inColor[2] = color[2];
@@ -182,7 +186,7 @@
         spectral: buildLookupFunction(SPECTRAL),
         temperature: buildLookupFunction(TEMPERATURE),
         grey: buildLookupFunction(GREYSCALE),
-        polar: buildLookupFunction(POLAR)
+        polar: buildLookupFunction(POLAR_HOT.concat(POLAR_COLD))
     };
 
     var setColorRamp = function(type) {

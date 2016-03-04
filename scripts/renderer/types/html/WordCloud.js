@@ -10,7 +10,6 @@
     var HALF_SIZE = TILE_SIZE / 2;
     var VERTICAL_OFFSET = 24;
     var HORIZONTAL_OFFSET = 10;
-    var SIZE_FUNCTION = 'log';
     var MAX_NUM_WORDS = 15;
     var MIN_FONT_SIZE = 10;
     var MAX_FONT_SIZE = 20;
@@ -107,7 +106,7 @@
             }
         },
 
-        _measureWords: function(wordCounts, sizeFunction) {
+        _measureWords: function(wordCounts) {
             // sort words by frequency
             wordCounts = wordCounts.sort(function(a, b) {
                 return b.count - a.count;
@@ -116,7 +115,7 @@
             var html = '<div style="height:256px; width:256px;">';
             var self = this;
             wordCounts.forEach(function(word) {
-                word.percent = self.transformValue(word.count, sizeFunction);
+                word.percent = self.transformValue(word.count);
                 word.fontSize = MIN_FONT_SIZE + word.percent * (MAX_FONT_SIZE - MIN_FONT_SIZE);
                 html += '<div class="word-cloud-label" style="' +
                     'visibility:hidden;' +
@@ -143,7 +142,7 @@
             };
             var cloud = [];
             // sort words by frequency
-            wordCounts = this._measureWords(wordCounts, SIZE_FUNCTION);
+            wordCounts = this._measureWords(wordCounts);
             // assemble word cloud
             wordCounts.forEach(function(wordCount) {
                 // starting spiral position

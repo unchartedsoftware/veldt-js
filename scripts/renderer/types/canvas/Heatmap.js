@@ -18,14 +18,13 @@
             var val, bin, i;
             for (i=0; i<bins.length; i++) {
                 bin = bins[i];
-                val = self.transformValue(bin, type);
-                val = Math.max(0, Math.min(1, val));
-                if (val === 0) {
+                if (bin === 0) {
                     color[0] = 0;
                     color[1] = 0;
                     color[2] = 0;
                     color[3] = 0;
                 } else {
+                    val = self.transformValue(bin, type);
                     rampFunc(val, color);
                 }
                 data[i * 4] = color[0];
@@ -44,7 +43,7 @@
             var bins = new Float64Array(data);
             var resolution = Math.sqrt(bins.length);
             var ramp = this.getColorRamp();
-            var tileCanvas = this.renderCanvas(bins, resolution, ramp, 'log');
+            var tileCanvas = this.renderCanvas(bins, resolution, ramp);
             var ctx = canvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(

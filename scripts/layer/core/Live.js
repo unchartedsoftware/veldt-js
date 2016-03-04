@@ -29,10 +29,6 @@
             this._params = {
                 binning: {}
             };
-            this._range = {
-                min: 0,
-                max: 1
-            };
             this.clearExtrema();
         },
 
@@ -46,21 +42,6 @@
 
         getExtrema: function() {
             return this._extrema;
-        },
-
-        setValueRange: function(range) {
-            this._range.min = range.min;
-            this._range.max = range.max;
-        },
-
-        getValueRange: function() {
-            if (!this._range) {
-                return {
-                    min: this._range.min,
-                    max: this._range.max
-                };
-            }
-            return this._range;
         },
 
         updateExtrema: function(data) {
@@ -82,26 +63,6 @@
                 min: _.min(data),
                 max: _.max(data)
             };
-        },
-
-        transformValue: function(value, type) {
-            // extrema range
-            var min = this._extrema.min;
-            var max = this._extrema.max;
-            var clamped = Math.max(Math.min(value, max), min);
-            var nval;
-            if (type === 'log') {
-                var logMin = Math.log10(min || 1);
-                var logMax = Math.log10(max || 1);
-                var oneOverLogRange = 1 / ((logMax - logMin) || 1);
-                nval = (Math.log10(clamped || 1) - logMin) * oneOverLogRange;
-            } else {
-                var range = max - min;
-                nval = (clamped - min) / range;
-            }
-            var rMin = this._range.min;
-            var rMax = this._range.max;
-            return (nval - rMin) / (rMax - rMin);
         },
 
         setMeta: function(meta) {

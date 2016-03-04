@@ -8,7 +8,6 @@
 
     var TILE_SIZE = 256;
     var HALF_SIZE = TILE_SIZE / 2;
-    var SIZE_FUNCTION = 'log';
     var MAX_NUM_WORDS = 8;
     var MIN_FONT_SIZE = 16;
     var MAX_FONT_SIZE = 22;
@@ -130,7 +129,7 @@
                 var sentimentClass = extractSentimentClass(avg);
                 var highlightClass = (topic === highlight) ? 'highlight' : '';
                 // scale the height based on level min / max
-                var percent = self.transformValue(total, SIZE_FUNCTION);
+                var percent = self.transformValue(total);
                 var percentLabel = Math.round((percent * 100) / 10) * 10;
                 var height = MIN_FONT_SIZE + percent * (MAX_FONT_SIZE - MIN_FONT_SIZE);
                 totalHeight += height;

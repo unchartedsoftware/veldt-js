@@ -9,6 +9,7 @@
     var TopTerms = require('../params/TopTerms');
     var Range = require('../params/Range');
     var Histogram = require('../params/Histogram');
+    var ValueTransform = require('../mixins/ValueTransform');
 
     var TopCount = Live.extend({
 
@@ -19,10 +20,18 @@
             TermsFilter,
             PrefixFilter,
             Range,
-            Histogram
+            Histogram,
+            // mixins
+            ValueTransform
         ],
 
-        type: 'top_count'
+        type: 'top_count',
+
+        initialize: function() {
+            ValueTransform.initialize.apply(this, arguments);
+            // base
+            Live.prototype.initialize.apply(this, arguments);
+        },
 
     });
 

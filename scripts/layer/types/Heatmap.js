@@ -9,6 +9,7 @@
     var PrefixFilter = require('../params/PrefixFilter');
     var Range = require('../params/Range');
     var ColorRamp = require('../mixins/ColorRamp');
+    var ValueTransform = require('../mixins/ValueTransform');
 
     var Heatmap = Live.extend({
 
@@ -20,13 +21,15 @@
             PrefixFilter,
             Range,
             // mixins
-            ColorRamp
+            ColorRamp,
+            ValueTransform
         ],
 
         type: 'heatmap',
 
         initialize: function() {
             ColorRamp.initialize.apply(this, arguments);
+            ValueTransform.initialize.apply(this, arguments);
             // base
             Live.prototype.initialize.apply(this, arguments);
         },
