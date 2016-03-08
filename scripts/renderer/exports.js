@@ -10,6 +10,7 @@
     // html renderers
     var HTML = {
         Heatmap: require('./types/html/Heatmap'),
+        Ring: require('./types/html/Ring'),
         WordCloud: require('./types/html/WordCloud'),
         WordHistogram: require('./types/html/WordHistogram')
     };
