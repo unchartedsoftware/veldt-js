@@ -100,6 +100,14 @@
                 $(this._container).addClass('highlight');
                 $('.word-cloud-label[data-word=' + word + ']').addClass('highlight');
                 this.highlight = word;
+                if (this.options.handlers.click) {
+                    this.options.handlers.click(target, {
+                        word: word,
+                        x: target.parent().attr('data-x'),
+                        y: target.parent().attr('data-y'),
+                        z: this._map.getZoom(),
+                    });
+                }
             } else {
                 $(this._container).removeClass('highlight');
                 this.highlight = null;

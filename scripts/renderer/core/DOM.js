@@ -37,6 +37,8 @@
                 x: tilePoint.x,
                 y: tilePoint.y
             };
+            tile.dataset.x = tilePoint.x;
+            tile.dataset.y = tilePoint.y;
             this._adjustTilePoint(tilePoint);
             this._redrawTile(tile);
         },

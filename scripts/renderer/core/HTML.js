@@ -6,6 +6,10 @@
 
     var HTML = DOM.extend({
 
+        options: {
+            handlers: {}
+        },
+
         onAdd: function(map) {
             var self = this;
             DOM.prototype.onAdd.call(this, map);
