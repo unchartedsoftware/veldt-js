@@ -73,8 +73,16 @@
 
     var WordHistogram = HTML.extend({
 
+        isTargetLayer: function( elem ) {
+            return this._container && $.contains(this._container, elem );
+        },
+
         onHover: function(e) {
             var target = $(e.originalEvent.target);
+            if (!this.isTargetLayer(e.originalEvent.target)) {
+                // this layer is not the target
+                return;
+            }
             $('.word-histogram-entry').removeClass('hover');
             var word = target.attr('data-word');
             if (word) {
@@ -84,6 +92,10 @@
 
         onClick: function(e) {
             var target = $(e.originalEvent.target);
+            if (!this.isTargetLayer(e.originalEvent.target)) {
+                // this layer is not the target
+                return;
+            }
             $('.word-histogram-entry').removeClass('highlight');
             var word = target.attr('data-word');
             if (word) {
@@ -91,11 +103,13 @@
                 $('.word-histogram-entry[data-word=' + word + ']').addClass('highlight');
                 this.highlight = word;
                 if (this.options.handlers.click) {
+                    var $parent = target.parents('.leaflet-html-tile');
                     this.options.handlers.click(target, {
                         word: word,
-                        x: target.parent().attr('data-x'),
-                        y: target.parent().attr('data-y'),
+                        x: $parent.attr('data-x'),
+                        y: $parent.attr('data-y'),
                         z: this._map.getZoom(),
+                        type: 'frequency'
                     });
                 }
             } else {

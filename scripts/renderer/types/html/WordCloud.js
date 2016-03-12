@@ -83,8 +83,16 @@
 
     var WordCloud = HTML.extend({
 
+        isTargetLayer: function( elem ) {
+            return this._container && $.contains(this._container, elem );
+        },
+
         onHover: function(e) {
             var target = $(e.originalEvent.target);
+            if (!this.isTargetLayer(e.originalEvent.target)) {
+                // this layer is not the target
+                return;
+            }
             $('.word-cloud-label').removeClass('hover');
             var word = target.attr('data-word');
             if (word) {
@@ -94,6 +102,10 @@
 
         onClick: function(e) {
             var target = $(e.originalEvent.target);
+            if (!this.isTargetLayer(e.originalEvent.target)) {
+                // this layer is not the target
+                return;
+            }
             $('.word-cloud-label').removeClass('highlight');
             var word = target.attr('data-word');
             if (word) {
@@ -101,11 +113,13 @@
                 $('.word-cloud-label[data-word=' + word + ']').addClass('highlight');
                 this.highlight = word;
                 if (this.options.handlers.click) {
+                    var $parent = target.parents('.leaflet-html-tile');
                     this.options.handlers.click(target, {
                         word: word,
-                        x: target.parent().attr('data-x'),
-                        y: target.parent().attr('data-y'),
+                        x: $parent.attr('data-x'),
+                        y: $parent.attr('data-y'),
                         z: this._map.getZoom(),
+                        type: 'cloud'
                     });
                 }
             } else {
