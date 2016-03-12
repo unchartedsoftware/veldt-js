@@ -116,8 +116,8 @@
                     var $parent = target.parents('.leaflet-html-tile');
                     this.options.handlers.click(target, {
                         word: word,
-                        x: $parent.attr('data-x'),
-                        y: $parent.attr('data-y'),
+                        x: parseInt($parent.attr('data-x'), 10),
+                        y: parseInt($parent.attr('data-y'), 10),
                         z: this._map.getZoom(),
                         type: 'cloud'
                     });
