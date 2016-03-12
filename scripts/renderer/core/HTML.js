@@ -20,7 +20,6 @@
         },
 
         onRemove: function(map) {
-            console.log('remove!');
             map.off('click', this.onClick, this);
             $(this._container).off('mouseover');
             DOM.prototype.onRemove.call(this, map);
