@@ -6,6 +6,11 @@
 
     var Pending = Image.extend({
 
+        options: {
+            unloadInvisibleTiles: true,
+            zIndex: 5000
+        },
+
         initialize: function(options) {
             this._pendingTiles = {};
             // set renderer
@@ -15,10 +20,8 @@
                 // recursively extend
                 $.extend(true, this, options.rendererClass);
             }
-            L.setOptions(this, {
-                unloadInvisibleTiles: true,
-                zIndex: 5000
-            });
+            // set options
+            L.setOptions(this, options);
         },
 
         increment: function(coord) {

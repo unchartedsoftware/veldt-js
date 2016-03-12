@@ -6,6 +6,11 @@
 
     var Debug = Image.extend({
 
+        options: {
+            unloadInvisibleTiles: true,
+            zIndex: 5000
+        },
+
         initialize: function(options) {
             // set renderer
             if (!options.rendererClass) {
@@ -14,10 +19,8 @@
                 // recursively extend
                 $.extend(true, this, options.rendererClass);
             }
-            L.setOptions(this, {
-                unloadInvisibleTiles: true,
-                zIndex: 4999
-            });
+            // set options
+            L.setOptions(this, options);
         },
 
         redraw: function() {
