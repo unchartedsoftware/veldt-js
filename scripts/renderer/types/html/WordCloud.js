@@ -87,6 +87,11 @@
             return this._container && $.contains(this._container, elem );
         },
 
+        clearSelection: function() {
+            $(this._container).removeClass('highlight');
+            this.highlight = null;
+        },
+
         onHover: function(e) {
             var target = $(e.originalEvent.target);
             if (!this.isTargetLayer(e.originalEvent.target)) {
@@ -123,8 +128,7 @@
                     });
                 }
             } else {
-                $(this._container).removeClass('highlight');
-                this.highlight = null;
+                this.clearSelection();
             }
         },
 
