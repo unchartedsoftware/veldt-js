@@ -1,135 +1,135 @@
 /* text */
 
-.pos-4 { color: #ff4400 !important; }
-.pos-3 { color: #e96c3f !important; }
-.pos-2 { color: #d3957e !important; }
-.pos-1,
-.neg-1 { color: #bdbdbd !important; }
-.neg-2 { color: #8fb5d1 !important; }
-.neg-3 { color: #60ade5 !important; }
-.neg-4 { color: #32a5f9 !important; }
-
-.pos-4:hover,
-.pos-4.hover {
-    color: #FF5E1A !important;
-}
-.pos-4.active {
-    color: #FF7733 !important;
-}
-.pos-3:hover,
-.pos-3.hover {
-    color: #FF9F72 !important;
-}
-.pos-3.active {
-    color: #FFD2A5 !important;
-}
-.pos-2:hover,
-.pos-2.hover {
-    color: #FFC8B1 !important;
-}
-.pos-2.active {
-    color: #FFFBE4 !important;
-}
-
-.pos-1:hover,
-.pos-1.hover,
-.neg-1:hover,
-.neg-1.hover {
-    color: #F0F0F0 !important;
-}
-.pos-1.active,
-.neg-1.active {
-    color: #fff !important;
-}
-
-.neg-2:hover,
-.neg-2.hover {
-    color: #C2E8FF !important;
-}
-.neg-2.active {
-    color: #F5FFFF !important;
-}
-
-.neg-3:hover,
-.neg-3.hover {
-    color: #93E0FF !important;
-}
-.neg-3.active {
-    color: #C6FFFF !important;
-}
+.neg-4 { color: #ff4400 !important; }
+.neg-3 { color: #e96c3f !important; }
+.neg-2 { color: #d3957e !important; }
+.neg-1,
+.pos-1 { color: #bdbdbd !important; }
+.pos-2 { color: #8fb5d1 !important; }
+.pos-3 { color: #60ade5 !important; }
+.pos-4 { color: #32a5f9 !important; }
 
 .neg-4:hover,
 .neg-4.hover {
-    color: #4CBFFF !important;
+    color: #FF5E1A !important;
 }
 .neg-4.active {
+    color: #FF7733 !important;
+}
+.neg-3:hover,
+.neg-3.hover {
+    color: #FF9F72 !important;
+}
+.neg-3.active {
+    color: #FFD2A5 !important;
+}
+.neg-2:hover,
+.neg-2.hover {
+    color: #FFC8B1 !important;
+}
+.neg-2.active {
+    color: #FFFBE4 !important;
+}
+
+.neg-1:hover,
+.neg-1.hover,
+.pos-1:hover,
+.pos-1.hover {
+    color: #F0F0F0 !important;
+}
+.neg-1.active,
+.pos-1.active {
+    color: #fff !important;
+}
+
+.pos-2:hover,
+.pos-2.hover {
+    color: #C2E8FF !important;
+}
+.pos-2.active {
+    color: #F5FFFF !important;
+}
+
+.pos-3:hover,
+.pos-3.hover {
+    color: #93E0FF !important;
+}
+.pos-3.active {
+    color: #C6FFFF !important;
+}
+
+.pos-4:hover,
+.pos-4.hover {
+    color: #4CBFFF !important;
+}
+.pos-4.active {
     color: #65D8FF !important;
 }
 
 /* fill */
 
-.pos-4-fill { background-color: #ff4400 !important; }
-.pos-3-fill { background-color: #e96c3f !important; }
-.pos-2-fill { background-color: #d3957e !important; }
-.pos-1-fill,
-.neg-1-fill { background-color: #bdbdbd !important; }
-.neg-2-fill { background-color: #8fb5d1 !important; }
-.neg-3-fill { background-color: #60ade5 !important; }
-.neg-4-fill { background-color: #32a5f9 !important; }
-
-.pos-4-fill:hover,
-.pos-4-fill.hover {
-    background-color: #FF5E1A !important;
-}
-.pos-4-fill.active {
-    background-color: #FF7733 !important;
-}
-.pos-3-fill:hover,
-.pos-3-fill.hover {
-    background-color: #FF9F72 !important;
-}
-.pos-3-fill.active {
-    background-color: #FFD2A5 !important;
-}
-.pos-2-fill:hover,
-.pos-2-fill.hover {
-    background-color: #FFC8B1 !important;
-}
-.pos-2-fill.active {
-    background-color: #FFFBE4 !important;
-}
-
-.pos-1-fill:hover,
-.pos-1-fill.hover,
-.neg-1-fill:hover,
-.neg-1-fill.hover {
-    background-color: #F0F0F0 !important;
-}
-.pos-1-fill.active,
-.neg-1-fill.active {
-    background-color: #fff !important;
-}
-
-.neg-2-fill:hover,
-.neg-2-fill.hover {
-    background-color: #C2E8FF !important;
-}
-.neg-2-fill.active {
-    background-color: #F5FFFF !important;
-}
-
-.neg-3-fill:hover,
-.neg-3-fill.hover {
-    background-color: #93E0FF !important;
-}
-.neg-3-fill.active {
-    background-color: #C6FFFF !important;
-}
+.neg-4-fill { background-color: #ff4400 !important; }
+.neg-3-fill { background-color: #e96c3f !important; }
+.neg-2-fill { background-color: #d3957e !important; }
+.neg-1-fill,
+.pos-1-fill { background-color: #bdbdbd !important; }
+.pos-2-fill { background-color: #8fb5d1 !important; }
+.pos-3-fill { background-color: #60ade5 !important; }
+.pos-4-fill { background-color: #32a5f9 !important; }
 
 .neg-4-fill:hover,
 .neg-4-fill.hover {
-    background-color: #4CBFFF !important;
+    background-color: #FF5E1A !important;
 }
 .neg-4-fill.active {
+    background-color: #FF7733 !important;
+}
+.neg-3-fill:hover,
+.neg-3-fill.hover {
+    background-color: #FF9F72 !important;
+}
+.neg-3-fill.active {
+    background-color: #FFD2A5 !important;
+}
+.neg-2-fill:hover,
+.neg-2-fill.hover {
+    background-color: #FFC8B1 !important;
+}
+.neg-2-fill.active {
+    background-color: #FFFBE4 !important;
+}
+
+.neg-1-fill:hover,
+.neg-1-fill.hover,
+.pos-1-fill:hover,
+.pos-1-fill.hover {
+    background-color: #F0F0F0 !important;
+}
+.neg-1-fill.active,
+.pos-1-fill.active {
+    background-color: #fff !important;
+}
+
+.pos-2-fill:hover,
+.pos-2-fill.hover {
+    background-color: #C2E8FF !important;
+}
+.pos-2-fill.active {
+    background-color: #F5FFFF !important;
+}
+
+.pos-3-fill:hover,
+.pos-3-fill.hover {
+    background-color: #93E0FF !important;
+}
+.pos-3-fill.active {
+    background-color: #C6FFFF !important;
+}
+
+.pos-4-fill:hover,
+.pos-4-fill.hover {
+    background-color: #4CBFFF !important;
+}
+.pos-4-fill.active {
     background-color: #65D8FF !important;
 }
