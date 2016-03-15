@@ -53,6 +53,12 @@
         return request.promise();
     };
 
+    Requestor.prototype.close = function() {
+        this.socket.onclose = null;
+        this.socket.close();
+        this.socket = null;
+    };
+
     module.exports = Requestor;
 
 }());

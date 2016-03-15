@@ -25,7 +25,6 @@
 
         setBrightness: function(brightness) {
             this._brightness = brightness;
-            console.log(brightness);
             $(this._container).css('-webkit-filter', 'brightness(' + (this._brightness * 100) + '%)');
             $(this._container).css('filter', 'brightness(' + (this._brightness * 100) + '%)');
         },

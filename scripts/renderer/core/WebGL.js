@@ -58,7 +58,6 @@
         },
 
         initialize: function(meta, options) {
-            console.log('WebGL initialize');
             options = L.setOptions(this, options);
             if (options.bounds) {
                 options.bounds = L.latLngBounds(options.bounds);
