@@ -114,7 +114,7 @@
                         x: parseInt($parent.attr('data-x'), 10),
                         y: parseInt($parent.attr('data-y'), 10),
                         z: this._map.getZoom(),
-                        type: 'frequency'
+                        type: 'word-histogram'
                     });
                 }
             } else {

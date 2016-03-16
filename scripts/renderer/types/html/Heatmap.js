@@ -8,11 +8,35 @@
 
     var Heatmap = HTML.extend({
 
+        isTargetLayer: function( elem ) {
+            return this._container && $.contains(this._container, elem );
+        },
+
+        clearSelection: function() {
+            $(this._container).removeClass('highlight');
+            this.highlight = null;
+        },
+
         onClick: function(e) {
             var target = $(e.originalEvent.target);
+            if (!this.isTargetLayer(e.originalEvent.target)) {
+                // this layer is not the target
+                return;
+            }
             $('.heatmap-pixel').removeClass('highlight');
             if ( target.hasClass('heatmap-pixel') ) {
                 target.addClass('highlight');
+            }
+            if (this.options.handlers.click) {
+                var $parent = target.parents('.leaflet-html-tile');
+                var value = target.attr('data-value');
+                this.options.handlers.click(target, {
+                    value: value,
+                    x: parseInt($parent.attr('data-x'), 10),
+                    y: parseInt($parent.attr('data-y'), 10),
+                    z: this._map.getZoom(),
+                    type: 'heatmap'
+                });
             }
         },
 
@@ -43,6 +67,7 @@
                     color[2] + ',' +
                     (color[3] / 255) + ')';
                 html += '<div class="heatmap-pixel" style="' +
+                    'data-value="' + bin + '"' +
                     'height:' + pixelSize + 'px;' +
                     'width:' + pixelSize + 'px;' +
                     'left:' + (left * pixelSize) + 'px;' +
