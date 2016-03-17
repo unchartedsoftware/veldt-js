@@ -15,13 +15,17 @@
             DOM.prototype.onAdd.call(this, map);
             map.on('click', this.onClick, this);
             $(this._container).on('mouseover', function(e) {
-                self.onHover(e);
+                self.onMouseOver(e);
+            });
+            $(this._container).on('mouseout', function(e) {
+                self.onMouseOut(e);
             });
         },
 
         onRemove: function(map) {
             map.off('click', this.onClick, this);
             $(this._container).off('mouseover');
+            $(this._container).off('mouseout');
             DOM.prototype.onRemove.call(this, map);
         },
 
@@ -34,9 +38,14 @@
             return tile;
         },
 
-        onHover: function() {
+        onMouseOver: function() {
             // override
         },
+
+        onMouseOut: function() {
+            // override
+        },
+
 
         onClick: function() {
             // override

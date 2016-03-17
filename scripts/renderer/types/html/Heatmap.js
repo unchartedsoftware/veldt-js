@@ -17,6 +17,40 @@
             this.highlight = null;
         },
 
+        onMouseOver: function(e) {
+            var target = $(e.originalEvent.target);
+            var value = target.attr('data-value');
+            if (value) {
+                if (this.options.handlers.mouseover) {
+                    var $parent = target.parents('.leaflet-html-tile');
+                    this.options.handlers.mouseover(target, {
+                        value: value,
+                        x: parseInt($parent.attr('data-x'), 10),
+                        y: parseInt($parent.attr('data-y'), 10),
+                        z: this._map.getZoom(),
+                        type: 'heatmap'
+                    });
+                }
+            }
+        },
+
+        onMouseOut: function(e) {
+            var target = $(e.originalEvent.target);
+            var value = target.attr('data-value');
+            if (value) {
+                if (this.options.handlers.mouseout) {
+                    var $parent = target.parents('.leaflet-html-tile');
+                    this.options.handlers.mouseout(target, {
+                        value: value,
+                        x: parseInt($parent.attr('data-x'), 10),
+                        y: parseInt($parent.attr('data-y'), 10),
+                        z: this._map.getZoom(),
+                        type: 'heatmap'
+                    });
+                }
+            }
+        },
+
         onClick: function(e) {
             var target = $(e.originalEvent.target);
             if (!this.isTargetLayer(e.originalEvent.target)) {
@@ -66,8 +100,9 @@
                     color[1] + ',' +
                     color[2] + ',' +
                     (color[3] / 255) + ')';
-                html += '<div class="heatmap-pixel" style="' +
+                html += '<div class="heatmap-pixel" ' +
                     'data-value="' + bin + '"' +
+                    'style="' +
                     'height:' + pixelSize + 'px;' +
                     'width:' + pixelSize + 'px;' +
                     'left:' + (left * pixelSize) + 'px;' +

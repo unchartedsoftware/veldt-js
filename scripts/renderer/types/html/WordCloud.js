@@ -92,16 +92,39 @@
             this.highlight = null;
         },
 
-        onHover: function(e) {
+        onMouseOver: function(e) {
             var target = $(e.originalEvent.target);
-            if (!this.isTargetLayer(e.originalEvent.target)) {
-                // this layer is not the target
-                return;
-            }
             $('.word-cloud-label').removeClass('hover');
             var word = target.attr('data-word');
             if (word) {
                 $('.word-cloud-label[data-word=' + word + ']').addClass('hover');
+                if (this.options.handlers.mouseover) {
+                    var $parent = target.parents('.leaflet-html-tile');
+                    this.options.handlers.mouseover(target, {
+                        word: word,
+                        x: parseInt($parent.attr('data-x'), 10),
+                        y: parseInt($parent.attr('data-y'), 10),
+                        z: this._map.getZoom(),
+                        type: 'word-cloud'
+                    });
+                }
+            }
+        },
+
+        onMouseOut: function(e) {
+            var target = $(e.originalEvent.target);
+            var word = target.attr('data-word');
+            if (word) {
+                if (this.options.handlers.mouseout) {
+                    var $parent = target.parents('.leaflet-html-tile');
+                    this.options.handlers.mouseout(target, {
+                        word: word,
+                        x: parseInt($parent.attr('data-x'), 10),
+                        y: parseInt($parent.attr('data-y'), 10),
+                        z: this._map.getZoom(),
+                        type: 'word-cloud'
+                    });
+                }
             }
         },
 

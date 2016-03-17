@@ -2,6 +2,8 @@
 
     'use strict';
 
+    var retryInterval = 5000;
+
     function getHost() {
         var loc = window.location;
         var new_uri;
@@ -13,25 +15,59 @@
         return new_uri + '//' + loc.host + loc.pathname;
     }
 
-    function Requestor(url, callback) {
-        var self = this;
-        this.requests = {};
-        this.socket = new WebSocket(getHost() + url);
-        this.socket.onopen = callback;
-        this.socket.onmessage = function(event) {
+    function establishConnection(requestor, callback) {
+        requestor.socket = new WebSocket(getHost() + requestor.url);
+        // on open
+        requestor.socket.onopen = function() {
+            requestor.isOpen = true;
+            console.log('Websocket connection established');
+            callback.apply(this, arguments);
+        };
+        // on message
+        requestor.socket.onmessage = function(event) {
             var res = JSON.parse(event.data);
-            var hash = self.getHash(res);
-            var request = self.requests[hash];
-            delete self.requests[hash];
+            var hash = requestor.getHash(res);
+            var request = requestor.requests[hash];
+            delete requestor.requests[hash];
             if (res.success) {
-                request.resolve(self.getURL(res), res);
+                request.resolve(requestor.getURL(res), res);
             } else {
                 request.reject(res);
             }
         };
-        this.socket.onclose = function() {
-            console.warn('Websocket connection closed.');
+        // on close
+        requestor.socket.onclose = function() {
+            // log close only if connection was ever open
+            if (requestor.isOpen) {
+                console.warn('Websocket connection closed');
+            }
+            requestor.socket = null;
+            requestor.isOpen = false;
+            // reject all pending requests
+            Object.keys(requestor.requests).forEach(function(key) {
+                requestor.requests[key].reject();
+            });
+            // clear request map
+            requestor.requests = {};
+            // attempt to re-establish connection
+            setTimeout(function() {
+                establishConnection(requestor, function() {
+                    // once connection is re-established, send pending requests
+                    requestor.pending.forEach(function(req) {
+                        requestor.get(req);
+                    });
+                    requestor.pending = [];
+                });
+            }, retryInterval);
         };
+    }
+
+    function Requestor(url, callback) {
+        this.url = url;
+        this.requests = {};
+        this.pending = [];
+        this.isOpen = false;
+        establishConnection(this, callback);
     }
 
     Requestor.prototype.getHash = function( /*req*/ ) {
@@ -43,6 +79,11 @@
     };
 
     Requestor.prototype.get = function(req) {
+        if (!this.isOpen) {
+            // if no connection, add request to pending queue
+            this.pending.push(req);
+            return;
+        }
         var hash = this.getHash(req);
         var request = this.requests[hash];
         if (request) {
