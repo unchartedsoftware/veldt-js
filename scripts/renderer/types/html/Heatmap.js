@@ -28,6 +28,8 @@
                         x: parseInt($parent.attr('data-x'), 10),
                         y: parseInt($parent.attr('data-y'), 10),
                         z: this._map.getZoom(),
+                        bx: parseInt(target.attr('data-bx'), 10),
+                        by: parseInt(target.attr('data-by'), 10),
                         type: 'heatmap'
                     });
                 }
@@ -45,6 +47,8 @@
                         x: parseInt($parent.attr('data-x'), 10),
                         y: parseInt($parent.attr('data-y'), 10),
                         z: this._map.getZoom(),
+                        bx: parseInt(target.attr('data-bx'), 10),
+                        by: parseInt(target.attr('data-by'), 10),
                         type: 'heatmap'
                     });
                 }
@@ -69,6 +73,8 @@
                     x: parseInt($parent.attr('data-x'), 10),
                     y: parseInt($parent.attr('data-y'), 10),
                     z: this._map.getZoom(),
+                    bx: parseInt(target.attr('data-bx'), 10),
+                    by: parseInt(target.attr('data-by'), 10),
                     type: 'heatmap'
                 });
             }
@@ -85,13 +91,16 @@
             var self = this;
             var color = [0, 0, 0, 0];
             var html = '';
-            bins.forEach(function(bin, index) {
-                var val, left, top;
+            var val, bin;
+            var left, top;
+            var i;
+            for (i=0; i<bins.length; i++) {
+                bin = bins[i];
                 if (bin === 0) {
-                    return;
+                    continue;
                 } else {
-                    left = (index % resolution);
-                    top = Math.floor(index / resolution);
+                    left = (i % resolution);
+                    top = Math.floor(i / resolution);
                     val = self.transformValue(bin);
                     rampFunc(val, color);
                 }
@@ -101,14 +110,16 @@
                     color[2] + ',' +
                     (color[3] / 255) + ')';
                 html += '<div class="heatmap-pixel" ' +
-                    'data-value="' + bin + '"' +
+                    'data-value="' + bin + '" ' +
+                    'data-bx="' + left + '" ' +
+                    'data-by="' + top + '" ' +
                     'style="' +
                     'height:' + pixelSize + 'px;' +
                     'width:' + pixelSize + 'px;' +
                     'left:' + (left * pixelSize) + 'px;' +
                     'top:' + (top * pixelSize) + 'px;' +
                     'background-color:' + rgba + ';"></div>';
-            });
+            }
             container.innerHTML = html;
         }
 
