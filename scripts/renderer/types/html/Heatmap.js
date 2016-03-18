@@ -65,18 +65,20 @@
             if ( target.hasClass('heatmap-pixel') ) {
                 target.addClass('highlight');
             }
-            if (this.options.handlers.click) {
-                var $parent = target.parents('.leaflet-html-tile');
-                var value = target.attr('data-value');
-                this.options.handlers.click(target, {
-                    value: value,
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom(),
-                    bx: parseInt(target.attr('data-bx'), 10),
-                    by: parseInt(target.attr('data-by'), 10),
-                    type: 'heatmap'
-                });
+            var value = target.attr('data-value');
+            if (value) {
+                if (this.options.handlers.click) {
+                    var $parent = target.parents('.leaflet-html-tile');
+                    this.options.handlers.click(target, {
+                        value: value,
+                        x: parseInt($parent.attr('data-x'), 10),
+                        y: parseInt($parent.attr('data-y'), 10),
+                        z: this._map.getZoom(),
+                        bx: parseInt(target.attr('data-bx'), 10),
+                        by: parseInt(target.attr('data-by'), 10),
+                        type: 'heatmap'
+                    });
+                }
             }
         },
 
