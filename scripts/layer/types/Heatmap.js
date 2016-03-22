@@ -8,6 +8,7 @@
     var TermsFilter = require('../params/TermsFilter');
     var PrefixFilter = require('../params/PrefixFilter');
     var Range = require('../params/Range');
+    var QueryString = require('../params/QueryString');
     var ColorRamp = require('../mixins/ColorRamp');
     var ValueTransform = require('../mixins/ValueTransform');
 
@@ -20,6 +21,7 @@
             TermsFilter,
             PrefixFilter,
             Range,
+            QueryString,
             // mixins
             ColorRamp,
             ValueTransform

@@ -86,11 +86,15 @@
         onAdd: function(map) {
             this._map = map;
             this._animated = map._zoomAnimated;
-            // create canvas
-            this._initCanvas();
-            map._panes.tilePane.appendChild(this._canvas);
-            // initialize the webgl context
-            this._initGL();
+            if (!this._canvas) {
+                // create canvas
+                this._initCanvas();
+                map._panes.tilePane.appendChild(this._canvas);
+                // initialize the webgl context
+                this._initGL();
+            } else {
+                map._panes.tilePane.appendChild(this._canvas);
+            }
             // set up events
             map.on({
                 'resize': this._resize,
@@ -119,6 +123,8 @@
         },
 
         onRemove: function(map) {
+            // clear the current buffer
+            this._clearBackBuffer();
             map.getPanes().tilePane.removeChild(this._canvas);
             map.off({
                 'resize': this._resize,
@@ -131,17 +137,13 @@
                     'zoomstart': this._enableZooming,
                     'zoomanim': this._animateZoom,
                     'zoomend': this._disableZooming
-                });
+                }, this);
             }
             if (!this.options.updateWhenIdle) {
-                map.off('move', this._limitedUpdate);
+                map.off('move', this._limitedUpdate, this);
             }
             this._map = null;
             this._animated = null;
-            this._gl = null;
-            this._canvas = null;
-            this._viewport = null;
-            this._initialized = false;
             this._isZooming = false;
             this._cache = {};
         },

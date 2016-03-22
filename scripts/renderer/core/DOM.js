@@ -12,7 +12,7 @@
         },
 
         onRemove: function(map) {
-            map.off('zoomstart', this.clearExtrema);
+            map.off('zoomstart', this.clearExtrema, this);
             L.TileLayer.prototype.onRemove.call(this, map);
         },
 
