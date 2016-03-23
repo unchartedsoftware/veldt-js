@@ -24,7 +24,7 @@
                 if (this.options.handlers.mouseover) {
                     var $parent = target.parents('.leaflet-html-tile');
                     this.options.handlers.mouseover(target, {
-                        value: value,
+                        value: parseInt(value, 10),
                         x: parseInt($parent.attr('data-x'), 10),
                         y: parseInt($parent.attr('data-y'), 10),
                         z: this._map.getZoom(),
@@ -50,7 +50,8 @@
                         z: this._map.getZoom(),
                         bx: parseInt(target.attr('data-bx'), 10),
                         by: parseInt(target.attr('data-by'), 10),
-                        type: 'heatmap'
+                        type: 'heatmap',
+                        layer: this
                     });
                 }
             }
@@ -79,7 +80,8 @@
                         z: this._map.getZoom(),
                         bx: parseInt(target.attr('data-bx'), 10),
                         by: parseInt(target.attr('data-by'), 10),
-                        type: 'heatmap'
+                        type: 'heatmap',
+                        layer: this
                     });
                 }
             }
