@@ -30,7 +30,8 @@
                         z: this._map.getZoom(),
                         bx: parseInt(target.attr('data-bx'), 10),
                         by: parseInt(target.attr('data-by'), 10),
-                        type: 'heatmap'
+                        type: 'heatmap',
+                        layer: this
                     });
                 }
             }

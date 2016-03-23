@@ -91,11 +91,12 @@
                 if (this.options.handlers.mouseover) {
                     var $parent = target.parents('.leaflet-html-tile');
                     this.options.handlers.mouseover(target, {
-                        word: word,
+                        value: word,
                         x: parseInt($parent.attr('data-x'), 10),
                         y: parseInt($parent.attr('data-y'), 10),
                         z: this._map.getZoom(),
-                        type: 'word-histogram'
+                        type: 'word-histogram',
+                        layer: this
                     });
                 }
             }
