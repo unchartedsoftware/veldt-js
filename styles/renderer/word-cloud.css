@@ -6,6 +6,7 @@
     position: absolute;
     padding: 0 5px;
     cursor: pointer;
+    pointer-events: all;
 }
 
 .word-cloud-label-100{color:#F8D9AC;}

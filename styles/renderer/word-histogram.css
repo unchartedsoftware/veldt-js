@@ -1,6 +1,7 @@
 .word-histograms {
 	position: relative;
 	display: inline-block;
+    pointer-events: all;
 }
 
 .word-histogram-entry {

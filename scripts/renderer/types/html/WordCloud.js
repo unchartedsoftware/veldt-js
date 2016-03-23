@@ -113,6 +113,7 @@
 
         onMouseOut: function(e) {
             var target = $(e.originalEvent.target);
+            $('.word-cloud-label').removeClass('hover');
             var word = target.attr('data-word');
             if (word) {
                 if (this.options.handlers.mouseout) {
@@ -129,12 +130,15 @@
         },
 
         onClick: function(e) {
+            // un-select any prev selected words
+            $('.word-cloud-label').removeClass('highlight');
+            $(this._container).removeClass('highlight');
+            // get target
             var target = $(e.originalEvent.target);
             if (!this.isTargetLayer(e.originalEvent.target)) {
                 // this layer is not the target
                 return;
             }
-            $('.word-cloud-label').removeClass('highlight');
             var word = target.attr('data-word');
             if (word) {
                 $(this._container).addClass('highlight');

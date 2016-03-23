@@ -103,6 +103,7 @@
 
         onMouseOut: function(e) {
             var target = $(e.originalEvent.target);
+            $('.word-histogram-entry').removeClass('hover');
             var word = target.attr('data-word');
             if (word) {
                 if (this.options.handlers.mouseout) {
@@ -119,12 +120,15 @@
         },
 
         onClick: function(e) {
+            // un-select and prev selected histogram
+            $('.word-histogram-entry').removeClass('highlight');
+            $(this._container).removeClass('highlight');
+            // get target
             var target = $(e.originalEvent.target);
             if (!this.isTargetLayer(e.originalEvent.target)) {
                 // this layer is not the target
                 return;
             }
-            $('.word-histogram-entry').removeClass('highlight');
             var word = target.attr('data-word');
             if (word) {
                 $(this._container).addClass('highlight');

@@ -1,6 +1,7 @@
 .heatmap-pixel {
     position: absolute;
     cursor: pointer;
+    pointer-events: all;
 }
 
 .heatmap-pixel:hover,

@@ -56,12 +56,14 @@
         },
 
         onClick: function(e) {
+            // un-select any prev selected pixel
+            $('.heatmap-pixel').removeClass('highlight');
+            // get target
             var target = $(e.originalEvent.target);
             if (!this.isTargetLayer(e.originalEvent.target)) {
                 // this layer is not the target
                 return;
             }
-            $('.heatmap-pixel').removeClass('highlight');
             if ( target.hasClass('heatmap-pixel') ) {
                 target.addClass('highlight');
             }
