@@ -120,7 +120,7 @@
                 if (this.options.handlers.mouseout) {
                     var $parent = target.parents('.leaflet-html-tile');
                     this.options.handlers.mouseout(target, {
-                        word: word,
+                        value: word,
                         x: parseInt($parent.attr('data-x'), 10),
                         y: parseInt($parent.attr('data-y'), 10),
                         z: this._map.getZoom(),
@@ -149,7 +149,7 @@
                 if (this.options.handlers.click) {
                     var $parent = target.parents('.leaflet-html-tile');
                     this.options.handlers.click(target, {
-                        word: word,
+                        value: word,
                         x: parseInt($parent.attr('data-x'), 10),
                         y: parseInt($parent.attr('data-y'), 10),
                         z: this._map.getZoom(),
