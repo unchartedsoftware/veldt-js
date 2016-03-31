@@ -86,8 +86,8 @@
         return this;
     };
 
-    var getTermsFilter = function() {
-        return this._params.terms_filter;
+    var getTermsFilter = function(field) {
+        return this._params.terms_filter[field];
     };
 
     module.exports = {

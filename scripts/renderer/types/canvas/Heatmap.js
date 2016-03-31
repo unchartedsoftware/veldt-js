@@ -6,7 +6,7 @@
 
     var Heatmap = Canvas.extend({
 
-        renderCanvas: function(bins, resolution, rampFunc, type) {
+        renderCanvas: function(bins, resolution, rampFunc) {
             var canvas = document.createElement('canvas');
             canvas.height = resolution;
             canvas.width = resolution;
@@ -15,7 +15,7 @@
             var data = imageData.data;
             var self = this;
             var color = [0, 0, 0, 0];
-            var val, bin, i;
+            var nval, rval, bin, i;
             for (i=0; i<bins.length; i++) {
                 bin = bins[i];
                 if (bin === 0) {
@@ -24,8 +24,9 @@
                     color[2] = 0;
                     color[3] = 0;
                 } else {
-                    val = self.transformValue(bin, type);
-                    rampFunc(val, color);
+                    nval = self.transformValue(bin);
+                    rval = self.interpolateToRange(nval);
+                    rampFunc(rval, color);
                 }
                 data[i * 4] = color[0];
                 data[i * 4 + 1] = color[1];

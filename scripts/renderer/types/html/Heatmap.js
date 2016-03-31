@@ -98,7 +98,7 @@
             var self = this;
             var color = [0, 0, 0, 0];
             var html = '';
-            var val, bin;
+            var nval, rval, bin;
             var left, top;
             var i;
             for (i=0; i<bins.length; i++) {
@@ -108,8 +108,9 @@
                 } else {
                     left = (i % resolution);
                     top = Math.floor(i / resolution);
-                    val = self.transformValue(bin);
-                    rampFunc(val, color);
+                    nval = self.transformValue(bin);
+                    rval = self.interpolateToRange(nval);
+                    rampFunc(rval, color);
                 }
                 var rgba = 'rgba(' +
                     color[0] + ',' +
