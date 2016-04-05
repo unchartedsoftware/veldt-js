@@ -34,4 +34,4 @@
     removeBoolQuery : removeBoolQuery,
     getBoolQuery : getBoolQuery
   }
-})
+}());
