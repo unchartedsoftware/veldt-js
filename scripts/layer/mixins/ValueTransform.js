@@ -33,6 +33,12 @@
         var absMin = Math.abs(min);
         var absMax = Math.abs(max);
         var distance = Math.max(absMin, absMax);
+        if (nval === 0) {
+            return -distance;
+        }
+        if (nval === 1) {
+            return distance;
+        }
         return Math.log((1/nval) - 1) * -(SIGMOID_SCALE * distance);
     }
 
