@@ -15,7 +15,7 @@
     }
   }
 
-  function addBoolQuery(query){
+  function setBoolQuery(query){
     var meta = this._meta;
     if (isValidQuery(meta, query)) {
       console.log('Valid bool_query');
@@ -35,7 +35,7 @@
   }
 
   module.exports = {
-    addBoolQuery : addBoolQuery,
+    setBoolQuery : setBoolQuery,
     removeBoolQuery : removeBoolQuery,
     getBoolQuery : getBoolQuery
   };
