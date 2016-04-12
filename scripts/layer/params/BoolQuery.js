@@ -2,30 +2,45 @@
 
   'use strict';
 
-  var checkField = function(meta, field) {
-    if (meta && meta.type) {
-
+  function isValidQuery(meta, query){
+    if (query && Array.isArray(query.must)){
+      var queryComponentCheck = true;
+      query.must.forEach(function(queryBlock){
+        if (queryBlock.term) {
+            if (!meta[queryBlock.term.field]){
+              queryComponentCheck = false;
+            }
+        } else if (queryBlock.range) {
+          if (!meta[queryBlock.range.field]){
+            queryComponentCheck = false;
+          }
+        } else {
+          queryComponentCheck = false;
+        }
+      });
+      return queryComponentCheck;
+    } else {
+      return false;
     }
   }
 
   function addBoolQuery(query){
 
-    // do some validation on the query object
-    // e.g. make sure that all of the fields referenced are actually part of the metadata for the layer
-    this._params.bool_query = query;
-    console.log('adding forreals');
-    return {};
+    var meta = this._meta;
+    if (isValidQuery(meta, query)) {
+      console.log('Valid bool_query');
+      this._params.bool_query = query;
+    } else {
+      console.warn('Invalid bool_query');
+    }
   }
 
   function removeBoolQuery(){
     this._params.bool_query = null;
-    console.log('removing forreals');
-    return {};
+    delete this._params.bool_query;
   }
 
   function getBoolQuery(){
-
-    console.log('getting forreals');
     return this._params.bool_query;
   }
 
@@ -33,5 +48,5 @@
     addBoolQuery : addBoolQuery,
     removeBoolQuery : removeBoolQuery,
     getBoolQuery : getBoolQuery
-  }
+  };
 }());
