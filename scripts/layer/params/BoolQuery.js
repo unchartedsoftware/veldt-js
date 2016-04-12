@@ -5,18 +5,9 @@
   function isValidQuery(meta, query){
     if (query && Array.isArray(query.must)){
       var queryComponentCheck = true;
-      query.must.forEach(function(queryBlock){
-        if (queryBlock.term) {
-            if (!meta[queryBlock.term.field]){
-              queryComponentCheck = false;
-            }
-        } else if (queryBlock.range) {
-          if (!meta[queryBlock.range.field]){
-            queryComponentCheck = false;
-          }
-        } else {
-          queryComponentCheck = false;
-        }
+      query.must.forEach(function(queryItem){
+        var queryConfig = queryItem.term || queryItem.range;
+        queryComponentCheck = queryComponentCheck && meta[queryConfig.field];
       });
       return queryComponentCheck;
     } else {
@@ -25,7 +16,6 @@
   }
 
   function addBoolQuery(query){
-
     var meta = this._meta;
     if (isValidQuery(meta, query)) {
       console.log('Valid bool_query');
