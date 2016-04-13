@@ -18,10 +18,9 @@
   function setBoolQuery(query){
     var meta = this._meta;
     if (isValidQuery(meta, query)) {
-      console.log('Valid bool_query');
       this._params.bool_query = query;
     } else {
-      console.warn('Invalid bool_query');
+      console.warn('Invalid bool_query. Ignoring command.');
     }
   }
 
