@@ -6,6 +6,7 @@
     var Binning = require('../params/Binning');
     var MetricAgg = require('../params/MetricAgg');
     var TermsFilter = require('../params/TermsFilter');
+    var BoolQuery = require('../params/BoolQuery');
     var PrefixFilter = require('../params/PrefixFilter');
     var Range = require('../params/Range');
     var QueryString = require('../params/QueryString');
@@ -19,6 +20,7 @@
             Binning,
             MetricAgg,
             TermsFilter,
+            BoolQuery,
             PrefixFilter,
             Range,
             QueryString,
