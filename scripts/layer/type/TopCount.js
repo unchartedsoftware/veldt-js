@@ -3,13 +3,10 @@
     'use strict';
 
     var Live = require('../core/Live');
-    var Tiling = require('../params/Tiling');
-    var TermsFilter = require('../params/TermsFilter');
-    var PrefixFilter = require('../params/PrefixFilter');
-    var TopTerms = require('../params/TopTerms');
-    var Range = require('../params/Range');
-    var Histogram = require('../params/Histogram');
-    var ValueTransform = require('../mixins/ValueTransform');
+    var Tiling = require('../param/Tiling');
+    var TopTerms = require('../agg/TopTerms');
+    var Histogram = require('../agg/Histogram');
+    var ValueTransform = require('../mixin/ValueTransform');
 
     var TopCount = Live.extend({
 
@@ -17,9 +14,7 @@
             // params
             Tiling,
             TopTerms,
-            TermsFilter,
-            PrefixFilter,
-            Range,
+            // aggs
             Histogram,
             // mixins
             ValueTransform

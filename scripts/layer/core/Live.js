@@ -2,6 +2,8 @@
 
     'use strict';
 
+    var boolQueryCheck = require('../query/Bool');
+
     var MIN = Number.MAX_VALUE;
     var MAX = 0;
 
@@ -10,7 +12,7 @@
         initialize: function(meta, options) {
             // set renderer
             if (!options.rendererClass) {
-                console.warn('No `rendererClass` option found, this layer will not render any data.');
+                throw 'No `rendererClass` option found.';
             } else {
                 // recursively extend and initialize
                 if (options.rendererClass.prototype) {
@@ -65,17 +67,22 @@
             };
         },
 
-        setMeta: function(meta) {
-            this._meta = meta;
-            return this;
+        setQuery: function(query) {
+            if (!query.must && !query.must_not && !query.should) {
+                throw 'Root query must have at least one `must`, `must_not`, or `should` argument.';
+            }
+            // check that the query is valid
+            boolQueryCheck(this._meta, query);
+            // set query
+            this._params.must = query.must;
+            this._params.must_not = query.must_not;
+            this._params.should = query.should;
+            // cleat extrema
+            this.clearExtrema();
         },
 
         getMeta: function() {
             return this._meta;
-        },
-
-        setParams: function(params) {
-            this._params = params;
         },
 
         getParams: function() {

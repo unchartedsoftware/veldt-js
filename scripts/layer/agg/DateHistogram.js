@@ -4,16 +4,13 @@
 
     var setDateHistogram = function(field, from, to, interval) {
         if (!field) {
-            console.warn('DateHistogram `field` is missing from argument. Ignoring command.');
-            return;
+            throw 'DateHistogram `field` is missing from argument';
         }
         if (from === undefined) {
-            console.warn('DateHistogram `from` are missing from argument. Ignoring command.');
-            return;
+            throw 'DateHistogram `from` are missing from argument';
         }
         if (to === undefined) {
-            console.warn('DateHistogram `to` are missing from argument. Ignoring command.');
-            return;
+            throw 'DateHistogram `to` are missing from argument';
         }
         this._params.date_histogram = {
             field: field,

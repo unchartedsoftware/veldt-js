@@ -3,25 +3,18 @@
     'use strict';
 
     var Live = require('../core/Live');
-    var Binning = require('../params/Binning');
-    var MetricAgg = require('../params/MetricAgg');
-    var TermsFilter = require('../params/TermsFilter');
-    var PrefixFilter = require('../params/PrefixFilter');
-    var Range = require('../params/Range');
-    var QueryString = require('../params/QueryString');
-    var ColorRamp = require('../mixins/ColorRamp');
-    var ValueTransform = require('../mixins/ValueTransform');
+    var Binning = require('../param/Binning');
+    var Metric = require('../agg/Metric');
+    var ColorRamp = require('../mixin/ColorRamp');
+    var ValueTransform = require('../mixin/ValueTransform');
 
     var Heatmap = Live.extend({
 
         includes: [
             // params
             Binning,
-            MetricAgg,
-            TermsFilter,
-            PrefixFilter,
-            Range,
-            QueryString,
+            // aggs
+            Metric,
             // mixins
             ColorRamp,
             ValueTransform

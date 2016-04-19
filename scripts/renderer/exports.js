@@ -4,32 +4,32 @@
 
     // canvas renderers
     var Canvas = {
-        Heatmap: require('./types/canvas/Heatmap')
+        Heatmap: require('./type/canvas/Heatmap')
     };
 
     // html renderers
     var HTML = {
-        Heatmap: require('./types/html/Heatmap'),
-        Ring: require('./types/html/Ring'),
-        WordCloud: require('./types/html/WordCloud'),
-        WordHistogram: require('./types/html/WordHistogram')
+        Heatmap: require('./type/html/Heatmap'),
+        Ring: require('./type/html/Ring'),
+        WordCloud: require('./type/html/WordCloud'),
+        WordHistogram: require('./type/html/WordHistogram')
     };
 
     // webgl renderers
     var WebGL = {
-        Heatmap: require('./types/webgl/Heatmap')
+        Heatmap: require('./type/webgl/Heatmap')
     };
 
     // pending layer renderers
     var Pending = {
-        Blink: require('./types/pending/Blink'),
-        Spin: require('./types/pending/Spin'),
-        BlinkSpin: require('./types/pending/BlinkSpin'),
+        Blink: require('./type/pending/Blink'),
+        Spin: require('./type/pending/Spin'),
+        BlinkSpin: require('./type/pending/BlinkSpin'),
     };
 
     // pending layer renderers
     var Debug = {
-        Coord: require('./types/debug/Coord')
+        Coord: require('./type/debug/Coord')
     };
 
     module.exports = {
