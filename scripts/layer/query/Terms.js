@@ -4,15 +4,11 @@
 
     var checkField = function(meta, field) {
         if (meta) {
-            if (meta.type === 'string') {
-                return true;
-            } else {
+            if (meta.type !== 'string') {
                 throw 'Field `' + field + '` is not of type `string` in meta data.';
             }
-        } else {
-            throw 'Field `' + field + '` is not recognized in meta data.';
         }
-        return false;
+        throw 'Field `' + field + '` is not recognized in meta data.';
     };
 
     module.exports = function(meta, query) {

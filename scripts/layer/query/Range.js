@@ -4,15 +4,11 @@
 
     var checkField = function(meta, field) {
         if (meta) {
-            if (meta.extrema) {
-                return true;
-            } else {
+            if (!meta.extrema) {
                 throw 'Field `' + field + '` is not ordinal in meta data.';
             }
-        } else {
-            throw 'Field `' + field + '` is not recognized in meta data.';
         }
-        return false;
+        throw 'Field `' + field + '` is not recognized in meta data.';
     };
 
     module.exports = function(meta, query) {
