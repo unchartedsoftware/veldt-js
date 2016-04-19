@@ -5,10 +5,11 @@
     var checkField = function(meta, field) {
         if (meta) {
             if (!meta.extrema) {
-                throw 'Field `' + field + '` is not ordinal in meta data.';
+                throw 'Range `field` ' + field + ' is not ordinal in meta data.';
             }
-        }
-        throw 'Field `' + field + '` is not recognized in meta data.';
+        } else {
+            throw 'Range `field` ' + field + ' is not recognized in meta data.';
+        }        
     };
 
     module.exports = function(meta, query) {

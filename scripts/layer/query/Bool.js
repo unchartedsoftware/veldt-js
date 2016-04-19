@@ -7,12 +7,12 @@
     function checkQuery(meta, query) {
         var keys = _.keys(query);
         if (keys.length !== 1) {
-            throw 'Query must only have a single key, query has multiple keys: `' + JSON.stringify(keys) + '`.';
+            throw 'Bool sub-query must only have a single key, query has multiple keys: `' + JSON.stringify(keys) + '`.';
         }
         var type = keys[0];
         var checkFunc = check[type];
         if (!checkFunc) {
-            throw 'Query type `' + type + '` is unrecognized.';
+            throw 'Query type `' + type + '` is not recognized.';
         }
         // check query by type
         check[type](meta, query[type]);

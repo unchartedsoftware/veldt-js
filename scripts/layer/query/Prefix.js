@@ -5,10 +5,11 @@
     var checkField = function(meta, field) {
         if (meta) {
             if (meta.type !== 'string') {
-                throw 'Field `' + field + '` is not of type `string` in meta data.';
+                throw 'Prefix `field` ' + field + ' is not of type `string` in meta data.';
             }
-        }
-        throw 'Field `' + field + '` is not recognized in meta data.';
+        } else {
+            throw 'Prefix `field` ' + field + ' is not recognized in meta data.';
+        }        
     };
 
     module.exports = function(meta, query) {

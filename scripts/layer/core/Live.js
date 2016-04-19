@@ -74,7 +74,9 @@
             // check that the query is valid
             boolQueryCheck(this._meta, query);
             // set query
-            this._params.bool = query;
+            this._params.must = query.must;
+            this._params.must_not = query.must_not;
+            this._params.should = query.should;
             // cleat extrema
             this.clearExtrema();
         },

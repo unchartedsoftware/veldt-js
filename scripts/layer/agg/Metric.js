@@ -12,10 +12,11 @@
     var checkField = function(meta, field) {
         if (meta) {
             if (!meta.extrema) {
-                throw 'Field `' + field + '` is not ordinal in meta data';
+                throw 'Metrix `field` ' + field + ' is not ordinal in meta data';
             }
+        } else {
+            throw 'Metric `field` ' + field + ' is not recognized in meta data';
         }
-        throw 'Field `' + field + '` is not recognized in meta data';
     };
 
     var setMetric = function(field, type) {
