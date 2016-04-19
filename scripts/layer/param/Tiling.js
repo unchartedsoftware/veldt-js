@@ -10,10 +10,10 @@
             if (meta.extrema) {
                 return true;
             } else {
-                console.warn('Field `' + field + '` is not ordinal in meta data. Ignoring command.');
+                throw 'Field `' + field + '` is not ordinal in meta data.';
             }
         } else {
-            console.warn('Field `' + field + '` is not recognized in meta data. Ignoring command.');
+            throw 'Field `' + field + '` is not recognized in meta data.';
         }
         return false;
     };

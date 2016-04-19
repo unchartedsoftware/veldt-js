@@ -12,11 +12,11 @@
     var Image = require('./core/Image');
 
     // live tile layers
-    var Heatmap = require('./types/Heatmap');
-    var TopCount = require('./types/TopCount');
-    var TopFrequency = require('./types/TopFrequency');
-    var TopicCount = require('./types/TopicCount');
-    var TopicFrequency = require('./types/TopicFrequency');
+    var Heatmap = require('./type/Heatmap');
+    var TopCount = require('./type/TopCount');
+    var TopFrequency = require('./type/TopFrequency');
+    var TopicCount = require('./type/TopicCount');
+    var TopicFrequency = require('./type/TopicFrequency');
 
     module.exports = {
         Debug: Debug,

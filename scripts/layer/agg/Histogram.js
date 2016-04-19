@@ -4,12 +4,10 @@
 
     var setHistogram = function(field, interval) {
         if (!field) {
-            console.warn('Histogram `field` is missing from argument. Ignoring command.');
-            return;
+            throw 'Histogram `field` is missing from argument';
         }
         if (!interval) {
-            console.warn('Histogram `interval` are missing from argument. Ignoring command.');
-            return;
+            throw 'Histogram `interval` are missing from argument';
         }
         this._params.histogram = {
             field: field,

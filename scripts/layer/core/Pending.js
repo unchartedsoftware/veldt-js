@@ -15,7 +15,7 @@
             this._pendingTiles = {};
             // set renderer
             if (!options.rendererClass) {
-                console.warn('No `rendererClass` option found, this layer will not render any data.');
+                throw 'No `rendererClass` option found.';
             } else {
                 // recursively extend
                 $.extend(true, this, options.rendererClass);

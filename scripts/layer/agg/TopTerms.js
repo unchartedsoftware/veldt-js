@@ -7,18 +7,17 @@
             if (meta.type === 'string') {
                 return true;
             } else {
-                console.warn('Field `' + field + '` is not of type `string` in meta data. Ignoring command.');
+                throw 'Field `' + field + '` is not of type `string` in meta data';
             }
         } else {
-            console.warn('Field `' + field + '` is not recognized in meta data. Ignoring command.');
+            throw 'Field `' + field + '` is not recognized in meta data';
         }
         return false;
     };
 
     var setTopTerms = function(field, size) {
         if (!field) {
-            console.warn('TopTerms `field` is missing from argument. Ignoring command.');
-            return;
+            throw 'TopTerms `field` is missing from argument';
         }
         var meta = this._meta[field];
         if (checkField(meta, field)) {

@@ -7,10 +7,10 @@
             if (meta.type === 'string') {
                 return true;
             } else {
-                console.warn('Field `' + field + '` is not of type `string` in meta data. Ignoring command.');
+                throw 'Field `' + field + '` is not of type `string` in meta data';
             }
         } else {
-            console.warn('Field `' + field + '` is not recognized in meta data. Ignoring command.');
+            throw 'Field `' + field + '` is not recognized in meta data';
         }
         return false;
     };
@@ -28,18 +28,16 @@
         return terms;
     };
 
-    var setTermsAgg = function(field, terms) {
+    var setTerms = function(field, terms) {
         if (!field) {
-            console.warn('TermsAgg `field` is missing from argument. Ignoring command.');
-            return;
+            throw 'Terms `field` is missing from argument';
         }
         if (terms === undefined) {
-            console.warn('TermsAgg `terms` are missing from argument. Ignoring command.');
-            return;
+            throw 'Terms `terms` are missing from argument';
         }
         var meta = this._meta[field];
         if (checkField(meta, field)) {
-            this._params.terms_agg = {
+            this._params.terms = {
                 field: field,
                 terms: normalizeTerms(terms)
             };
@@ -48,13 +46,13 @@
         return this;
     };
 
-    var getTermsAgg = function() {
-        return this._params.terms_agg;
+    var getTerms = function() {
+        return this._params.terms;
     };
 
     module.exports = {
-        setTermsAgg: setTermsAgg,
-        getTermsAgg: getTermsAgg
+        setTerms: setTerms,
+        getTerms: getTerms
     };
 
 }());
