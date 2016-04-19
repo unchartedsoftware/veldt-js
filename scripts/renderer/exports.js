@@ -5,6 +5,7 @@
     // canvas renderers
     var Canvas = {
         Heatmap: require('./type/canvas/Heatmap')
+        Preview: require('./type/canvas/Preview')
     };
 
     // html renderers
