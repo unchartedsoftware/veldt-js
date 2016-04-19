@@ -3,19 +3,17 @@
     'use strict';
 
     var Live = require('../core/Live');
-    var Tiling = require('../params/Tiling');
-    var TermsAgg = require('../params/TermsAgg');
-    var Range = require('../params/Range');
-    var Histogram = require('../params/Histogram');
-    var ValueTransform = require('../mixins/ValueTransform');
+    var Tiling = require('../param/Tiling');
+    var Terms = require('../agg/Terms');
+    var Histogram = require('../agg/Histogram');
+    var ValueTransform = require('../mixin/ValueTransform');
 
     var TopicCount = Live.extend({
 
         includes: [
             // params
             Tiling,
-            TermsAgg,
-            Range,
+            Terms,
             Histogram,
             // mixins
             ValueTransform
