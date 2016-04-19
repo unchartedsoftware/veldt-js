@@ -2,7 +2,7 @@
 
     'use strict';
 
-    var queryCheck = require('../query/Bool');
+    var boolQueryCheck = require('../query/Bool');
 
     var MIN = Number.MAX_VALUE;
     var MAX = 0;
@@ -69,17 +69,10 @@
 
         setQuery: function(query) {
             if (!query.must && !query.must_not && !query.should) {
-                // wrap any queries in a bool.must query if it isn't provided
-                query = {
-                    must: _.map(query, function(sub, key) {
-                        var res = {};
-                        res[key] = sub;
-                        return res;
-                    })
-                };
+                throw 'Root query must have at least one `must`, `must_not`, or `should` argument.';
             }
             // check that the query is valid
-            queryCheck(this._meta, query);
+            boolQueryCheck(this._meta, query);
             // set query
             this._params.bool = query;
             // cleat extrema
