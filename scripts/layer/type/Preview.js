@@ -3,27 +3,29 @@
     'use strict';
 
     var Live = require('../core/Live');
-    var Binning = require('../params/Binning');
-    var TermsFilter = require('../params/TermsFilter');
-    var PrefixFilter = require('../params/PrefixFilter');
-    var Range = require('../params/Range');
-    var QueryString = require('../params/QueryString');
+    var Binning = require('../param/Binning');
+    var Metric = require('../agg/Metric');
 
     var Preview = Live.extend({
 
         includes: [
             // params
             Binning,
-            TermsFilter,
-            PrefixFilter,
-            Range,
-            QueryString,
+            Metric
         ],
 
         type: 'preview',
 
         initialize: function() {
             Live.prototype.initialize.apply(this, arguments);
+        },
+
+        // extreme not relevant for preview
+        extractExtrema: function() {
+            return {
+                min: 0,
+                max: 0
+            };
         }
     });
 

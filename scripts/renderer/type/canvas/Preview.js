@@ -61,7 +61,7 @@
             var z = this._map.getZoom();
             var key = x + ':' + y + ':' + z;
             var cacheEntry = this._cache[key];
-            if (cacheEntry) {
+            if (cacheEntry && cacheEntry.data) {
                 var data = cacheEntry.data;
                 var tile = cacheEntry.tiles[x + ':' + y];
                 if (tile) {
