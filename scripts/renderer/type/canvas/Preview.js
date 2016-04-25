@@ -5,7 +5,6 @@
     var Canvas = require('../../core/Canvas');
 
     var Preview = Canvas.extend({
-        // possible to define this in stylesheet?
         HIGHLIGHT_LINE_WIDTH: 2,
         HIGHLIGHT_LINE_COLOUR: 'lightblue',
         HIGHLIGHT_FILL_COLOUR: 'darkblue',
@@ -37,6 +36,7 @@
             return canvas;
         },
 
+        // possible to define this in stylesheet?
         renderTile: function(canvas, data) {
             if (!data) {
                 return;
@@ -78,6 +78,7 @@
                         hitInfo.bucketX = xBucket;
                         hitInfo.bucketY = yBucket;
                         hitInfo.bucketSize = canvasSize / resolution;
+                        hitInfo.data = data[yBucket * resolution + xBucket]; 
                         return hitInfo;
                     }
                 }
@@ -116,6 +117,10 @@
                 hitInfo.canvas = canvas;
                 this._drawHighlight(hitInfo);
                 this.lastHitInfo = hitInfo;
+                this.notifyDataChange(hitInfo.data.text);
+            } else {
+                this._clearHighlight(this.lastHitInfo);
+                this.notifyDataChange(null);
             }
         }
     });
