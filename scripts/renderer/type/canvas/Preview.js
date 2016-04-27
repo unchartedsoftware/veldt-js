@@ -117,7 +117,9 @@
                 hitInfo.canvas = canvas;
                 this._drawHighlight(hitInfo);
                 this.lastHitInfo = hitInfo;
-                this.notifyDataChange(hitInfo.data);
+                if (this.notifyDataChange) {
+                    this.notifyDataChange(hitInfo.data);
+                }
             } else {
                 this._clearHighlight(this.lastHitInfo);
                 this.notifyDataChange(null);
