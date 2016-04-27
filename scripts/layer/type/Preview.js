@@ -4,14 +4,14 @@
 
     var Live = require('../core/Live');
     var Binning = require('../param/Binning');
-    var Metric = require('../agg/Metric');
+    var TopHits = require('../agg/TopHits');
 
     var Preview = Live.extend({
 
         includes: [
             // params
             Binning,
-            Metric
+            TopHits 
         ],
 
         type: 'preview',
@@ -26,7 +26,7 @@
                 min: 0,
                 max: 0
             };
-        }
+        },
     });
 
     module.exports = Preview;

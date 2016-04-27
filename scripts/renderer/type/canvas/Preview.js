@@ -78,7 +78,7 @@
                         hitInfo.bucketX = xBucket;
                         hitInfo.bucketY = yBucket;
                         hitInfo.bucketSize = canvasSize / resolution;
-                        hitInfo.data = data[yBucket * resolution + xBucket]; 
+                        hitInfo.data = data[yBucket * resolution + xBucket];
                         return hitInfo;
                     }
                 }
@@ -94,7 +94,7 @@
             ctx.fillStyle = this.HIGHLIGHT_FILL_COLOUR;
             ctx.arc(hitInfo.bucketX * size + sizeOver2, hitInfo.bucketY * size + sizeOver2, 
                     sizeOver2, 0, 2 * Math.PI, false);
-            ctx.fill(); 
+            ctx.fill();
             ctx.lineWidth = this.HIGHLIGHT_LINE_WIDTH;
             ctx.strokeStyle = this.HIGHLIGHT_LINE_COLOUR;
             ctx.stroke();
@@ -109,7 +109,7 @@
             }
        },
 
-        onMouseOver: function(event) {
+       onMouseOver: function(event) {
             this._clearHighlight(this.lastHitInfo);
             var canvas = $(event.originalEvent.target).context;
             var hitInfo = this._findHitBucket(event, canvas.width); 
@@ -117,7 +117,7 @@
                 hitInfo.canvas = canvas;
                 this._drawHighlight(hitInfo);
                 this.lastHitInfo = hitInfo;
-                this.notifyDataChange(hitInfo.data.text);
+                this.notifyDataChange(hitInfo.data);
             } else {
                 this._clearHighlight(this.lastHitInfo);
                 this.notifyDataChange(null);
