@@ -14,10 +14,10 @@
 
     var setTerms = function(field, size) {
         if (!field) {
-            throw 'Terms `field` is missing from argument';
+            throw 'TopHits `field` is missing from argument';
         }
         checkField(this._meta[field], field);
-        this._params.terms = {
+        this._params.top_hits = {
             field: field,
             size: size
         };
@@ -26,7 +26,7 @@
     };
 
     var getTerms = function() {
-        return this._params.terms;
+        return this._params.top_hits;
     };
 
     module.exports = {
