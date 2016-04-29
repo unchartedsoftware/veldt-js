@@ -12,11 +12,6 @@
             return this._container && $.contains(this._container, elem );
         },
 
-        clearSelection: function() {
-            $(this._container).removeClass('highlight');
-            this.highlight = null;
-        },
-
         onMouseOver: function(e) {
             var target = $(e.originalEvent.target);
             var value = target.attr('data-value');

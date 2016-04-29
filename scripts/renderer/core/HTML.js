@@ -14,6 +14,9 @@
             var self = this;
             DOM.prototype.onAdd.call(this, map);
             map.on('click', this.onClick, this);
+            $(this._container).on('mousemove', function(e) {
+                self.onMouseMove(e);
+            });
             $(this._container).on('mouseover', function(e) {
                 self.onMouseOver(e);
             });
@@ -24,6 +27,7 @@
 
         onRemove: function(map) {
             map.off('click', this.onClick, this);
+            $(this._container).off('mousemove');
             $(this._container).off('mouseover');
             $(this._container).off('mouseout');
             DOM.prototype.onRemove.call(this, map);
@@ -36,6 +40,10 @@
             tile.onselectstart = L.Util.falseFn;
             tile.onmousemove = L.Util.falseFn;
             return tile;
+        },
+
+        onMouseMove: function() {
+            // override
         },
 
         onMouseOver: function() {
