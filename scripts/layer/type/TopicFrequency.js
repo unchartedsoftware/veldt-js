@@ -4,7 +4,7 @@
 
     var Live = require('../core/Live');
     var Tiling = require('../param/Tiling');
-    var Terms = require('../agg/Terms');
+    var TermsFilter = require('../agg/TermsFilter');
     var DateHistogram = require('../agg/DateHistogram');
     var Histogram = require('../agg/Histogram');
     var ValueTransform = require('../mixin/ValueTransform');
@@ -14,7 +14,7 @@
         includes: [
             // params
             Tiling,
-            Terms,
+            TermsFilter,
             DateHistogram,
             Histogram,
             // mixins

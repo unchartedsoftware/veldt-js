@@ -99,7 +99,7 @@
                     // store the tile in the cache
                     cached.tiles[unadjustedHash] = tile;
                     // draw the tile
-                    self.renderTile(tile, cached.data);
+                    self.renderTile(tile, cached.data, coord);
                     self.tileDrawn(tile);
                 }
             } else {
@@ -130,7 +130,7 @@
                         // multiple tiles dependent on the response, so iterate
                         // over each tile and draw it.
                         _.forIn(cached.tiles, function(tile) {
-                            self.renderTile(tile, data);
+                            self.renderTile(tile, data, coord);
                             self.tileDrawn(tile);
                         });
                     }

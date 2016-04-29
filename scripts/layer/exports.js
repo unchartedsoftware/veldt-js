@@ -13,6 +13,7 @@
 
     // live tile layers
     var Heatmap = require('./type/Heatmap');
+    var TopTrails = require('./type/TopTrails');
     var TopCount = require('./type/TopCount');
     var TopFrequency = require('./type/TopFrequency');
     var TopicCount = require('./type/TopicCount');
@@ -24,6 +25,7 @@
         Image: Image,
         Heatmap: Heatmap,
         TopCount: TopCount,
+        TopTrails: TopTrails,
         TopFrequency: TopFrequency,
         TopicCount: TopicCount,
         TopicFrequency: TopicFrequency

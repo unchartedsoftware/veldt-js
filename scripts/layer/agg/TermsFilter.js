@@ -12,26 +12,29 @@
         }
     };
 
-    var setTerms = function(field, size) {
+    var setTermsFilter = function(field, terms) {
         if (!field) {
             throw 'Terms `field` is missing from argument';
         }
+        if (terms === undefined) {
+            throw 'Terms `terms` are missing from argument';
+        }
         checkField(this._meta[field], field);
-        this._params.terms = {
+        this._params.terms_filter = {
             field: field,
-            size: size
+            terms: terms
         };
         this.clearExtrema();
         return this;
     };
 
-    var getTerms = function() {
-        return this._params.terms;
+    var getTermsFilter = function() {
+        return this._params.terms_filter;
     };
 
     module.exports = {
-        setTerms: setTerms,
-        getTerms: getTerms
+        setTermsFilter: setTermsFilter,
+        getTermsFilter: getTermsFilter
     };
 
 }());
