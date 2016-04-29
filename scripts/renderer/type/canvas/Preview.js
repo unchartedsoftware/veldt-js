@@ -117,12 +117,14 @@
                 hitInfo.canvas = canvas;
                 this._drawHighlight(hitInfo);
                 this.lastHitInfo = hitInfo;
-                if (this.notifyDataChange) {
-                    this.notifyDataChange(hitInfo.data);
+                if (this.options.handlers.mouseover) {
+                    this.options.handlers.mouseover(canvas, hitInfo.data);
                 }
             } else {
                 this._clearHighlight(this.lastHitInfo);
-                this.notifyDataChange(null);
+                if (this.options.handlers.mouseover) {
+                    this.options.handlers.mouseover(canvas, null);
+                }
             }
         }
     });

@@ -22,21 +22,21 @@
     };
 
     // bind point for external controls
-    var setSORTField = function(sort) {
+    var setSortField = function(sort) {
         this._params.top_hits.sort = sort;
         return this;
     };
 
     // bind point for external controls
-    var getSORTField = function() {
+    var getSortField = function() {
         return this._params.top_hits.sort;
     };
 
     module.exports = {
         setTopHits: setTopHits,
         getTopHits: getTopHits,
-        setSORTField: setSORTField,
-        getSORTField: getSORTField
+        setSortField: setSortField,
+        getSortField: getSortField
     };
 
 }());
