@@ -4,13 +4,14 @@
 
     // canvas renderers
     var Canvas = {
-        Heatmap: require('./type/canvas/Heatmap')
+        Heatmap: require('./type/canvas/Heatmap'),
+        TopTrails: require('./type/canvas/TopTrails'),
+        Preview: require('./type/canvas/Preview')
     };
 
     // html renderers
     var HTML = {
         Heatmap: require('./type/html/Heatmap'),
-        TopTrails: require('./type/html/TopTrails'),
         Ring: require('./type/html/Ring'),
         WordCloud: require('./type/html/WordCloud'),
         WordHistogram: require('./type/html/WordHistogram')
