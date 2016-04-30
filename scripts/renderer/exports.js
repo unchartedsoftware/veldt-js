@@ -5,7 +5,8 @@
     // canvas renderers
     var Canvas = {
         Heatmap: require('./type/canvas/Heatmap'),
-        TopTrails: require('./type/canvas/TopTrails')
+        TopTrails: require('./type/canvas/TopTrails'),
+        Preview: require('./type/canvas/Preview')
     };
 
     // html renderers

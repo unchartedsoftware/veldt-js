@@ -18,6 +18,7 @@
     var TopFrequency = require('./type/TopFrequency');
     var TopicCount = require('./type/TopicCount');
     var TopicFrequency = require('./type/TopicFrequency');
+    var Preview = require('./type/Preview');
 
     module.exports = {
         Debug: Debug,
@@ -28,7 +29,8 @@
         TopTrails: TopTrails,
         TopFrequency: TopFrequency,
         TopicCount: TopicCount,
-        TopicFrequency: TopicFrequency
+        TopicFrequency: TopicFrequency,
+        Preview: Preview
     };
 
 }());
