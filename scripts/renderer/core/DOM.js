@@ -4,6 +4,10 @@
 
     var Image = require('../../layer/core/Image');
 
+    function mod(n, m) {
+        return ((n % m) + m) % m;
+    }
+
     var DOM = Image.extend({
 
         onAdd: function(map) {
@@ -73,9 +77,21 @@
             L.TileLayer.prototype._removeTile.call(this, key);
         },
 
+        _cacheKeyFromCoord: function(coord) {
+            return coord.x + ':' + coord.y + ':' + coord.z;
+        },
+
+        _coordFromCacheKey: function(key) {
+            var kArr = key.split(':');
+            return {
+                x: parseInt(kArr[0], 10),
+                y: parseInt(kArr[1], 10),
+                z: parseInt(kArr[2], 10)
+            };
+        },
+
         _redrawTile: function(tile) {
             var self = this;
-            var cache = this._cache;
             var coord = {
                 x: tile._tilePoint.x,
                 y: tile._tilePoint.y,
@@ -83,12 +99,12 @@
             };
             // use the adjusted coordinates to hash the the cache values, this
             // is because we want to only have one copy of the data
-            var hash = coord.x + ':' + coord.y + ':' + coord.z;
+            var hash = this._cacheKeyFromCoord(coord);
             // use the unadjsuted coordinates to track which 'wrapped' tiles
             // used the cached data
             var unadjustedHash = tile._unadjustedTilePoint.x + ':' + tile._unadjustedTilePoint.y;
             // check cache
-            var cached = cache[hash];
+            var cached = this._cache[hash];
             if (cached) {
                 if (cached.isPending) {
                     // currently pending
@@ -104,16 +120,16 @@
                 }
             } else {
                 // create a cache entry
-                cache[hash] = {
+                this._cache[hash] = {
                     isPending: true,
                     tiles: {},
                     data: null
                 };
                 // add tile to the cache entry
-                cache[hash].tiles[unadjustedHash] = tile;
+                this._cache[hash].tiles[unadjustedHash] = tile;
                 // request the tile
                 this.requestTile(coord, function(data) {
-                    var cached = cache[hash];
+                    var cached = self._cache[hash];
                     if (!cached) {
                         // tile is no longer being tracked, ignore
                         return;
@@ -136,6 +152,43 @@
                     }
                 });
             }
+        },
+
+        _getLayerPointFromEvent: function(e) {
+            var lonlat = this._map.mouseEventToLatLng(e);
+            var pixel = this._map.project(lonlat);
+            var zoom = this._map.getZoom();
+            var pow = Math.pow(2, zoom);
+            var tileSize = this.options.tileSize;
+            return {
+                x: mod(pixel.x, pow * tileSize),
+                y: mod(pixel.y, pow * tileSize)
+            };
+        },
+
+        _getTileCoordFromLayerPoint: function(layerPoint) {
+            var tileSize = this.options.tileSize;
+            return {
+                x: Math.floor(layerPoint.x / tileSize),
+                y: Math.floor(layerPoint.y / tileSize),
+                z: this._map.getZoom()
+            };
+        },
+
+        _getBinCoordFromLayerPoint: function(layerPoint) {
+            var tileSize = this.options.tileSize;
+            var resolution = this.getResolution() || tileSize;
+            var tx = mod(layerPoint.x, tileSize);
+            var ty = mod(layerPoint.y, tileSize);
+            var pixelSize = tileSize / resolution;
+            var bx = Math.floor(tx / pixelSize);
+            var by = Math.floor(ty / pixelSize);
+            return {
+                x: bx,
+                y: by,
+                index: bx + (by * resolution),
+                size: pixelSize
+            };
         },
 
         tileDrawn: function(tile) {

@@ -5,12 +5,24 @@
     var esper = require('esper');
 
     function translationMatrix(translation) {
-        return new Float32Array([
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            translation[0], translation[1], translation[2], 1
-        ]);
+        var mat = new Float32Array(16);
+        mat[0] = 1;
+        mat[1] = 0;
+        mat[2] = 0;
+        mat[3] = 0;
+        mat[4] = 0;
+        mat[5] = 1;
+        mat[6] = 0;
+        mat[7] = 0;
+        mat[8] = 0;
+        mat[9] = 0;
+        mat[10] = 1;
+        mat[11] = 0;
+        mat[12] = translation[0];
+        mat[13] = translation[1];
+        mat[14] = translation[2];
+        mat[15] = 1;
+        return mat;
     }
 
     function orthoMatrix(left, right, bottom, top, near, far) {
@@ -501,9 +513,21 @@
             });
         },
 
+        _cacheKeyFromCoord: function(coord) {
+            return coord.x + ':' + coord.y + ':' + coord.z;
+        },
+
+        _coordFromCacheKey: function(key) {
+            var kArr = key.split(':');
+            return {
+                x: parseInt(kArr[0], 10),
+                y: parseInt(kArr[1], 10),
+                z: parseInt(kArr[2], 10)
+            };
+        },
+
         _redrawTile: function(tile) {
             var self = this;
-            var cache = this._cache;
             var coord = {
                 x: tile._tilePoint.x,
                 y: tile._tilePoint.y,
@@ -511,27 +535,27 @@
             };
             // use the adjusted coordinates to hash the the cache values, this
             // is because we want to only have one copy of the data
-            var hash = coord.x + ':' + coord.y + ':' + coord.z;
+            var hash = this._cacheKeyFromCoord(coord);
             // use the unadjsuted coordinates to track which 'wrapped' tiles
             // used the cached data
             var unadjustedHash = tile._unadjustedTilePoint.x + ':' + tile._unadjustedTilePoint.y;
             // check cache
-            var cached = cache[hash];
+            var cached = this._cache[hash];
             if (cached) {
                 // store the tile in the cache to draw to later
                 cached.tiles[unadjustedHash] = tile;
             } else {
                 // create a cache entry
-                cache[hash] = {
+                this._cache[hash] = {
                     isPending: true,
                     tiles: {},
                     data: null
                 };
                 // add tile to the cache entry
-                cache[hash].tiles[unadjustedHash] = tile;
+                this._cache[hash].tiles[unadjustedHash] = tile;
                 // request the tile
                 this.requestTile(coord, function(data) {
-                    var cached = cache[hash];
+                    var cached = self._cache[hash];
                     if (!cached) {
                         // tile is no longer being tracked, ignore
                         return;

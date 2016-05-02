@@ -6,12 +6,6 @@
     var sentiment = require('../../sentiment/Sentiment');
     var sentimentFunc = sentiment.getClassFunc(-1, 1);
 
-    var TILE_SIZE = 256;
-    var HALF_SIZE = TILE_SIZE / 2;
-    var MAX_NUM_WORDS = 8;
-    var MIN_FONT_SIZE = 16;
-    var MAX_FONT_SIZE = 22;
-
     var isSingleValue = function(count) {
         // single values are never null, and always numbers
         return count !== null && _.isNumber(count);
@@ -72,6 +66,12 @@
     };
 
     var WordHistogram = HTML.extend({
+
+        options: {
+            maxNumWords: 8,
+            minFontSize: 16,
+            maxFontSize: 22
+        },
 
         isTargetLayer: function( elem ) {
             return this._container && $.contains(this._container, elem );
@@ -172,9 +172,11 @@
                 return b.total - a.total;
             });
             // get number of entries
-            var numEntries = Math.min(values.length, MAX_NUM_WORDS);
+            var numEntries = Math.min(values.length, this.options.maxNumWords);
             var $html = $('<div class="word-histograms" style="display:inline-block;"></div>');
             var totalHeight = 0;
+            var minFontSize = this.options.minFontSize;
+            var maxFontSize = this.options.maxFontSize;
             var self = this;
             values.slice(0, numEntries).forEach(function(value) {
                 var topic = value.topic;
@@ -187,7 +189,7 @@
                 // scale the height based on level min / max
                 var percent = self.transformValue(total);
                 var percentLabel = Math.round((percent * 100) / 10) * 10;
-                var height = MIN_FONT_SIZE + percent * (MAX_FONT_SIZE - MIN_FONT_SIZE);
+                var height = minFontSize + percent * (maxFontSize - minFontSize);
                 totalHeight += height;
                 // create container 'entry' for chart and hashtag
                 var $entry = $('<div class="word-histogram-entry ' + highlightClass + '" ' +
@@ -255,7 +257,7 @@
                 $entry.append($topic);
                 $html.append($entry);
             });
-            $html.css('top', HALF_SIZE - (totalHeight / 2));
+            $html.css('top', ( this.options.tileSize / 2 ) - (totalHeight / 2));
             container.innerHTML = $html[0].outerHTML;
         }
     });
