@@ -6,13 +6,8 @@
     var sentiment = require('../../sentiment/Sentiment');
     var sentimentFunc = sentiment.getClassFunc(-1, 1);
 
-    var TILE_SIZE = 256;
-    var HALF_SIZE = TILE_SIZE / 2;
     var VERTICAL_OFFSET = 24;
     var HORIZONTAL_OFFSET = 10;
-    var MAX_NUM_WORDS = 15;
-    var MIN_FONT_SIZE = 10;
-    var MAX_FONT_SIZE = 20;
     var NUM_ATTEMPTS = 1;
 
     /**
@@ -82,6 +77,12 @@
     };
 
     var WordCloud = HTML.extend({
+
+        options: {
+            maxNumWords: 15,
+            minFontSize: 10,
+            maxFontSize: 20
+        },
 
         isTargetLayer: function( elem ) {
             return this._container && $.contains(this._container, elem );
@@ -166,13 +167,15 @@
             // sort words by frequency
             wordCounts = wordCounts.sort(function(a, b) {
                 return b.count - a.count;
-            }).slice(0, MAX_NUM_WORDS);
+            }).slice(0, this.options.maxNumWords);
             // build measurement html
             var html = '<div style="height:256px; width:256px;">';
+            var minFontSize = this.options.minFontSize;
+            var maxFontSize = this.options.maxFontSize;
             var self = this;
             wordCounts.forEach(function(word) {
                 word.percent = self.transformValue(word.count);
-                word.fontSize = MIN_FONT_SIZE + word.percent * (MAX_FONT_SIZE - MIN_FONT_SIZE);
+                word.fontSize = minFontSize + word.percent * (maxFontSize - minFontSize);
                 html += '<div class="word-cloud-label" style="' +
                     'visibility:hidden;' +
                     'font-size:' + word.fontSize + 'px;">' + word.text + '</div>';
@@ -190,9 +193,10 @@
         },
 
         _createWordCloud: function(wordCounts) {
+            var tileSize = this.options.tileSize;
             var boundingBox = {
-                width: TILE_SIZE - HORIZONTAL_OFFSET * 2,
-                height: TILE_SIZE - VERTICAL_OFFSET * 2,
+                width: tileSize - HORIZONTAL_OFFSET * 2,
+                height: tileSize - VERTICAL_OFFSET * 2,
                 x: 0,
                 y: 0
             };
@@ -276,6 +280,7 @@
             // genereate the cloud
             var cloud = this._createWordCloud(wordCounts);
             // build html elements
+            var halfSize = this.options.tileSize / 2;
             var html = '';
             cloud.forEach(function(word) {
                 // create classes
@@ -288,8 +293,8 @@
                 // create styles
                 var styles = [
                     'font-size:' + word.fontSize + 'px',
-                    'left:' + (HALF_SIZE + word.x - (word.width / 2)) + 'px',
-                    'top:' + (HALF_SIZE + word.y - (word.height / 2)) + 'px',
+                    'left:' + (halfSize + word.x - (word.width / 2)) + 'px',
+                    'top:' + (halfSize + word.y - (word.height / 2)) + 'px',
                     'width:' + word.width + 'px',
                     'height:' + word.height + 'px',
                 ].join(';');

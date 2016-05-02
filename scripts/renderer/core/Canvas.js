@@ -4,10 +4,8 @@
 
     var DOM = require('./DOM');
 
-    var TILE_SIZE = 256;
-
     var Canvas = DOM.extend({
-        
+
         options: {
             handlers: {}
         },
@@ -43,9 +41,10 @@
         },
 
         _clearTiles: function() {
+            var tileSize = this.options.tileSize;
             _.forIn(this._tiles, function(tile) {
                 var ctx = tile.getContext('2d');
-                ctx.clearRect(0, 0, TILE_SIZE, TILE_SIZE);
+                ctx.clearRect(0, 0, tileSize, tileSize);
             });
         },
 

@@ -4,8 +4,6 @@
 
     var Image = require('../../layer/core/Image');
 
-    var TILE_SIZE = 256;
-
     function mod(n, m) {
         return ((n % m) + m) % m;
     }
@@ -161,25 +159,28 @@
             var pixel = this._map.project(lonlat);
             var zoom = this._map.getZoom();
             var pow = Math.pow(2, zoom);
+            var tileSize = this.options.tileSize;
             return {
-                x: mod(pixel.x, pow * TILE_SIZE),
-                y: mod(pixel.y, pow * TILE_SIZE)
+                x: mod(pixel.x, pow * tileSize),
+                y: mod(pixel.y, pow * tileSize)
             };
         },
 
         _getTileCoordFromLayerPoint: function(layerPoint) {
+            var tileSize = this.options.tileSize;
             return {
-                x: Math.floor(layerPoint.x / TILE_SIZE),
-                y: Math.floor(layerPoint.y / TILE_SIZE),
+                x: Math.floor(layerPoint.x / tileSize),
+                y: Math.floor(layerPoint.y / tileSize),
                 z: this._map.getZoom()
             };
         },
 
         _getBinCoordFromLayerPoint: function(layerPoint) {
-            var resolution = this.getResolution() || TILE_SIZE;
-            var tx = mod(layerPoint.x, TILE_SIZE);
-            var ty = mod(layerPoint.y, TILE_SIZE);
-            var pixelSize = TILE_SIZE / resolution;
+            var tileSize = this.options.tileSize;
+            var resolution = this.getResolution() || tileSize;
+            var tx = mod(layerPoint.x, tileSize);
+            var ty = mod(layerPoint.y, tileSize);
+            var pixelSize = tileSize / resolution;
             var bx = Math.floor(tx / pixelSize);
             var by = Math.floor(ty / pixelSize);
             return {

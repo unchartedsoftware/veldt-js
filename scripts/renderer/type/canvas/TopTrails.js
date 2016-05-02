@@ -4,13 +4,11 @@
 
     var Canvas = require('../../core/Canvas');
 
-    var TILE_SIZE = 256;
-    var DOWN_SAMPLE = 8;
-
     var TopTrails = Canvas.extend({
 
         options: {
-            color: [255, 0, 255, 255]
+            color: [255, 0, 255, 255],
+            downSampleFactor: 8
         },
 
         highlighted: false,
@@ -35,8 +33,8 @@
                 // get bin coordinate
                 var bin = this._getBinCoordFromLayerPoint(layerPoint);
                 // downsample the bin res
-                var x = Math.floor(bin.x / DOWN_SAMPLE);
-                var y = Math.floor(bin.y / DOWN_SAMPLE);
+                var x = Math.floor(bin.x / this.options.downSampleFactor);
+                var y = Math.floor(bin.y / this.options.downSampleFactor);
                 // if hits a pixel
                 if (cached.pixels[x] && cached.pixels[x][y]) {
                     var ids = Object.keys(cached.pixels[x][y]);
@@ -79,7 +77,7 @@
         },
 
         _highlightTrail: function(canvas, pixels) {
-            var resolution = this.getResolution() || TILE_SIZE;
+            var resolution = this.getResolution() || this.options.tileSize;
             var highlight = document.createElement('canvas');
             highlight.height = resolution;
             highlight.width = resolution;
@@ -131,8 +129,8 @@
                 for (j=0; j<bins.length; j++) {
                     bin = bins[j];
                     // down sample the pixel to make interaction easier
-                    rx = Math.floor(bin[0] / DOWN_SAMPLE);
-                    ry = Math.floor(bin[1] / DOWN_SAMPLE);
+                    rx = Math.floor(bin[0] / this.options.downSampleFactor);
+                    ry = Math.floor(bin[1] / this.options.downSampleFactor);
                     pixels[rx] = pixels[rx] || {};
                     pixels[rx][ry] = pixels[rx][ry] || {};
                     pixels[rx][ry][id] = true;

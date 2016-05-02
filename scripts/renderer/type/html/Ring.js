@@ -4,8 +4,6 @@
 
     var HTML = require('../../core/HTML');
 
-    var TILE_SIZE = 256;
-
     var Heatmap = HTML.extend({
 
         onClick: function(e) {
@@ -23,7 +21,7 @@
             var self = this;
             var bins = new Float64Array(data);
             var resolution = Math.sqrt(bins.length);
-            var binSize = (TILE_SIZE / resolution);
+            var binSize = (this.options.tileSize / resolution);
             var html = '';
             bins.forEach(function(bin, index) {
                 if (!bin) {

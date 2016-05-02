@@ -4,8 +4,6 @@
 
     var HTML = require('../../core/HTML');
 
-    var TILE_SIZE = 256;
-
     var Heatmap = HTML.extend({
 
         isTargetLayer: function( elem ) {
@@ -89,7 +87,7 @@
             var bins = new Float64Array(data);
             var resolution = Math.sqrt(bins.length);
             var rampFunc = this.getColorRamp();
-            var pixelSize = TILE_SIZE / resolution;
+            var pixelSize = this.options.tileSize / resolution;
             var self = this;
             var color = [0, 0, 0, 0];
             var html = '';
