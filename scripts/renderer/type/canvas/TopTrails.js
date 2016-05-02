@@ -7,58 +7,44 @@
     var TILE_SIZE = 256;
     var DOWN_SAMPLE = 8;
 
-    function mod(n, m) {
-        return ((n % m) + m) % m;
-    }
-
     var TopTrails = Canvas.extend({
+
+        options: {
+            color: [255, 0, 255, 255]
+        },
 
         highlighted: false,
 
         onMouseMove: function(e) {
-            var self = this;
+            var target = $(e.originalEvent.target);
             if (this.highlighted) {
-                // clear existing highlight
-                _.forIn(this._tiles, function(tile) {
-                    var ctx = tile.getContext('2d');
-                    ctx.clearRect(0, 0, TILE_SIZE, TILE_SIZE);
-                });
+                // clear existing highlights
+                this._clearTiles();
+                // clear highlighted flag
+                this.highlighted = false;
             }
-            this.highlighted = false;
-            // get pixel position in the layer
-            var lonlat = this._map.mouseEventToLatLng(e);
-            var pixel = this._map.project(lonlat);
-            var zoom = this._map.getZoom();
-            var pow = Math.pow(2, zoom);
-            // get native layer pixel coords
-            var nx = mod(pixel.x, pow * TILE_SIZE);
-            var ny = mod(pixel.y, pow * TILE_SIZE);
-            // get cache entry key for the tile
-            var hash = this._cacheKeyFromCoord({
-                x: Math.floor(nx / TILE_SIZE),
-                y: Math.floor(ny / TILE_SIZE),
-                z: zoom
-            });
-            var cached = this._cache[hash];
-            if (cached.pixels) {
-                // get pixels in tile coords
-                var tx = mod(nx, TILE_SIZE);
-                var ty = mod(ny, TILE_SIZE);
-                // downsample them
-                var resolution = this.getResolution() || TILE_SIZE;
-                var pixelSize = TILE_SIZE / resolution;
-                var downSample = pixelSize * DOWN_SAMPLE;
-                var x = Math.floor(tx / downSample);
-                var y = Math.floor(ty / downSample);
+            // get layer coord
+            var layerPoint = this._getLayerPointFromEvent(e);
+            // get tile coord
+            var coord = this._getTileCoordFromLayerPoint(layerPoint);
+            // get cache key
+            var key = this._cacheKeyFromCoord(coord);
+            // get cache entry
+            var cached = this._cache[key];
+            if (cached && cached.pixels) {
+                // get bin coordinate
+                var bin = this._getBinCoordFromLayerPoint(layerPoint);
+                // downsample the bin res
+                var x = Math.floor(bin.x / DOWN_SAMPLE);
+                var y = Math.floor(bin.y / DOWN_SAMPLE);
                 // if hits a pixel
                 if (cached.pixels[x] && cached.pixels[x][y]) {
-                    // flag as highlighted
-                    this.highlighted = true;
                     var ids = Object.keys(cached.pixels[x][y]);
-                    // TODO: better metric for this
+                    // take first entry
                     var id = ids[0];
                     // for each cache entry
-                    _.forIn(self._cache, function(cached) {
+                    var self = this;
+                    _.forIn(this._cache, function(cached) {
                         if (cached.data) {
                             // for each tile relying on that data
                             _.forIn(cached.tiles, function(tile) {
@@ -69,7 +55,26 @@
                             });
                         }
                     });
+                    // execute callback
+                    if (this.options.handlers.mousemove) {
+                        this.options.handlers.mousemove(target, {
+                            value: id,
+                            x: coord.x,
+                            y: coord.z,
+                            z: coord.z,
+                            bx: bin.x,
+                            by: bin.y,
+                            type: 'top-trails',
+                            layer: this
+                        });
+                    }
+                    // flag as highlighted
+                    this.highlighted = true;
+                    return;
                 }
+            }
+            if (this.options.handlers.mousemove) {
+                this.options.handlers.mousemove(target, null);
             }
         },
 
@@ -87,10 +92,10 @@
                 x = pixel[0];
                 y = pixel[1];
                 j = x + (resolution * y);
-                data[j * 4] = 255;
-                data[j * 4 + 1] = 255;
-                data[j * 4 + 2] = 255;
-                data[j * 4 + 3] = 255;
+                data[j * 4] = this.options.color[0];
+                data[j * 4 + 1] = this.options.color[1];
+                data[j * 4 + 2] = this.options.color[2];
+                data[j * 4 + 3] = this.options.color[3];
             }
             highlightCtx.putImageData(imageData, 0, 0);
             // draw to tile
@@ -109,13 +114,13 @@
             $(container).css('pointer-events', 'all');
             // modify cache entry
             var hash = this._cacheKeyFromCoord(coord);
-            var cache = this._cache[hash];
-            if (cache.trails) {
+            var cached = this._cache[hash];
+            if (cached.trails) {
                 // trails already added, exit early
                 return;
             }
-            var trails = cache.trails = {};
-            var pixels = cache.pixels = {};
+            var trails = cached.trails = {};
+            var pixels = cached.pixels = {};
             var ids  = Object.keys(data);
             var bins, bin;
             var id, i, j;

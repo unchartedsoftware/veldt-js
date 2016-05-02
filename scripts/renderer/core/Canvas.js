@@ -4,7 +4,10 @@
 
     var DOM = require('./DOM');
 
+    var TILE_SIZE = 256;
+
     var Canvas = DOM.extend({
+        
         options: {
             handlers: {}
         },
@@ -37,6 +40,13 @@
             tile.width = tile.height = this.options.tileSize;
             tile.onselectstart = tile.onmousemove = L.Util.falseFn;
             return tile;
+        },
+
+        _clearTiles: function() {
+            _.forIn(this._tiles, function(tile) {
+                var ctx = tile.getContext('2d');
+                ctx.clearRect(0, 0, TILE_SIZE, TILE_SIZE);
+            });
         },
 
         onMouseMove: function() {
