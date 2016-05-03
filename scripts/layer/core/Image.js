@@ -4,6 +4,13 @@
 
     var Image = L.TileLayer.extend({
 
+        removeFrom: function (obj) {
+    		if (obj) {
+    			obj.removeLayer(this);
+    		}
+    		return this;
+    	},
+
         getOpacity: function() {
             return this.options.opacity;
         },

@@ -134,6 +134,13 @@
             return this;
         },
 
+        removeFrom: function (obj) {
+    		if (obj) {
+    			obj.removeLayer(this);
+    		}
+    		return this;
+    	},
+
         onRemove: function(map) {
             // clear the current buffer
             this._clearBackBuffer();
