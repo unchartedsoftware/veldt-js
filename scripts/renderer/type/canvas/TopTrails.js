@@ -108,8 +108,11 @@
         },
 
         renderTile: function(container, data, coord) {
+            if (!data) {
+                return;
+            }
             // ensure tile accepts mouse events
-            $(container).css('pointer-events', 'all');
+            $(container).css('pointer-events', 'all');        
             // modify cache entry
             var hash = this._cacheKeyFromCoord(coord);
             var cached = this._cache[hash];
