@@ -46,10 +46,6 @@
         return mat;
     }
 
-    // TODO:
-    //     - fix zoom transition animation bug
-    //     - fix show / hide bug
-
     var WebGL = L.Class.extend({
 
         includes: [
@@ -360,6 +356,7 @@
                     hard: true
                 });
                 this._update();
+                this._updateDataTextures();
             }
             return this;
         },
@@ -486,32 +483,35 @@
             layer._tileLoaded();
         },
 
-        _encodeFloatAsUint8: function(num) {
-            return new Uint8Array([
-                (num & 0xff000000) >> 24,
-                (num & 0x00ff0000) >> 16,
-                (num & 0x0000ff00) >> 8,
-                (num & 0x000000ff)
-            ]);
-        },
-
         _createDataTexture: function(data) {
-            var doubles = new Float64Array(data);
-            var resolution = Math.sqrt(doubles.length);
-            var buffer = new ArrayBuffer(resolution * resolution * 4);
-            var encodedBins = new Uint8Array(buffer);
-            for (var i = 0; i < resolution * resolution; i++) {
-                // cast from float64 to float32
-                var enc = this._encodeFloatAsUint8(doubles[i]);
-                encodedBins[i * 4] = enc[0];
-                encodedBins[i * 4 + 1] = enc[1];
-                encodedBins[i * 4 + 2] = enc[2];
-                encodedBins[i * 4 + 3] = enc[3];
+            var resolution = Math.sqrt(data.length);
+            var buffer = new ArrayBuffer(data.length * 4);
+            var bins = new Uint8Array(buffer);
+            var color = [0, 0, 0, 0];
+            var nval, rval, bin, i;
+            var ramp = this.getColorRamp();
+            var self = this;
+            for (i=0; i<data.length; i++) {
+                bin = data[i];
+                if (bin === 0) {
+                    color[0] = 0;
+                    color[1] = 0;
+                    color[2] = 0;
+                    color[3] = 0;
+                } else {
+                    nval = self.transformValue(bin);
+                    rval = self.interpolateToRange(nval);
+                    ramp(rval, color);
+                }
+                bins[i * 4] = color[0];
+                bins[i * 4 + 1] = color[1];
+                bins[i * 4 + 2] = color[2];
+                bins[i * 4 + 3] = color[3];
             }
             return new esper.Texture2D({
                 height: resolution,
                 width: resolution,
-                data: encodedBins,
+                src: bins,
                 format: 'RGBA',
                 type: 'UNSIGNED_BYTE',
                 wrap: 'CLAMP_TO_EDGE',
@@ -568,15 +568,29 @@
                         return;
                     }
                     cached.isPending = false;
-                    // if data is null, exit early
-                    if (data === null) {
+                    if (!data) {
                         return;
                     }
+                    cached.data = new Float64Array(data);
                     // update the extrema
-                    self.updateExtrema(data);
-                    cached.data = self._createDataTexture(data);
+                    if (self.updateExtrema(data)) {
+                        // extrema changed, update all textures
+                        self._updateDataTextures();
+                    } else {
+                        // same extrema, buffer only this tiles texture
+                        cached.texture = self._createDataTexture(cached.data);
+                    }
                 });
             }
+        },
+
+        _updateDataTextures: function() {
+            var self = this;
+            _.forIn(this._cache, function(cached) {
+                if (cached.data) {
+                    cached.texture = self._createDataTexture(cached.data);
+                }
+            });
         },
 
         _initGL: function() {
@@ -584,8 +598,7 @@
             var gl = this._gl = esper.WebGLContext.get(this._canvas);
             // handle missing context
             if (!gl) {
-                console.error('Unable to acquire a WebGL context.');
-                return;
+                throw 'Unable to acquire a WebGL context';
             }
             // init the webgl state
             gl.clearColor(0, 0, 0, 0);
@@ -614,10 +627,14 @@
                 ]
             });
             // load shaders
-            this._shader = new esper.Shader({
+            new esper.Shader({
                 vert: this.options.shaders.vert,
                 frag: this.options.shaders.frag
-            }, function() {
+            }, function(err, shader) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
                 // execute callback
                 var width = self._canvas.width;
                 var height = self._canvas.height;
@@ -626,6 +643,7 @@
                     height: height
                 });
                 self._initialized = true;
+                self._shader = shader;
                 self._draw();
             });
         },
@@ -716,11 +734,11 @@
             var dim = Math.pow(2, this._map.getZoom()) * 256;
             // for each tile
             _.forIn(this._cache, function(cached) {
-                if (cached.isPending || !cached.data) {
+                if (cached.isPending || !cached.texture) {
                     return;
                 }
                 // bind tile texture to texture unit 0
-                cached.data.push(0);
+                cached.texture.push(0);
                 _.forIn(cached.tiles, function(tile, key) {
                     // find the tiles position from its key
                     var kArr = key.split(':');
@@ -736,7 +754,7 @@
                     // draw the tile
                     self._renderable.draw();
                 });
-            // no need to unbind texture
+                // no need to unbind texture
             });
         },
 
