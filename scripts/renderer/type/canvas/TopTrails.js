@@ -17,7 +17,7 @@
             var target = $(e.originalEvent.target);
             if (this.highlighted) {
                 // clear existing highlights
-                this._clearTiles();
+                this.clearTiles();
                 // clear highlighted flag
                 this.highlighted = false;
             }
@@ -26,9 +26,9 @@
             // get tile coord
             var coord = this._getTileCoordFromLayerPoint(layerPoint);
             // get cache key
-            var key = this._cacheKeyFromCoord(coord);
+            var nkey = this._cacheKeyFromCoord(coord, true);
             // get cache entry
-            var cached = this._cache[key];
+            var cached = this._cache[nkey];
             if (cached && cached.pixels) {
                 // get bin coordinate
                 var bin = this._getBinCoordFromLayerPoint(layerPoint);
@@ -112,10 +112,10 @@
                 return;
             }
             // ensure tile accepts mouse events
-            $(container).css('pointer-events', 'all');        
+            $(container).css('pointer-events', 'all');
             // modify cache entry
-            var hash = this._cacheKeyFromCoord(coord);
-            var cached = this._cache[hash];
+            var nkey = this._cacheKeyFromCoord(coord, true);
+            var cached = this._cache[nkey];
             if (cached.trails) {
                 // trails already added, exit early
                 return;

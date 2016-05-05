@@ -2,9 +2,9 @@
 
     'use strict';
 
-    var Image = require('./Image');
+    var Tile = require('./Tile');
 
-    var Debug = Image.extend({
+    var Debug = Tile.extend({
 
         options: {
             unloadInvisibleTiles: true,
@@ -23,48 +23,17 @@
             L.setOptions(this, options);
         },
 
-        redraw: function() {
-            if (this._map) {
-                this._reset({
-                    hard: true
-                });
-                this._update();
-            }
-            return this;
-        },
-
-        _redrawTile: function(tile) {
-            var coord = {
-                x: tile._tilePoint.x,
-                y: tile._tilePoint.y,
-                z: this._map._zoom
-            };
+        createTile: function(coord) {
+            // create a <div> element for drawing
+            var tile = L.DomUtil.create('div', 'leaflet-tile');
+            // draw to it
             this.renderTile(tile, coord);
-            this.tileDrawn(tile);
-        },
-
-        _createTile: function() {
-            var tile = L.DomUtil.create('div', 'leaflet-tile leaflet-debug-tile');
-            tile.width = this.options.tileSize;
-            tile.height = this.options.tileSize;
-            tile.onselectstart = L.Util.falseFn;
-            tile.onmousemove = L.Util.falseFn;
+            // pass tile to callback
             return tile;
         },
 
-        _loadTile: function(tile, tilePoint) {
-            tile._layer = this;
-            tile._tilePoint = tilePoint;
-            this._adjustTilePoint(tilePoint);
-            this._redrawTile(tile);
-        },
-
-        renderTile: function( /*elem, coord*/ ) {
+        renderTile: function() {
             // override
-        },
-
-        tileDrawn: function(tile) {
-            this._tileOnLoad.call(tile);
         }
 
     });

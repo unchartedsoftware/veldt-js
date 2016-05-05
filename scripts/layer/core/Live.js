@@ -31,6 +31,7 @@
             this._params = {
                 binning: {}
             };
+            // set extrema / cache
             this.clearExtrema();
         },
 

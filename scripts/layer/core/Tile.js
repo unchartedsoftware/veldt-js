@@ -2,14 +2,7 @@
 
     'use strict';
 
-    var Image = L.TileLayer.extend({
-
-        removeFrom: function (obj) {
-    		if (obj) {
-    			obj.removeLayer(this);
-    		}
-    		return this;
-    	},
+    var Tile = L.GridLayer.extend({
 
         getOpacity: function() {
             return this.options.opacity;
@@ -42,6 +35,6 @@
 
     });
 
-    module.exports = Image;
+    module.exports = Tile;
 
 }());
