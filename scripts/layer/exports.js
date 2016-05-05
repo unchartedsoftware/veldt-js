@@ -8,8 +8,8 @@
     // pending tile layer
     var Pending = require('./core/Pending');
 
-    // base tile layer
-    var Tile = require('./core/Tile');
+    // image layer
+    var Image = require('./core/Image');
 
     // live tile layers
     var Heatmap = require('./type/Heatmap');
@@ -23,7 +23,7 @@
     module.exports = {
         Debug: Debug,
         Pending: Pending,
-        Tile: Tile,
+        Image: Image,
         Heatmap: Heatmap,
         TopCount: TopCount,
         TopTrails: TopTrails,
