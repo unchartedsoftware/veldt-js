@@ -2,9 +2,9 @@
 
     'use strict';
 
-    var Tile = require('./Tile');
+    var Base = require('./Base');
 
-    var Debug = Tile.extend({
+    var Debug = Base.extend({
 
         options: {
             unloadInvisibleTiles: true,

@@ -45,7 +45,7 @@
             // get tile coord
             var coord = this._getTileCoordFromLayerPoint(layerPoint);
             // get cache key
-            var nkey = this._cacheKeyFromCoord(coord, true);
+            var nkey = this.cacheKeyFromCoord(coord, true);
             // get cache entry
             var cached = this._cache[nkey];
             if (cached && cached.data) {

@@ -2,9 +2,9 @@
 
     'use strict';
 
-    var Tile = require('./Tile');
+    var Base = require('./Base');
 
-    var Pending = Tile.extend({
+    var Pending = Base.extend({
 
         options: {
             unloadInvisibleTiles: true,
@@ -86,7 +86,7 @@
             return tile;
         },
 
-        renderTile: function( /*elem, coord*/ ) {
+        renderTile: function() {
             // override
         }
 

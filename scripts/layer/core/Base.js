@@ -2,7 +2,7 @@
 
     'use strict';
 
-    var Tile = L.GridLayer.extend({
+    var Base = L.GridLayer.extend({
 
         getOpacity: function() {
             return this.options.opacity;
@@ -35,6 +35,6 @@
 
     });
 
-    module.exports = Tile;
+    module.exports = Base;
 
 }());
