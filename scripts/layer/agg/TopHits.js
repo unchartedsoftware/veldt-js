@@ -6,7 +6,30 @@
 
     'use strict';
 
+    var checkField = function(meta, field) {
+        if (meta) {
+            if (meta.type !== 'long') {
+                throw 'TopTerms `field` ' + field + ' is not of type `string` in meta data';
+            }
+        } else {
+            throw 'TopTerms `field` ' + field + ' is not recognized in meta data';
+        }
+    };
+
     var setTopHits = function(size, include, sort, order) {
+        if (!size) {
+            throw 'TopHits `size` is missing from arguments';
+        }
+        if (!include) {
+            throw 'TopHits `include` is missing from arguments';
+        }
+        if (!sort) {
+            throw 'TopHits `sort` is missing from arguments';
+        }
+        if (!order) {
+            throw 'TopHits `order` is missing from arguments';
+        }
+        checkField(this._meta[sort], sort);
         this._params.top_hits = {
             size: size, 
             include:include,
@@ -23,7 +46,13 @@
 
     // bind point for external controls
     var setSortField = function(sort) {
-        this._params.top_hits.sort = sort;
+        if (!sort) {
+            throw 'TopHits `sort` argument is missing';
+        }
+        if (sort !== this._params.top_hits.sort) {
+            this._params.top_hits.sort = sort;
+            this.clearExtrema();
+        }
         return this;
     };
 
