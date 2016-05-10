@@ -73,9 +73,10 @@
             // the case of a map with wraparound, we may have
             // multiple tiles dependent on the response, so iterate
             // over each tile and draw it.
+            var self = this;
             if (cached.data) {
                 _.forIn(cached.tiles, function(tile) {
-                    this.renderTile(tile, cached.data, coords);
+                    self.renderTile(tile, cached.data, coords);
                 });
             }
         },

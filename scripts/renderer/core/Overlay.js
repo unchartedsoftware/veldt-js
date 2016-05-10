@@ -8,6 +8,10 @@
 
     var Overlay = Base.extend({
 
+        options: {
+            zIndex: 1
+        },
+
         onAdd: function(map) {
             map.on('zoomend', this.onZoomEnd, this);
             this.on('tileload', this.onTileLoad, this);
@@ -29,12 +33,7 @@
         },
 
     	// No-op these functions
-    	bringToFront: NO_OP,
-    	bringToBack: NO_OP,
-    	setZIndex: NO_OP,
     	createTile: NO_OP,
-    	_updateZIndex: NO_OP,
-    	_setAutoZIndex: NO_OP,
     	_updateOpacity: NO_OP,
     	_initTile: NO_OP,
     	_tileReady: NO_OP,
@@ -47,6 +46,7 @@
                 this._container = document.createElement('canvas');
                 this._container.className += 'leaflet-layer leaflet-zoom-animated';
             }
+            this._updateZIndex();
             this.getPane().appendChild(this._container);
     	},
 
