@@ -6,7 +6,8 @@
     var Canvas = {
         Heatmap: require('./type/canvas/Heatmap'),
         TopTrails: require('./type/canvas/TopTrails'),
-        Preview: require('./type/canvas/Preview')
+        Preview: require('./type/canvas/Preview'),
+        PointsOfInterest: require('./type/canvas/PointsOfInterest')
     };
 
     // html renderers

@@ -24,9 +24,8 @@
             L.GridLayer.prototype.onRemove.call(this, map);
         },
 
-        _getLayerPointFromEvent: function(e) {
-            var lonlat = this._map.mouseEventToLatLng(e);
-            var pixel = this._map.project(lonlat);
+        _getLayerPointFromLonLat: function(lonlatPoint) {
+            var pixel = this._map.project(lonlatPoint);
             var zoom = this._map.getZoom();
             var pow = Math.pow(2, zoom);
             var tileSize = this.options.tileSize;
@@ -34,6 +33,11 @@
                 x: mod(pixel.x, pow * tileSize),
                 y: mod(pixel.y, pow * tileSize)
             };
+        },
+    
+        _getLayerPointFromEvent: function(e) {
+            var lonlat = this._map.mouseEventToLatLng(e);
+            return this._getLayerPointFromLonLat(lonlat);
         },
 
         _getTileCoordFromLayerPoint: function(layerPoint) {
@@ -45,9 +49,9 @@
             };
         },
 
-        _getBinCoordFromLayerPoint: function(layerPoint) {
+        _getBinCoordFromLayerPoint: function(layerPoint, res) {
             var tileSize = this.options.tileSize;
-            var resolution = this.getResolution() || tileSize;
+            var resolution = res || this.getResolution() || tileSize;
             var tx = mod(layerPoint.x, tileSize);
             var ty = mod(layerPoint.y, tileSize);
             var pixelSize = tileSize / resolution;
