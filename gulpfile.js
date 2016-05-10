@@ -37,7 +37,7 @@
     });
 
     function handleError( err ) {
-        console.log( err );
+        console.error( err );
         this.emit( 'end' );
     }
 

@@ -135,10 +135,26 @@
             }
             // remove the tile from the cache
             delete cached.tiles[key];
+            // don't remove cache entry unless to tiles use it anymore
             if (_.keys(cached.tiles).length === 0) {
                 // no more tiles use this cached data, so delete it
                 delete this._cache[key];
             }
+        },
+
+        onCacheHit: function(/*tile, cached, coords*/) {
+            // this is executed for a tile whose data is already in memory.
+            // probably just draw the tile.
+        },
+
+        onCacheLoad: function(/*tile, cached, coords*/) {
+            // this is executed when the data for a tile is retreived and cached
+            // probably just draw the tile.
+        },
+
+        onCacheLoadExtremaUpdate: function(/*tile, cached, coords*/) {
+            // this is executed when the data for a tile is retreived and is
+            // outside the current extrema. probably just redraw all tiles.
         },
 
         onTileLoad: function(event) {
@@ -156,8 +172,8 @@
                 // add tile under normalize coords
                 cached.tiles[key] = tile;
                 if (!cached.isPending) {
-                    // tile has already received data, draw
-                    self.renderTile(tile, cached.data, coords);
+                    // cache entry already exists
+                    self.onCacheHit(tile, cached, coords);
                 }
             } else {
                 // create a cache entry
@@ -179,22 +195,11 @@
                     cached.data = data;
                     // update the extrema
                     if (data && self.updateExtrema(data)) {
-                        // extrema changed, redraw all tiles
-                        _.forIn(self._cache, function(cached) {
-                            _.forIn(cached.tiles, function(tile, key) {
-                                if (cached.data) {
-                                    self.renderTile(tile, cached.data, self.coordFromCacheKey(key));
-                                }
-                            });
-                        });
+                        // extrema changed
+                        self.onCacheLoadExtremaUpdate(tile, cached, coords);
                     } else {
-                        // same extrema, we are good to render the tiles. In
-                        // the case of a map with wraparound, we may have
-                        // multiple tiles dependent on the response, so iterate
-                        // over each tile and draw it.
-                        _.forIn(cached.tiles, function(tile) {
-                            self.renderTile(tile, data, coords);
-                        });
+                        // data is loaded into cache
+                        self.onCacheLoad(tile, cached, coords);
                     }
                 });
             }
