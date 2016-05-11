@@ -47,12 +47,12 @@
             });
         },
 
-    	_initContainer: function () {
+        _initContainer: function () {
             Overlay.prototype._initContainer.call(this);
             if (!this._gl) {
                 this._initGL();
             }
-    	},
+        },
 
         _initGL: function() {
             var self = this;

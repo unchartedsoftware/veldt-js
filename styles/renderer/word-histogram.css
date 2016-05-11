@@ -1,48 +1,48 @@
 .word-histograms {
-	position: relative;
-	display: inline-block;
+    position: relative;
+    display: inline-block;
     pointer-events: all;
 }
 
 .word-histogram-entry {
-	position: relative;
-	width: 236px;
-	left: 10px;
-	z-index: 1;
-	cursor: pointer;
+    position: relative;
+    width: 236px;
+    left: 10px;
+    z-index: 1;
+    cursor: pointer;
 }
 
 .word-histogram-left {
-	position: relative;
-	float: left;
-	padding-top: 2px;
-	padding-bottom: 2px;
-	width: 162px;
-	height: 100%;
+    position: relative;
+    float: left;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    width: 162px;
+    height: 100%;
     box-sizing: border-box;
 }
 
 .word-histogram-right {
-	position: relative;
-	float: right;
-	width: 74px;
-	height: 100%;
+    position: relative;
+    float: right;
+    width: 74px;
+    height: 100%;
 }
 
 .word-histogram-label {
-	position: relative;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	padding-bottom: 5px;
+    position: relative;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-bottom: 5px;
 }
 
 .word-histogram-bar {
-	position: relative;
-	float: left;
-	bottom: 0px;
-	border: 1px solid #000;
-	margin-left: -1px;
+    position: relative;
+    float: left;
+    bottom: 0px;
+    border: 1px solid #000;
+    margin-left: -1px;
     box-sizing: border-box;
 }
 
