@@ -22,6 +22,16 @@
             this.on('tileunload', this._tileUnload);
         },
 
+        onRemove: function(map) {
+            var self = this;
+            _.forEach(self._markers, function(markers) {
+                 _.forEach(markers, function(marker) {
+                    map.removeLayer(marker);
+                });
+            });
+            self._markers = {};
+        },
+
         options: {
             lineWidth: 0,
             poiOpacity: 0.5,
