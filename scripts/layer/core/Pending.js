@@ -2,9 +2,9 @@
 
     'use strict';
 
-    var Image = require('./Image');
+    var Base = require('./Base');
 
-    var Pending = Image.extend({
+    var Pending = Base.extend({
 
         options: {
             unloadInvisibleTiles: true,
@@ -30,7 +30,7 @@
                 this._pendingTiles[hash] = 1;
                 var tiles = this._getTilesWithHash(hash);
                 tiles.forEach(function(tile) {
-                    this._redrawTile(tile);
+                    this._updateTile(coord, tile);
                 }, this);
             } else {
                 this._pendingTiles[hash]++;
@@ -44,23 +44,13 @@
                 delete this._pendingTiles[hash];
                 var tiles = this._getTilesWithHash(hash);
                 tiles.forEach(function(tile) {
-                    this._redrawTile(tile);
+                    this._updateTile(coord, tile);
                 }, this);
             }
         },
 
-        redraw: function() {
-            if (this._map) {
-                this._reset({
-                    hard: true
-                });
-                this._update();
-            }
-            return this;
-        },
-
         _getTileClass: function(hash) {
-            return 'pending-' + hash;
+            return 'leaflet-pending-' + hash;
         },
 
         _getTileHash: function(coord) {
@@ -76,12 +66,8 @@
             return tiles;
         },
 
-        _redrawTile: function(tile) {
-            var coord = {
-                x: tile._tilePoint.x,
-                y: tile._tilePoint.y,
-                z: this._map._zoom
-            };
+        _updateTile: function(coord, tile) {
+            // get hash
             var hash = this._getTileHash(coord);
             $(tile).addClass(this._getTileClass(hash));
             if (this._pendingTiles[hash] > 0) {
@@ -89,31 +75,19 @@
             } else {
                 tile.innerHTML = '';
             }
-            this.tileDrawn(tile);
         },
 
-        _createTile: function() {
-            var tile = L.DomUtil.create('div', 'leaflet-tile leaflet-pending-tile');
-            tile.width = this.options.tileSize;
-            tile.height = this.options.tileSize;
-            tile.onselectstart = L.Util.falseFn;
-            tile.onmousemove = L.Util.falseFn;
+        createTile: function(coord) {
+            // create a <div> element for drawing
+            var tile = L.DomUtil.create('div', 'leaflet-tile');
+            // get hash
+            this._updateTile(coord, tile);
+            // pass tile to callback
             return tile;
         },
 
-        _loadTile: function(tile, tilePoint) {
-            tile._layer = this;
-            tile._tilePoint = tilePoint;
-            this._adjustTilePoint(tilePoint);
-            this._redrawTile(tile);
-        },
-
-        renderTile: function( /*elem*/ ) {
+        renderTile: function() {
             // override
-        },
-
-        tileDrawn: function(tile) {
-            this._tileOnLoad.call(tile);
         }
 
     });

@@ -2,7 +2,7 @@
 
     'use strict';
 
-    var retryInterval = 5000;
+    var RETRY_INTERVAL = 5000;
 
     function getHost() {
         var loc = window.location;
@@ -39,7 +39,7 @@
         requestor.socket.onclose = function() {
             // log close only if connection was ever open
             if (requestor.isOpen) {
-                console.warn('Websocket connection closed');
+                console.warn('Websocket connection closed, attempting to re-connect in ' + RETRY_INTERVAL);
             }
             requestor.socket = null;
             requestor.isOpen = false;
@@ -58,7 +58,7 @@
                     });
                     requestor.pending = [];
                 });
-            }, retryInterval);
+            }, RETRY_INTERVAL);
         };
     }
 

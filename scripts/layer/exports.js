@@ -8,7 +8,7 @@
     // pending tile layer
     var Pending = require('./core/Pending');
 
-    // standard XYZ / TMX image layer
+    // image layer
     var Image = require('./core/Image');
 
     // live tile layers

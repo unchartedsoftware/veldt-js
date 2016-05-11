@@ -33,17 +33,17 @@
             DOM.prototype.onRemove.call(this, map);
         },
 
-        _createTile: function() {
+        createTile: function() {
             var tile = L.DomUtil.create('canvas', 'leaflet-tile');
-            tile.width = tile.height = this.options.tileSize;
-            tile.onselectstart = tile.onmousemove = L.Util.falseFn;
+            tile.width = this.options.tileSize;
+            tile.height = this.options.tileSize;
             return tile;
         },
 
-        _clearTiles: function() {
+        clearTiles: function() {
             var tileSize = this.options.tileSize;
             _.forIn(this._tiles, function(tile) {
-                var ctx = tile.getContext('2d');
+                var ctx = tile.el.getContext('2d');
                 ctx.clearRect(0, 0, tileSize, tileSize);
             });
         },
