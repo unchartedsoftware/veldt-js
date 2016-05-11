@@ -7,6 +7,19 @@
     var MIN = Number.MAX_VALUE;
     var MAX = 0;
 
+    function mod(n, m) {
+        return ((n % m) + m) % m;
+    }
+
+    function getNormalizeCoords(coords) {
+        var pow = Math.pow(2, coords.z);
+        return {
+            x: mod(coords.x, pow),
+            y: mod(coords.y, pow),
+            z: coords.z
+        };
+    }
+
     var Live = L.Class.extend({
 
         initialize: function(meta, options) {
@@ -31,6 +44,7 @@
             this._params = {
                 binning: {}
             };
+            // set extrema / cache
             this.clearExtrema();
         },
 
@@ -87,7 +101,109 @@
 
         getParams: function() {
             return this._params;
-        }
+        },
+
+        cacheKeyFromCoord: function(coords, normalize) {
+            if (normalize) {
+                // leaflet layer x and y may be > n^2, and < 0 in the case
+                // of a wraparound. If normalize is true, mod the coords
+                coords = getNormalizeCoords(coords);
+            }
+            return coords.z + ':' + coords.x + ':' + coords.y;
+        },
+
+        coordFromCacheKey: function(key) {
+            var arr = key.split(':');
+            return {
+                x: parseInt(arr[1], 10),
+                y: parseInt(arr[2], 10),
+                z: parseInt(arr[0], 10)
+            };
+        },
+
+        onTileUnload: function(event) {
+            // cache key from coords
+            var key = this.cacheKeyFromCoord(event.coords);
+            // cache key from normalized coords
+            var nkey = this.cacheKeyFromCoord(event.coords, true);
+            // get cache entry
+            var cached = this._cache[nkey];
+            // could the be case where the cache is cleared before tiles are
+            // unloaded
+            if (!cached) {
+                return;
+            }
+            // remove the tile from the cache
+            delete cached.tiles[key];
+            // don't remove cache entry unless to tiles use it anymore
+            if (_.keys(cached.tiles).length === 0) {
+                // no more tiles use this cached data, so delete it
+                delete this._cache[key];
+            }
+        },
+
+        onCacheHit: function(/*tile, cached, coords*/) {
+            // this is executed for a tile whose data is already in memory.
+            // probably just draw the tile.
+        },
+
+        onCacheLoad: function(/*tile, cached, coords*/) {
+            // this is executed when the data for a tile is retreived and cached
+            // probably just draw the tile.
+        },
+
+        onCacheLoadExtremaUpdate: function(/*tile, cached, coords*/) {
+            // this is executed when the data for a tile is retreived and is
+            // outside the current extrema. probably just redraw all tiles.
+        },
+
+        onTileLoad: function(event) {
+            var self = this;
+            var coords = event.coords;
+            var ncoords = getNormalizeCoords(event.coords);
+            var tile = event.tile;
+            // cache key from coords
+            var key = this.cacheKeyFromCoord(event.coords);
+            // cache key from normalized coords
+            var nkey = this.cacheKeyFromCoord(event.coords, true);
+            // check cache
+            var cached = this._cache[nkey];
+            if (cached) {
+                // add tile under normalize coords
+                cached.tiles[key] = tile;
+                if (!cached.isPending) {
+                    // cache entry already exists
+                    self.onCacheHit(tile, cached, coords);
+                }
+            } else {
+                // create a cache entry
+                this._cache[nkey] = {
+                    isPending: true,
+                    tiles: {},
+                    data: null
+                };
+                // add tile to the cache entry
+                this._cache[nkey].tiles[key] = tile;
+                // request the tile
+                this.requestTile(ncoords, function(data) {
+                    var cached = self._cache[nkey];
+                    if (!cached) {
+                        // tile is no longer being tracked, ignore
+                        return;
+                    }
+                    cached.isPending = false;
+                    cached.data = data;
+                    // update the extrema
+                    if (data && self.updateExtrema(data)) {
+                        // extrema changed
+                        self.onCacheLoadExtremaUpdate(tile, cached, coords);
+                    } else {
+                        // data is loaded into cache
+                        self.onCacheLoad(tile, cached, coords);
+                    }
+                });
+            }
+        },
 
     });
 

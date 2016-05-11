@@ -2,156 +2,26 @@
 
     'use strict';
 
-    var Image = require('../../layer/core/Image');
+    var Base = require('../../layer/core/Base');
 
     function mod(n, m) {
         return ((n % m) + m) % m;
     }
 
-    var DOM = Image.extend({
+    var DOM = Base.extend({
 
         onAdd: function(map) {
-            L.TileLayer.prototype.onAdd.call(this, map);
+            L.GridLayer.prototype.onAdd.call(this, map);
             map.on('zoomstart', this.clearExtrema, this);
+            this.on('tileload', this.onTileLoad, this);
+            this.on('tileunload', this.onTileUnload, this);
         },
 
         onRemove: function(map) {
             map.off('zoomstart', this.clearExtrema, this);
-            L.TileLayer.prototype.onRemove.call(this, map);
-        },
-
-        redraw: function() {
-            if (this._map) {
-                this._reset({
-                    hard: true
-                });
-                this._update();
-            }
-            return this;
-        },
-
-        _createTile: function() {
-            // override
-        },
-
-        _loadTile: function(tile, tilePoint) {
-            tile._layer = this;
-            tile._tilePoint = tilePoint;
-            tile._unadjustedTilePoint = {
-                x: tilePoint.x,
-                y: tilePoint.y
-            };
-            tile.dataset.x = tilePoint.x;
-            tile.dataset.y = tilePoint.y;
-            this._adjustTilePoint(tilePoint);
-            this._redrawTile(tile);
-        },
-
-        _adjustTileKey: function(key) {
-            // when dealing with wrapped tiles, internally leafet will use
-            // coordinates n < 0 and n > (2^z) to position them correctly.
-            // this function converts that to the modulos key used to cache them
-            // data.
-            // Ex. '-1:3' at z = 2 becomes '3:3'
-            var kArr = key.split(':');
-            var x = parseInt(kArr[0], 10);
-            var y = parseInt(kArr[1], 10);
-            var tilePoint = {
-                x: x,
-                y: y
-            };
-            this._adjustTilePoint(tilePoint);
-            return tilePoint.x + ':' + tilePoint.y + ':' + tilePoint.z;
-        },
-
-        _removeTile: function(key) {
-            var adjustedKey = this._adjustTileKey(key);
-            var cached = this._cache[adjustedKey];
-            // remove the tile from the cache
-            delete cached.tiles[key];
-            if (_.keys(cached.tiles).length === 0) {
-                // no more tiles use this cached data, so delete it
-                delete this._cache[adjustedKey];
-            }
-            // call parent method
-            L.TileLayer.prototype._removeTile.call(this, key);
-        },
-
-        _cacheKeyFromCoord: function(coord) {
-            return coord.x + ':' + coord.y + ':' + coord.z;
-        },
-
-        _coordFromCacheKey: function(key) {
-            var kArr = key.split(':');
-            return {
-                x: parseInt(kArr[0], 10),
-                y: parseInt(kArr[1], 10),
-                z: parseInt(kArr[2], 10)
-            };
-        },
-
-        _redrawTile: function(tile) {
-            var self = this;
-            var coord = {
-                x: tile._tilePoint.x,
-                y: tile._tilePoint.y,
-                z: this._map._zoom
-            };
-            // use the adjusted coordinates to hash the the cache values, this
-            // is because we want to only have one copy of the data
-            var hash = this._cacheKeyFromCoord(coord);
-            // use the unadjsuted coordinates to track which 'wrapped' tiles
-            // used the cached data
-            var unadjustedHash = tile._unadjustedTilePoint.x + ':' + tile._unadjustedTilePoint.y;
-            // check cache
-            var cached = this._cache[hash];
-            if (cached) {
-                if (cached.isPending) {
-                    // currently pending
-                    // store the tile in the cache to draw to later
-                    cached.tiles[unadjustedHash] = tile;
-                } else {
-                    // already requested
-                    // store the tile in the cache
-                    cached.tiles[unadjustedHash] = tile;
-                    // draw the tile
-                    self.renderTile(tile, cached.data, coord);
-                    self.tileDrawn(tile);
-                }
-            } else {
-                // create a cache entry
-                this._cache[hash] = {
-                    isPending: true,
-                    tiles: {},
-                    data: null
-                };
-                // add tile to the cache entry
-                this._cache[hash].tiles[unadjustedHash] = tile;
-                // request the tile
-                this.requestTile(coord, function(data) {
-                    var cached = self._cache[hash];
-                    if (!cached) {
-                        // tile is no longer being tracked, ignore
-                        return;
-                    }
-                    cached.isPending = false;
-                    cached.data = data;
-                    // update the extrema
-                    if (data && self.updateExtrema(data)) {
-                        // extrema changed, redraw all tiles
-                        self.redraw();
-                    } else {
-                        // same extrema, we are good to render the tiles. In
-                        // the case of a map with wraparound, we may have
-                        // multiple tiles dependent on the response, so iterate
-                        // over each tile and draw it.
-                        _.forIn(cached.tiles, function(tile) {
-                            self.renderTile(tile, data, coord);
-                            self.tileDrawn(tile);
-                        });
-                    }
-                });
-            }
+            this.off('tileload', this.onTileLoad, this);
+            this.off('tileunload', this.onTileUnload, this);
+            L.GridLayer.prototype.onRemove.call(this, map);
         },
 
         _getLayerPointFromEvent: function(e) {
@@ -191,8 +61,40 @@
             };
         },
 
-        tileDrawn: function(tile) {
-            this._tileOnLoad.call(tile);
+        onCacheHit: function(tile, cached, coords) {
+            // data exists, render only this tile
+            if (cached.data) {
+                this.renderTile(tile, cached.data, coords);
+            }
+        },
+
+        onCacheLoad: function(tile, cached, coords) {
+            // same extrema, we are good to render the tiles. In
+            // the case of a map with wraparound, we may have
+            // multiple tiles dependent on the response, so iterate
+            // over each tile and draw it.
+            var self = this;
+            if (cached.data) {
+                _.forIn(cached.tiles, function(tile) {
+                    self.renderTile(tile, cached.data, coords);
+                });
+            }
+        },
+
+        onCacheLoadExtremaUpdate: function() {
+            // redraw all tiles
+            var self = this;
+            _.forIn(this._cache, function(cached) {
+                _.forIn(cached.tiles, function(tile, key) {
+                    if (cached.data) {
+                        self.renderTile(tile, cached.data, self.coordFromCacheKey(key));
+                    }
+                });
+            });
+        },
+
+        createTile: function() {
+            // override
         },
 
         requestTile: function() {

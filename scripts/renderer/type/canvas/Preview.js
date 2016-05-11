@@ -36,7 +36,7 @@
             var target = $(e.originalEvent.target);
             if (this.highlighted) {
                 // clear existing highlight
-                this._clearTiles();
+                this.clearTiles();
                 // clear highlighted flag
                 this.highlighted = false;
             }
@@ -45,9 +45,9 @@
             // get tile coord
             var coord = this._getTileCoordFromLayerPoint(layerPoint);
             // get cache key
-            var key = this._cacheKeyFromCoord(coord);
+            var nkey = this.cacheKeyFromCoord(coord, true);
             // get cache entry
-            var cached = this._cache[key];
+            var cached = this._cache[nkey];
             if (cached && cached.data) {
                 // get bin coordinate
                 var bin = this._getBinCoordFromLayerPoint(layerPoint);
