@@ -35,6 +35,7 @@
 
         createTile: function() {
             var tile = L.DomUtil.create('canvas', 'leaflet-tile');
+            tile.style['pointer-events'] = 'all';
             tile.width = this.options.tileSize;
             tile.height = this.options.tileSize;
             return tile;
