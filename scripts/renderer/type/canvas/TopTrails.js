@@ -111,8 +111,6 @@
             if (!data) {
                 return;
             }
-            // ensure tile accepts mouse events
-            $(container).css('pointer-events', 'all');
             // modify cache entry
             var nkey = this.cacheKeyFromCoord(coord, true);
             var cached = this._cache[nkey];
