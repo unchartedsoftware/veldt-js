@@ -2,6 +2,8 @@
 
     'use strict';
 
+    var DEFAULT_RESOLUTION = 256;
+
     var Tiling = require('./Tiling');
 
     var setResolution = function(resolution) {
@@ -13,7 +15,7 @@
     };
 
     var getResolution = function() {
-        return this._params.binning.resolution;
+        return this._params.binning.resolution || DEFAULT_RESOLUTION;
     };
 
     module.exports = {
@@ -22,9 +24,15 @@
         getXField: Tiling.getXField,
         setYField: Tiling.setYField,
         getYField: Tiling.getYField,
+        getLayerPointFromDataPoint: Tiling.getLayerPointFromDataPoint,
+        getDataPointFromLayerPoint: Tiling.getDataPointFromLayerPoint,
+        DEFAULT_X_FIELD: Tiling.DEFAULT_X_FIELD,
+        DEFAULT_Y_FIELD: Tiling.DEFAULT_Y_FIELD,
+        DEFAULT_PIXEL_MAX: Tiling.DEFAULT_PIXEL_MAX,
         // binning
         setResolution: setResolution,
-        getResolution: getResolution
+        getResolution: getResolution,
+        DEFAULT_RESOLUTION: DEFAULT_RESOLUTION
     };
 
 }());

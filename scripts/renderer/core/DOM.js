@@ -47,7 +47,7 @@
 
         _getBinCoordFromLayerPoint: function(layerPoint) {
             var tileSize = this.options.tileSize;
-            var resolution = this.getResolution() || tileSize;
+            var resolution = this.getResolution();
             var tx = mod(layerPoint.x, tileSize);
             var ty = mod(layerPoint.y, tileSize);
             var pixelSize = tileSize / resolution;
