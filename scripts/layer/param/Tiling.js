@@ -5,7 +5,7 @@
     var DEFAULT_X_FIELD = 'pixel.x';
     var DEFAULT_Y_FIELD = 'pixel.y';
     var DEFAULT_PIXEL_MIN = 0;
-    var DEFAULT_PIXEL_MAX = 1 << 32;
+    var DEFAULT_PIXEL_MAX = Math.pow(2, 32);
 
     var checkField = function(meta, field) {
         if (meta) {
@@ -76,18 +76,18 @@
         var pow = Math.pow(2, zoom);
         var extent = tileSize * pow;
         var xRange = Math.abs(binning.right - binning.left);
-    	var yRange = Math.abs(binning.bottom - binning.top);
+        var yRange = Math.abs(binning.bottom - binning.top);
         var nx, ny;
         if (binning.left > binning.right) {
             nx = 1 - ((x - binning.right) / xRange);
-    	} else {
+        } else {
             nx = (x - binning.left) / xRange;
-    	}
+        }
         if (binning.top > binning.bottom) {
             ny = 1 - ((y - binning.bottom) / yRange);
-    	} else {
+        } else {
             ny = (y - binning.top) / yRange;
-    	}
+        }
         return {
             x: extent * nx,
             y: extent * ny
@@ -102,18 +102,18 @@
         var nx = x / extent;
         var ny = y / extent;
         var xRange = Math.abs(binning.right - binning.left);
-    	var yRange = Math.abs(binning.bottom - binning.top);
+        var yRange = Math.abs(binning.bottom - binning.top);
         var px, py;
         if (binning.left > binning.right) {
             px = binning.right + (1 - nx) * xRange;
-    	} else {
+        } else {
             px = binning.left + nx * xRange;
-    	}
+        }
         if (binning.top > binning.bottom) {
             py = binning.bottom + (1 - ny) * yRange;
-    	} else {
+        } else {
             py = binning.top + ny * yRange;
-    	}
+        }
         return {
             x: px,
             y: py
