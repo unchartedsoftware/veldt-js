@@ -77,7 +77,7 @@
         },
 
         _highlightTrail: function(canvas, pixels) {
-            var resolution = this.getResolution() || this.options.tileSize;
+            var resolution = this.getResolution();
             var highlight = document.createElement('canvas');
             highlight.height = resolution;
             highlight.width = resolution;
