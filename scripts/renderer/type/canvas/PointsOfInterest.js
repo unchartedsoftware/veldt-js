@@ -7,6 +7,7 @@
     'use strict';
 
     var Overlay = require('../../core/Overlay');
+    var moment = require('moment');
 
     var PointsOfInterest = Overlay.extend({
         // used to store a list of markers for each tile, where the tiles
@@ -47,13 +48,25 @@
             // is no longer visible
             if (!self._markers[key]) {
                 self._markers[key] = [];
+
+                var fieldDataToLatLon = self._createFieldDataConverter(
+                    self.getXField(), self.getYField(), self._meta, coord.z);
+
                 // Create a marker for non-null bin in our data and register handlers
                 // to look after mouse events.  We can have mutiple tiles associated
                 // with a single key since the world wraps, so we ensure that we only
                 // add markers once for a key.
                 _.forEach(cached.data, function(d) {
-                    if (d && d[0].location) {
-                        var circle = L.circleMarker([d[0].location.lat, d[0].location.lon], {
+                    if (d) {
+                        // tx the point in our data space into a lat/lon point that the
+                        // Leaflet marker API can consume.  If the point can't be transformed
+                        // we skip it.
+                        var latLon = fieldDataToLatLon(d[0]);
+                        if (latLon === null) {
+                            return false;
+                        }
+
+                        var circle = L.circleMarker(latLon, {
                             radius: self.options.poiSize / 2,
                             color: self.options.poiLineColor,
                             opacity: self.options.poiOpacity,
@@ -153,6 +166,38 @@
                 });
             }
         },
+
+        _createFieldDataConverter: function(xField, yField, meta, zoom) {
+            var self = this;
+            // generates a function extracts a numeric value or a formatted date string
+            function createExtractor(field) {
+                var type = _.get(meta, field).type;
+                if (type === 'long' || type === 'integer' || type === 'float' ||
+                type === 'double' || type === 'short' || type === 'byte') {
+                    return function(data) { return _.get(data, field); };
+                } else if (type === 'date') {
+                    return function(data) { return moment(_.get(data, field)); };
+                } else {
+                    console.error('Unhandled field data type ' + type);
+                    return null;
+                }
+            }
+            // create extraction functions for each of the fields 
+            var xExtractor = createExtractor(xField);
+            var yExtractor = createExtractor(yField);
+            // create the final function to extract x,y values from data and convert them into
+            // lat/lon coordintes.
+            if (xExtractor === null || yExtractor === null) {
+                return function() { return null; };
+            } else {
+                return function(data) {
+                    var x = xExtractor(data);
+                    var y = yExtractor(data);
+                    var layerPoint = self.getLayerPointFromDataPoint(x, y, zoom);
+                    return self._map.unproject(L.point(layerPoint.x, layerPoint.y));
+                };
+            }
+        }
     });
 
     module.exports = PointsOfInterest;
