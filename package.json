@@ -15,7 +15,8 @@
   ],
   "dependencies": {
     "esper": "0.10.1",
-    "json-stable-stringify": "1.0.1"
+    "json-stable-stringify": "1.0.1",
+    "moment": "2.13.0"
   },
   "devDependencies": {
     "browserify": "13.0.0",

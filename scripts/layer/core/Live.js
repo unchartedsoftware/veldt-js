@@ -121,6 +121,11 @@
             };
         },
 
+        onCacheUnload: function(/*tile, cahced, coords*/) {
+            // executed when the data for a tile is purged from the cache
+            // allows for any associated visuals to be purged if required
+        },
+        
         onTileUnload: function(event) {
             // cache key from coords
             var key = this.cacheKeyFromCoord(event.coords);
@@ -128,16 +133,21 @@
             var nkey = this.cacheKeyFromCoord(event.coords, true);
             // get cache entry
             var cached = this._cache[nkey];
-            // could the be case where the cache is cleared before tiles are
+                        // could the be case where the cache is cleared before tiles are
             // unloaded
             if (!cached) {
                 return;
             }
+
+            // get the tile being deleted
+            var tile = cached.tiles[key];
+
             // remove the tile from the cache
             delete cached.tiles[key];
             // don't remove cache entry unless to tiles use it anymore
             if (_.keys(cached.tiles).length === 0) {
                 // no more tiles use this cached data, so delete it
+                this.onCacheUnload(tile, cached, event.coords);
                 delete this._cache[key];
             }
         },
