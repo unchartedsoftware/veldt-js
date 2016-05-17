@@ -4,10 +4,6 @@
 
     var Base = require('../../layer/core/Base');
 
-    function mod(n, m) {
-        return ((n % m) + m) % m;
-    }
-
     var DOM = Base.extend({
 
         onAdd: function(map) {
@@ -24,43 +20,7 @@
             L.GridLayer.prototype.onRemove.call(this, map);
         },
 
-        _getLayerPointFromEvent: function(e) {
-            var lonlat = this._map.mouseEventToLatLng(e);
-            var pixel = this._map.project(lonlat);
-            var zoom = this._map.getZoom();
-            var pow = Math.pow(2, zoom);
-            var tileSize = this.options.tileSize;
-            return {
-                x: mod(pixel.x, pow * tileSize),
-                y: mod(pixel.y, pow * tileSize)
-            };
-        },
-
-        _getTileCoordFromLayerPoint: function(layerPoint) {
-            var tileSize = this.options.tileSize;
-            return {
-                x: Math.floor(layerPoint.x / tileSize),
-                y: Math.floor(layerPoint.y / tileSize),
-                z: this._map.getZoom()
-            };
-        },
-
-        _getBinCoordFromLayerPoint: function(layerPoint) {
-            var tileSize = this.options.tileSize;
-            var resolution = this.getResolution();
-            var tx = mod(layerPoint.x, tileSize);
-            var ty = mod(layerPoint.y, tileSize);
-            var pixelSize = tileSize / resolution;
-            var bx = Math.floor(tx / pixelSize);
-            var by = Math.floor(ty / pixelSize);
-            return {
-                x: bx,
-                y: by,
-                index: bx + (by * resolution),
-                size: pixelSize
-            };
-        },
-
+ 
         onCacheHit: function(tile, cached, coords) {
             // data exists, render only this tile
             if (cached.data) {

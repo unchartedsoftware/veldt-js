@@ -8,25 +8,20 @@
 
         options: {
             lineWidth: 2,
-            lineColor: 'lightblue',
-            fillColor: 'darkblue',
+            lineColor: 'lightblue'
         },
 
         highlighted: false,
 
         _drawHighlight: function(canvas, x, y, size) {
-            var sizeOver2 = size / 2;
             var ctx = canvas.getContext('2d');
             ctx.beginPath();
             ctx.fillStyle = this.options.fillColor;
-            ctx.arc(
-                x * size + sizeOver2,
-                y * size + sizeOver2,
-                sizeOver2,
-                0,
-                2 * Math.PI,
-                false);
-            ctx.fill();
+            ctx.rect(
+                x * size,
+                y * size,
+                size,
+                size);
             ctx.lineWidth = this.options.lineWidth;
             ctx.strokeStyle = this.options.lineColor;
             ctx.stroke();

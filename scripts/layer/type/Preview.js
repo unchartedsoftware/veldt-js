@@ -26,7 +26,7 @@
                 min: 0,
                 max: 0
             };
-        },
+        }
     });
 
     module.exports = Preview;
