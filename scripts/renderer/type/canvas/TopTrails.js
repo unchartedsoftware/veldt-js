@@ -3,8 +3,16 @@
     'use strict';
 
     var Canvas = require('../../core/Canvas');
+    var ColorRamp = require('../../mixin/ColorRamp');
+    var ValueTransform = require('../../mixin/ValueTransform');
 
     var TopTrails = Canvas.extend({
+
+        includes: [
+            // mixins
+            ColorRamp,
+            ValueTransform
+        ],
 
         options: {
             color: [255, 0, 255, 255],
@@ -12,6 +20,11 @@
         },
 
         highlighted: false,
+
+        initialize: function() {
+            ColorRamp.initialize.apply(this, arguments);
+            ValueTransform.initialize.apply(this, arguments);
+        },
 
         onMouseMove: function(e) {
             var target = $(e.originalEvent.target);

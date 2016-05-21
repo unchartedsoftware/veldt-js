@@ -3,6 +3,7 @@
     'use strict';
 
     var HTML = require('../../core/HTML');
+    var ValueTransform = require('../../mixin/ValueTransform');
     var sentiment = require('../../sentiment/Sentiment');
     var sentimentFunc = sentiment.getClassFunc(-1, 1);
 
@@ -67,10 +68,19 @@
 
     var WordHistogram = HTML.extend({
 
+        includes: [
+            // mixins
+            ValueTransform
+        ],
+
         options: {
             maxNumWords: 8,
             minFontSize: 16,
             maxFontSize: 22
+        },
+
+        initialize: function() {
+            ValueTransform.initialize.apply(this, arguments);
         },
 
         isTargetLayer: function( elem ) {

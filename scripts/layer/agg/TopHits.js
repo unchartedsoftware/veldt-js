@@ -1,5 +1,5 @@
-// Provides top hits query functionality. 'size' indicates the number of top 
-// hits to return, 'include' is the list of fields to include in the returned 
+// Provides top hits query functionality. 'size' indicates the number of top
+// hits to return, 'include' is the list of fields to include in the returned
 // data, 'sort' is the field to use for sort critera, and 'order' is value of
 // 'asc' or 'desc' to indicate sort ordering.
 (function() {
@@ -8,7 +8,7 @@
 
     var checkField = function(meta, field) {
         if (meta) {
-            if (meta.type !== 'long') {
+            if (meta.type !== 'long' && meta.type !== 'date') {
                 throw 'TopTerms `field` ' + field + ' is not of type `string` in meta data';
             }
         } else {
@@ -17,24 +17,14 @@
     };
 
     var setTopHits = function(size, include, sort, order) {
-        if (!size) {
-            throw 'TopHits `size` is missing from arguments';
+        if (sort) {
+            checkField(this._meta[sort], sort);
         }
-        if (!include) {
-            throw 'TopHits `include` is missing from arguments';
-        }
-        if (!sort) {
-            throw 'TopHits `sort` is missing from arguments';
-        }
-        if (!order) {
-            throw 'TopHits `order` is missing from arguments';
-        }
-        checkField(this._meta[sort], sort);
         this._params.top_hits = {
-            size: size, 
-            include:include,
+            size: size,
+            include: include,
             sort: sort,
-            order: order            
+            order: order
         };
         this.clearExtrema();
         return this;
