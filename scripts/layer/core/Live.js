@@ -25,9 +25,7 @@
         initialize: function(meta, options) {
             options = options || {};
             // set renderer
-            if (!options.rendererClass) {
-                //throw 'No `rendererClass` option found.';
-            } else {
+            if (options.rendererClass) {
                 // recursively extend and initialize
                 if (options.rendererClass.prototype) {
                     $.extend(true, this, options.rendererClass.prototype);
