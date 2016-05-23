@@ -5,7 +5,7 @@
     function mod(n, m) {
         return ((n % m) + m) % m;
     }
- 
+
     var Base = L.GridLayer.extend({
 
         getOpacity: function() {
@@ -47,7 +47,7 @@
                 y: mod(pixel.y, pow * tileSize)
             };
         },
-    
+
         _getLayerPointFromEvent: function(e) {
             var lonlat = this._map.mouseEventToLatLng(e);
             return this._getLayerPointFromLonLat(lonlat);
