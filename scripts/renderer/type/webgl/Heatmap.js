@@ -3,6 +3,8 @@
     'use strict';
 
     var WebGL = require('../../core/WebGL');
+    var ColorRamp = require('../../mixin/ColorRamp');
+    var ValueTransform = require('../../mixin/ValueTransform');
 
     var vert = [
         'precision highp float;',
@@ -30,11 +32,22 @@
 
     var Heatmap = WebGL.extend({
 
+        includes: [
+            // mixins
+            ColorRamp,
+            ValueTransform
+        ],
+
         options: {
             shaders: {
                 vert: vert,
                 frag: frag,
             }
+        },
+
+        initialize: function() {
+            ColorRamp.initialize.apply(this, arguments);
+            ValueTransform.initialize.apply(this, arguments);
         }
 
     });

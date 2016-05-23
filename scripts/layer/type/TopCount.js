@@ -6,7 +6,6 @@
     var Tiling = require('../param/Tiling');
     var TopTerms = require('../agg/TopTerms');
     var Histogram = require('../agg/Histogram');
-    var ValueTransform = require('../mixin/ValueTransform');
 
     var TopCount = Live.extend({
 
@@ -15,19 +14,11 @@
             Tiling,
             TopTerms,
             // aggs
-            Histogram,
-            // mixins
-            ValueTransform
+            Histogram
         ],
 
-        type: 'top_count',
-
-        initialize: function() {
-            ValueTransform.initialize.apply(this, arguments);
-            // base
-            Live.prototype.initialize.apply(this, arguments);
-        },
-
+        type: 'top_count'
+        
     });
 
     module.exports = TopCount;

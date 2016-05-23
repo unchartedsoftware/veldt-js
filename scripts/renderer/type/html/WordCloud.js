@@ -3,6 +3,7 @@
     'use strict';
 
     var HTML = require('../../core/HTML');
+    var ValueTransform = require('../../mixin/ValueTransform');
     var sentiment = require('../../sentiment/Sentiment');
     var sentimentFunc = sentiment.getClassFunc(-1, 1);
 
@@ -78,10 +79,19 @@
 
     var WordCloud = HTML.extend({
 
+        includes: [
+            // mixins
+            ValueTransform
+        ],
+
         options: {
             maxNumWords: 15,
             minFontSize: 10,
             maxFontSize: 20
+        },
+
+        initialize: function() {
+            ValueTransform.initialize.apply(this, arguments);
         },
 
         isTargetLayer: function( elem ) {

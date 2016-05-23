@@ -12,8 +12,7 @@
             zIndex: 1
         },
 
-        onAdd: function(map) {
-            map.on('zoomend', this.onZoomEnd, this);
+        onAdd: function() {
             this.on('tileload', this.onTileLoad, this);
             this.on('tileunload', this.onTileUnload, this);
             this._tiles = {};
@@ -23,7 +22,6 @@
         },
 
         onRemove: function(map) {
-            map.off('zoomend', this.onZoomEnd, this);
             this.off('tileload', this.onTileLoad, this);
             this.off('tileunload', this.onTileUnload, this);
             this._removeAllTiles();

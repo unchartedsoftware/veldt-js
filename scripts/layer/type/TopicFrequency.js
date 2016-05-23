@@ -7,7 +7,6 @@
     var TermsFilter = require('../agg/TermsFilter');
     var DateHistogram = require('../agg/DateHistogram');
     var Histogram = require('../agg/Histogram');
-    var ValueTransform = require('../mixin/ValueTransform');
 
     var TopicFrequency = Live.extend({
 
@@ -16,18 +15,10 @@
             Tiling,
             TermsFilter,
             DateHistogram,
-            Histogram,
-            // mixins
-            ValueTransform
+            Histogram
         ],
 
-        type: 'topic_frequency',
-
-        initialize: function() {
-            ValueTransform.initialize.apply(this, arguments);
-            // base
-            Live.prototype.initialize.apply(this, arguments);
-        },
+        type: 'topic_frequency'
 
     });
 
