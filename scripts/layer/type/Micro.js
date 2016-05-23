@@ -3,21 +3,23 @@
     'use strict';
 
     var Live = require('../core/Live');
-    var Binning = require('../param/Binning');
+    var Tiling = require('../param/Tiling');
+    var MacroMicro = require('../param/MacroMicro');
     var TopHits = require('../agg/TopHits');
 
-    var Preview = Live.extend({
+    var Micro = Live.extend({
 
         includes: [
             // params
-            Binning,
+            Tiling,
+            MacroMicro,
             // aggs
             TopHits
         ],
 
-        type: 'preview',
+        type: 'micro',
 
-        // extreme not relevant for preview
+        // extreme not relevant for micro
         extractExtrema: function() {
             return {
                 min: Infinity,
@@ -26,6 +28,6 @@
         }
     });
 
-    module.exports = Preview;
+    module.exports = Micro;
 
 }());

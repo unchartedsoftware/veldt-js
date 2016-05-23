@@ -2,6 +2,7 @@
 
     'use strict';
 
+    var DEFAULT_TILE_SIZE = 256;
     var DEFAULT_X_FIELD = 'pixel.x';
     var DEFAULT_Y_FIELD = 'pixel.y';
     var DEFAULT_PIXEL_MIN = 0;
@@ -72,7 +73,7 @@
 
     var getLayerPointFromDataPoint = function(x, y, zoom) {
         var binning = this._params.binning;
-        var tileSize = this.options.tileSize;
+        var tileSize = this.options.tileSize || DEFAULT_TILE_SIZE;
         var pow = Math.pow(2, zoom);
         var extent = tileSize * pow;
         var xRange = Math.abs(binning.right - binning.left);
@@ -96,7 +97,7 @@
 
     var getDataPointFromLayerPoint = function(x, y, zoom) {
         var binning = this._params.binning;
-        var tileSize = this.options.tileSize;
+        var tileSize = this.options.tileSize || DEFAULT_TILE_SIZE;
         var pow = Math.pow(2, zoom);
         var extent = tileSize * pow;
         var nx = x / extent;

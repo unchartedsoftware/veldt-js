@@ -11,6 +11,9 @@
     // image layer
     var Image = require('./core/Image');
 
+    // composite layer
+    var Composite = require('./core/Composite');
+
     // live tile layers
     var Heatmap = require('./type/Heatmap');
     var TopTrails = require('./type/TopTrails');
@@ -19,18 +22,23 @@
     var TopicCount = require('./type/TopicCount');
     var TopicFrequency = require('./type/TopicFrequency');
     var Preview = require('./type/Preview');
+    var Macro = require('./type/Macro');
+    var Micro = require('./type/Micro');
 
     module.exports = {
         Debug: Debug,
         Pending: Pending,
         Image: Image,
         Heatmap: Heatmap,
+        Composite: Composite,
         TopCount: TopCount,
         TopTrails: TopTrails,
         TopFrequency: TopFrequency,
         TopicCount: TopicCount,
         TopicFrequency: TopicFrequency,
-        Preview: Preview
+        Preview: Preview,
+        Macro: Macro,
+        Micro: Micro
     };
 
 }());

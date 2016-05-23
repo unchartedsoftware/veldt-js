@@ -3,8 +3,18 @@
     'use strict';
 
     var HTML = require('../../core/HTML');
+    var ValueTransform = require('../../mixin/ValueTransform');
 
     var Heatmap = HTML.extend({
+
+        includes: [
+            // mixins
+            ValueTransform
+        ],
+
+        initialize: function() {
+            ValueTransform.initialize.apply(this, arguments);
+        },
 
         onClick: function(e) {
             var target = $(e.originalEvent.target);

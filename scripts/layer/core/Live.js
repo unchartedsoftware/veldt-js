@@ -23,9 +23,10 @@
     var Live = L.Class.extend({
 
         initialize: function(meta, options) {
+            options = options || {};
             // set renderer
             if (!options.rendererClass) {
-                throw 'No `rendererClass` option found.';
+                //throw 'No `rendererClass` option found.';
             } else {
                 // recursively extend and initialize
                 if (options.rendererClass.prototype) {
@@ -125,7 +126,7 @@
             // executed when the data for a tile is purged from the cache
             // allows for any associated visuals to be purged if required
         },
-        
+
         onTileUnload: function(event) {
             // cache key from coords
             var key = this.cacheKeyFromCoord(event.coords);
@@ -165,6 +166,10 @@
         onCacheLoadExtremaUpdate: function(/*tile, cached, coords*/) {
             // this is executed when the data for a tile is retreived and is
             // outside the current extrema. probably just redraw all tiles.
+        },
+
+        requestTile: function() {
+            // override
         },
 
         onTileLoad: function(event) {

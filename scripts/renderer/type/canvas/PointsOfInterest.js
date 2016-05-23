@@ -104,8 +104,6 @@
             delete self._markers[key];
         },
 
-        onZoomEnd: function() {},
-
         _mouseOver: function(circle, data, e) {
             // render a highlight visual and pass event data to downstream
             // listeners
@@ -173,7 +171,7 @@
             function createExtractor(field) {
                 var type = _.get(meta, field).type;
                 if (type === 'long' || type === 'integer' || type === 'float' ||
-                type === 'double' || type === 'short' || type === 'byte') {
+                    type === 'double' || type === 'short' || type === 'byte') {
                     return function(data) { return _.get(data, field); };
                 } else if (type === 'date') {
                     return function(data) { return moment(_.get(data, field)); };
@@ -182,7 +180,7 @@
                     return null;
                 }
             }
-            // create extraction functions for each of the fields 
+            // create extraction functions for each of the fields
             var xExtractor = createExtractor(xField);
             var yExtractor = createExtractor(yField);
             // create the final function to extract x,y values from data and convert them into

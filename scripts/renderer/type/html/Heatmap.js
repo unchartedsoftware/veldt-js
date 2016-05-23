@@ -3,8 +3,21 @@
     'use strict';
 
     var HTML = require('../../core/HTML');
+    var ColorRamp = require('../../mixin/ColorRamp');
+    var ValueTransform = require('../../mixin/ValueTransform');
 
     var Heatmap = HTML.extend({
+
+        includes: [
+            // mixins
+            ColorRamp,
+            ValueTransform
+        ],
+
+        initialize: function() {
+            ColorRamp.initialize.apply(this, arguments);
+            ValueTransform.initialize.apply(this, arguments);
+        },
 
         isTargetLayer: function( elem ) {
             return this._container && $.contains(this._container, elem );

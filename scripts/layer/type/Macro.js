@@ -4,21 +4,21 @@
 
     var Live = require('../core/Live');
     var Binning = require('../param/Binning');
-    var Metric = require('../agg/Metric');
+    var MacroMicro = require('../param/MacroMicro');
 
-    var Heatmap = Live.extend({
+    var Macro = Live.extend({
 
         includes: [
             // params
             Binning,
-            // aggs
-            Metric
+            MacroMicro
         ],
 
-        type: 'heatmap',
+        type: 'macro',
 
         extractExtrema: function(data) {
             var bins = new Float64Array(data);
+            console.log('derp', bins);
             return {
                 min: _.min(bins),
                 max: _.max(bins)
@@ -27,6 +27,6 @@
 
     });
 
-    module.exports = Heatmap;
+    module.exports = Macro;
 
 }());

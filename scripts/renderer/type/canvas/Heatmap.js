@@ -3,8 +3,21 @@
     'use strict';
 
     var Canvas = require('../../core/Canvas');
+    var ColorRamp = require('../../mixin/ColorRamp');
+    var ValueTransform = require('../../mixin/ValueTransform');
 
     var Heatmap = Canvas.extend({
+
+        includes: [
+            // mixins
+            ColorRamp,
+            ValueTransform
+        ],
+
+        initialize: function() {
+            ColorRamp.initialize.apply(this, arguments);
+            ValueTransform.initialize.apply(this, arguments);
+        },
 
         renderCanvas: function(bins, resolution, ramp) {
             var canvas = document.createElement('canvas');

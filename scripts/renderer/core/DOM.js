@@ -20,7 +20,6 @@
             L.GridLayer.prototype.onRemove.call(this, map);
         },
 
- 
         onCacheHit: function(tile, cached, coords) {
             // data exists, render only this tile
             if (cached.data) {
@@ -54,10 +53,6 @@
         },
 
         createTile: function() {
-            // override
-        },
-
-        requestTile: function() {
             // override
         },
 
