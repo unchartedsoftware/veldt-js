@@ -7,6 +7,14 @@
     var ValueTransform = require('../../mixin/ValueTransform');
 
     var TILE_SIZE = 256;
+    var HASH_RESOLUTON = 64;
+    var HASH_BIN_SIZE = TILE_SIZE / HASH_RESOLUTON;
+
+    function hashPixel(tx, ty) {
+        var xHash = Math.floor(tx / HASH_BIN_SIZE);
+        var yHash = Math.floor(ty / HASH_BIN_SIZE);
+        return xHash + ':' + yHash;
+    }
 
     var MacroMicro = Canvas.extend({
 
@@ -20,7 +28,7 @@
             fillColor: 'rgba(10, 80, 20, 0.5)',
             strokeColor: '#ffffff',
             strokeWidth: 1,
-            pointRadius: 6
+            resolution: 32
         },
 
         initialize: function() {
@@ -29,6 +37,55 @@
             }
             ColorRamp.initialize.apply(this, arguments);
             ValueTransform.initialize.apply(this, arguments);
+        },
+
+        onMouseMove: function(e) {
+            var target = $(e.originalEvent.target);
+            // get layer coord
+            var layerPixel = this._getLayerPointFromEvent(e);
+            // get tile coord
+            var coord = this._getTileCoordFromLayerPoint(layerPixel);
+            // get cache key
+            var nkey = this.cacheKeyFromCoord(coord, true);
+            // get cache entry
+            var cached = this._cache[nkey];
+            if (cached && cached.spatialHash) {
+                // pixel in tile coords
+                var tx = Math.floor(layerPixel.x % TILE_SIZE);
+                var ty = Math.floor(layerPixel.y % TILE_SIZE);
+                // spatial hash key
+                var hash = hashPixel(tx, ty);
+                // get points in bin
+                var points = cached.spatialHash[hash];
+                if (points) {
+                    // find first intersecting point in the bin
+                    var pointRadius = Math.max(1, (TILE_SIZE / this.options.resolution) / 2);
+                    var self = this;
+                    points.forEach(function(point) {
+                        if (tx > (point.x - pointRadius) &&
+                            tx < (point.x + pointRadius) &&
+                            ty > (point.y - pointRadius) &&
+                            ty < (point.y + pointRadius)) {
+                            // collision
+                            // execute callback
+                            if (self.options.handlers.mousemove) {
+                                self.options.handlers.mousemove(target, {
+                                    value: point.hit,
+                                    x: coord.x,
+                                    y: coord.z,
+                                    z: coord.z,
+                                    type: 'macro_micro',
+                                    layer: self
+                                });
+                            }
+                            return;
+                        }
+                    });
+                }
+            }
+            if (this.options.handlers.mousemove) {
+                this.options.handlers.mousemove(target, null);
+            }
         },
 
         renderMacroCanvas: function(bins, resolution, ramp) {
@@ -66,7 +123,7 @@
             var fillColor = this.options.fillColor;
             var strokeColor = this.options.strokeColor;
             var strokeWidth = this.options.strokeWidth;
-            var pointRadius = this.options.pointRadius;
+            var pointRadius = Math.max(1, (TILE_SIZE / this.options.resolution) / 2);
             var bufferRadius = pointRadius + strokeWidth;
             var bufferDiameter = bufferRadius * 2;
             // buffer the canvas so that none of the points are cut off
@@ -77,14 +134,14 @@
                 'margin-top': -bufferRadius,
                 'margin-left': -bufferRadius
             });
-
+            // double the resolution if on a hi-res display
             var devicePixelFactor = (L.Browser.retina) ? 2 : 1;
             canvas.width = (TILE_SIZE + bufferDiameter) * devicePixelFactor;
             canvas.height = (TILE_SIZE + bufferDiameter) * devicePixelFactor;
-
+            // get 2d context
             var ctx = canvas.getContext('2d');
             ctx.globalCompositeOperation = 'lighter';
-
+            // draw each pixel
             pixels.forEach(function(pixel) {
                 ctx.beginPath();
                 ctx.fillStyle = fillColor;
@@ -116,12 +173,11 @@
         },
 
         getResolution: function() {
-            // TODO: FINISH!!!
-            return this.options.pointRadius;
+            return this.options.resolution;
         },
 
         setResolution: function(res) {
-            this.options.pointRadius = res / TILE_SIZE;
+            this.options.resolution = res;
         },
 
         renderTile: function(canvas, res, coords) {
@@ -146,24 +202,47 @@
                     canvas.width, canvas.height);
             } else {
                 // micro
-                var micro = this.layers.micro;
-                var xField = micro.getXField();
-                var yField = micro.getYField();
-                var zoom = coords.z;
-                var pixels = [];
-                data.forEach(function(hit) {
-                    var x = _.get(hit, xField);
-                    var y = _.get(hit, yField);
-                    if (x !== undefined && y !== undefined) {
-                        // TODO: THESE ARE WRONG?
-                        var layerPixel = micro.getLayerPointFromDataPoint(x, y, zoom);
-                        pixels.push({
-                            x: Math.floor(layerPixel.x % 256),
-                            y: Math.floor(layerPixel.y % 256)
-                        });
-                    }
-                });
-                this.renderMicroCanvas(canvas, pixels);
+                // modify cache entry
+                var nkey = this.cacheKeyFromCoord(coords, true);
+                var cached = this._cache[nkey];
+                // check if pixel locations have been cached
+                if (!cached.pixels || !cached.spatialHash) {
+                    // convert x / y to tile pixels
+                    var micro = this.layers.micro;
+                    var xField = micro.getXField();
+                    var yField = micro.getYField();
+                    var zoom = coords.z;
+                    var pixels = [];
+                    var spatialHash = {};
+                    // calc pixel locations
+                    data.forEach(function(hit) {
+                        var x = _.get(hit, xField);
+                        var y = _.get(hit, yField);
+                        if (x !== undefined && y !== undefined) {
+                            var layerPixel = micro.getLayerPointFromDataPoint(x, y, zoom);
+                            // pixel in tile coords
+                            var tx = Math.floor(layerPixel.x % TILE_SIZE);
+                            var ty = Math.floor(layerPixel.y % TILE_SIZE);
+                            // create pixel
+                            var pixel = {
+                                x: tx,
+                                y: ty,
+                                hit: hit
+                            };
+                            pixels.push(pixel);
+                            // spatial hash key
+                            var hash = hashPixel(tx, ty);
+                            // add pixel to hash
+                            spatialHash[hash] = spatialHash[hash] || [];
+                            spatialHash[hash].push(pixel);
+                        }
+                    });
+                    // store in cache
+                    cached.pixels = pixels;
+                    cached.spatialHash = spatialHash;
+                }
+                // render the tile
+                this.renderMicroCanvas(canvas, cached.pixels);
             }
         }
 
