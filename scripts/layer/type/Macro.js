@@ -3,6 +3,7 @@
     'use strict';
 
     var Live = require('../core/Live');
+    var Elastic = require('../param/Elastic');
     var Binning = require('../param/Binning');
     var MacroMicro = require('../param/MacroMicro');
 
@@ -10,6 +11,7 @@
 
         includes: [
             // params
+            Elastic,
             Binning,
             MacroMicro
         ],

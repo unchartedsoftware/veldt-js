@@ -6,6 +6,8 @@
     var ColorRamp = require('../../mixin/ColorRamp');
     var ValueTransform = require('../../mixin/ValueTransform');
 
+    var TILE_SIZE = 256;
+
     var MacroMicro = Canvas.extend({
 
         includes: [
@@ -67,7 +69,6 @@
             var pointRadius = this.options.pointRadius;
             var bufferRadius = pointRadius + strokeWidth;
             var bufferDiameter = bufferRadius * 2;
-            var TILE_SIZE = 256;
             // buffer the canvas so that none of the points are cut off
             // ensure the DOM size is the same as the canvas
             $(canvas).css({
@@ -80,7 +81,7 @@
             var devicePixelFactor = (L.Browser.retina) ? 2 : 1;
             canvas.width = (TILE_SIZE + bufferDiameter) * devicePixelFactor;
             canvas.height = (TILE_SIZE + bufferDiameter) * devicePixelFactor;
-            
+
             var ctx = canvas.getContext('2d');
             ctx.globalCompositeOperation = 'lighter';
 
@@ -112,6 +113,15 @@
                 min: Infinity,
                 max: -Infinity
             };
+        },
+
+        getResolution: function() {
+            // TODO: FINISH!!!
+            return this.options.pointRadius;
+        },
+
+        setResolution: function(res) {
+            this.options.pointRadius = res / TILE_SIZE;
         },
 
         renderTile: function(canvas, res, coords) {

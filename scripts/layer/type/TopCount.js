@@ -3,6 +3,7 @@
     'use strict';
 
     var Live = require('../core/Live');
+    var Elastic = require('../param/Elastic');
     var Tiling = require('../param/Tiling');
     var TopTerms = require('../agg/TopTerms');
     var Histogram = require('../agg/Histogram');
@@ -11,6 +12,7 @@
 
         includes: [
             // params
+            Elastic,
             Tiling,
             TopTerms,
             // aggs
@@ -18,7 +20,7 @@
         ],
 
         type: 'top_count'
-        
+
     });
 
     module.exports = TopCount;
