@@ -4,7 +4,7 @@
 
 - [jQuery ~2.2.1](https://jquery.com/)
 - [lodash ~4.5.1](https://lodash.com/)
-- [Leaflet ~0.7.7](http://leafletjs.com)
+- [Leaflet 1.0.0-rc.1](http://leafletjs.com)
 
 The above dependencies **_must_** be loaded prior to **prism.js**.
 

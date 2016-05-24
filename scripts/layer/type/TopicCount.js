@@ -3,6 +3,7 @@
     'use strict';
 
     var Live = require('../core/Live');
+    var Elastic = require('../param/Elastic');
     var Tiling = require('../param/Tiling');
     var TermsFilter = require('../agg/TermsFilter');
     var Histogram = require('../agg/Histogram');
@@ -11,7 +12,9 @@
 
         includes: [
             // params
+            Elastic,
             Tiling,
+            // aggs
             TermsFilter,
             Histogram,
         ],

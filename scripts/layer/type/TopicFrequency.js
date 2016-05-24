@@ -3,6 +3,7 @@
     'use strict';
 
     var Live = require('../core/Live');
+    var Elastic = require('../param/Elastic');
     var Tiling = require('../param/Tiling');
     var TermsFilter = require('../agg/TermsFilter');
     var DateHistogram = require('../agg/DateHistogram');
@@ -11,8 +12,10 @@
     var TopicFrequency = Live.extend({
 
         includes: [
-            // params
+            // params            
+            Elastic,
             Tiling,
+            // aggs
             TermsFilter,
             DateHistogram,
             Histogram

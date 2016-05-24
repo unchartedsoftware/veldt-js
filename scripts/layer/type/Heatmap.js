@@ -3,6 +3,7 @@
     'use strict';
 
     var Live = require('../core/Live');
+    var Elastic = require('../param/Elastic');
     var Binning = require('../param/Binning');
     var Metric = require('../agg/Metric');
 
@@ -10,6 +11,7 @@
 
         includes: [
             // params
+            Elastic,
             Binning,
             // aggs
             Metric
