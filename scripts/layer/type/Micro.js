@@ -4,7 +4,7 @@
 
     var Live = require('../core/Live');
     var Elastic = require('../param/Elastic');
-    var Tiling = require('../param/Tiling');
+    var Binning = require('../param/Binning');
     var MacroMicro = require('../param/MacroMicro');
     var TopHits = require('../agg/TopHits');
 
@@ -13,7 +13,7 @@
         includes: [
             // params
             Elastic,
-            Tiling,
+            Binning,
             MacroMicro,
             // aggs
             TopHits

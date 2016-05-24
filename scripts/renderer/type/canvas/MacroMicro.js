@@ -27,8 +27,7 @@
         options: {
             fillColor: 'rgba(10, 80, 20, 0.5)',
             strokeColor: '#ffffff',
-            strokeWidth: 1,
-            resolution: 32
+            strokeWidth: 1
         },
 
         initialize: function() {
@@ -59,7 +58,7 @@
                 var points = cached.spatialHash[hash];
                 if (points) {
                     // find first intersecting point in the bin
-                    var pointRadius = Math.max(1, (TILE_SIZE / this.options.resolution) / 2);
+                    var pointRadius = this._getPointRadius();
                     var self = this;
                     points.forEach(function(point) {
                         if (tx > (point.x - pointRadius) &&
@@ -119,11 +118,15 @@
             return canvas;
         },
 
+        _getPointRadius: function() {
+            return Math.max(1, (TILE_SIZE / this.layers.micro.getResolution()) / 2);
+        },
+
         renderMicroCanvas: function(canvas, pixels) {
             var fillColor = this.options.fillColor;
             var strokeColor = this.options.strokeColor;
             var strokeWidth = this.options.strokeWidth;
-            var pointRadius = Math.max(1, (TILE_SIZE / this.options.resolution) / 2);
+            var pointRadius = this._getPointRadius();
             var bufferRadius = pointRadius + strokeWidth;
             var bufferDiameter = bufferRadius * 2;
             // buffer the canvas so that none of the points are cut off
@@ -170,14 +173,6 @@
                 min: Infinity,
                 max: -Infinity
             };
-        },
-
-        getResolution: function() {
-            return this.options.resolution;
-        },
-
-        setResolution: function(res) {
-            this.options.resolution = res;
         },
 
         renderTile: function(canvas, res, coords) {
