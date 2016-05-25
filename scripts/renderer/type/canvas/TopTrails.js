@@ -12,23 +12,63 @@
         },
 
         highlighted: false,
+        
+        isTargetLayer: function( elem ) {
+            return this._container && $.contains(this._container, elem );
+        },
+
+        onClick: function (e) {
+            if (!this.isTargetLayer(e.originalEvent.target) ||
+                !this.options.handlers.click) {
+                return;
+            }
+            var target = $(e.originalEvent.target);
+            var binData = this._getEventBinData(e.originalEvent);
+
+            this.options.handlers.click(target, binData);
+        },
 
         onMouseMove: function(e) {
             var target = $(e.originalEvent.target);
             if (this.highlighted) {
                 // clear existing highlights
-                this._clearTiles();
+                this.clearTiles();
                 // clear highlighted flag
                 this.highlighted = false;
             }
+            var binData = this._getEventBinData(e);
+
+            if (binData) {
+                var id = binData.value;
+                // for each cache entry
+                var self = this;
+                _.forIn(this._cache, function(cached) {
+                    if (cached.data) {
+                        // for each tile relying on that data
+                        _.forIn(cached.tiles, function(tile) {
+                            var trail = cached.trails[id];
+                            if (trail) {
+                                self._highlightTrail(tile, trail);
+                            }
+                        });
+                    }
+                });
+                this.highlighted = true;
+            }
+            if (this.options.handlers.mousemove) {
+                this.options.handlers.mousemove(target, binData);
+            }
+        },
+
+        _getEventBinData: function (e) {
             // get layer coord
             var layerPoint = this._getLayerPointFromEvent(e);
             // get tile coord
             var coord = this._getTileCoordFromLayerPoint(layerPoint);
             // get cache key
-            var key = this._cacheKeyFromCoord(coord);
+            var nkey = this.cacheKeyFromCoord(coord, true);
             // get cache entry
-            var cached = this._cache[key];
+            var cached = this._cache[nkey];
             if (cached && cached.pixels) {
                 // get bin coordinate
                 var bin = this._getBinCoordFromLayerPoint(layerPoint);
@@ -40,40 +80,19 @@
                     var ids = Object.keys(cached.pixels[x][y]);
                     // take first entry
                     var id = ids[0];
-                    // for each cache entry
-                    var self = this;
-                    _.forIn(this._cache, function(cached) {
-                        if (cached.data) {
-                            // for each tile relying on that data
-                            _.forIn(cached.tiles, function(tile) {
-                                var trail = cached.trails[id];
-                                if (trail) {
-                                    self._highlightTrail(tile, trail);
-                                }
-                            });
-                        }
-                    });
-                    // execute callback
-                    if (this.options.handlers.mousemove) {
-                        this.options.handlers.mousemove(target, {
-                            value: id,
-                            x: coord.x,
-                            y: coord.z,
-                            z: coord.z,
-                            bx: bin.x,
-                            by: bin.y,
-                            type: 'top-trails',
-                            layer: this
-                        });
-                    }
-                    // flag as highlighted
-                    this.highlighted = true;
-                    return;
+                    return {
+                        value: id,
+                        x: coord.x,
+                        y: coord.z,
+                        z: coord.z,
+                        bx: bin.x,
+                        by: bin.y,
+                        type: 'top-trails',
+                        layer: this
+                    };
                 }
             }
-            if (this.options.handlers.mousemove) {
-                this.options.handlers.mousemove(target, null);
-            }
+            return null;
         },
 
         _highlightTrail: function(canvas, pixels) {
