@@ -12,7 +12,7 @@
         },
 
         highlighted: false,
-        
+
         isTargetLayer: function( elem ) {
             return this._container && $.contains(this._container, elem );
         },
@@ -32,7 +32,7 @@
             var target = $(e.originalEvent.target);
             if (this.highlighted) {
                 // clear existing highlights
-                this.clearTiles();
+                this._clearTiles();
                 // clear highlighted flag
                 this.highlighted = false;
             }
@@ -66,7 +66,7 @@
             // get tile coord
             var coord = this._getTileCoordFromLayerPoint(layerPoint);
             // get cache key
-            var nkey = this.cacheKeyFromCoord(coord, true);
+            var nkey = this._cacheKeyFromCoord(coord);
             // get cache entry
             var cached = this._cache[nkey];
             if (cached && cached.pixels) {
