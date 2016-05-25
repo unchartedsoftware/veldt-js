@@ -13,6 +13,9 @@
     // between each tile. Currently this is not taken into account for mouse
     // events, which will give priority to tiles that are 'above' others.
 
+    // TODO: above issue causes selection on highlighting errors when clicking
+    // on overlapped tiles.
+
     function getHash(tx, ty, radius) {
         var diameter = radius * 2;
         var xHash = Math.floor(tx / diameter);
@@ -110,7 +113,22 @@
             ValueTransform.initialize.apply(this, arguments);
         },
 
-        _renderSelection: function(canvas, points, point) {
+        onAdd: function(map) {
+            Canvas.prototype.onAdd.call(this, map);
+            map.on('zoomend', this.onZoom, this);
+        },
+
+        onRemove: function(map) {
+            Canvas.prototype.onRemove.call(this, map);
+            map.off('zoomend', this.onZoom, this);
+        },
+
+        onZoom: function() {
+            // clear selected on zoom
+            this.selected = null;
+        },
+
+        _updateSelection: function(canvas, points, point) {
             // clear previous selection
             this._clearSelected();
             // save selection
@@ -158,7 +176,7 @@
                         // check for collision
                         if (circleCollision(tx, ty, point, pointRadius)) {
                             // render with selection
-                            this._renderSelection(canvas, cached.points, point);
+                            this._updateSelection(canvas, cached.points, point);
                             // execute callback
                             if (this.options.handlers.click) {
                                 this.options.handlers.click(target, {
@@ -174,6 +192,9 @@
                         }
                     }
                 }
+            }
+            if (this.options.handlers.mousemove) {
+                this.options.handlers.mousemove(target, null);
             }
             // re-render without selection
             this._clearSelected();

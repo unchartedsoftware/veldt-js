@@ -94,6 +94,23 @@
             this.clearExtrema();
         },
 
+        getQuery: function() {
+            return {
+                must: this._params.must,
+                must_not: this._params.must_not,
+                should: this._params.should,
+            };
+        },
+
+        clearQuery: function() {
+            // clear query
+            this._params.must = undefined;
+            this._params.must_not = undefined;
+            this._params.should = undefined;
+            // cleat extrema
+            this.clearExtrema();
+        },
+
         getMeta: function() {
             return this._meta;
         },
