@@ -75,6 +75,10 @@
                         }).addTo(self._map);
 
                         // register mouse event handlers for the circle
+                        circle.on('click', function(e) {
+                            self._click(circle, d, e);
+                        });
+
                         circle.on('mouseover', function(e) {
                             self._mouseOver(circle, d, e);
                         });
@@ -102,6 +106,25 @@
                 self._map.removeLayer(marker);
             });
             delete self._markers[key];
+        },
+
+        _click: function(circle, data, e) {
+            var target = $(e.originalEvent.target);
+            var layerPoint = this._getLayerPointFromLonLat(e.latlng);
+            var binCoord = this._getBinCoordFromLayerPoint(layerPoint);
+            var tileCoord = this._getTileCoordFromLayerPoint(layerPoint);
+            if (this.options.handlers.click) {
+                this.options.handlers.click(target, {
+                    value: data,
+                    x: tileCoord.x,
+                    y: tileCoord.z,
+                    z: tileCoord.z,
+                    bx: binCoord.x,
+                    by: binCoord.y,
+                    type: 'pointsOfInterest',
+                    layer: this
+                });
+            }
         },
 
         _mouseOver: function(circle, data, e) {

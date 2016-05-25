@@ -79,6 +79,8 @@
                             layer: this
                         });
                     }
+                    // set cursor
+                    $(target).css('cursor', 'pointer');
                     // flag as highlighted
                     this.highlighted = true;
                     return;
@@ -87,6 +89,8 @@
             if (this.options.handlers.mousemove) {
                 this.options.handlers.mousemove(target, null);
             }
+            // set cursor
+            $(target).css('cursor', '');
         },
 
         _highlightTrail: function(canvas, pixels) {
