@@ -110,6 +110,19 @@
             ValueTransform.initialize.apply(this, arguments);
         },
 
+        _renderSelection: function(canvas, points, point) {
+            // clear previous selection
+            this._clearSelected();
+            // save selection
+            this.selected = {
+                points: points,
+                point: point,
+                canvas: canvas
+            };
+            // render tile
+            this.renderMicroCanvas(canvas, points, point);
+        },
+
         _clearSelected: function() {
             if (this.selected) {
                 this.renderMicroCanvas(this.selected.canvas, this.selected.points);
@@ -144,12 +157,8 @@
                         point = points[i];
                         // check for collision
                         if (circleCollision(tx, ty, point, pointRadius)) {
-                            // re-render with selection
-                            this.selected = {
-                                points: cached.points,
-                                canvas: canvas
-                            };
-                            this.renderMicroCanvas(canvas, cached.points, point);
+                            // render with selection
+                            this._renderSelection(canvas, cached.points, point);
                             // execute callback
                             if (this.options.handlers.click) {
                                 this.options.handlers.click(target, {
@@ -283,6 +292,7 @@
             canvas.height = (TILE_SIZE + bufferDiameter) * devicePixelFactor;
             // get 2d context
             var ctx = canvas.getContext('2d');
+            // additive blending
             ctx.globalCompositeOperation = 'lighter';
             // draw each point
             points.forEach(function(pixel) {
@@ -299,6 +309,8 @@
                 ctx.fill();
                 ctx.stroke();
             });
+            // default blending
+            ctx.globalCompositeOperation = 'source-over';
             // draw selected point
             if (selectedPixel) {
                 ctx.beginPath();
