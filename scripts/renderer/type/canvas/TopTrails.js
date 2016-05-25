@@ -12,12 +12,17 @@
         },
 
         highlighted: false,
+        selectedBinData: null,
 
         isTargetLayer: function( elem ) {
             return this._container && $.contains(this._container, elem );
         },
 
         onClick: function (e) {
+            // Clear selection
+            this._clearTiles();
+            this.selectedBinData = null;
+
             if (!this.isTargetLayer(e.originalEvent.target) ||
                 !this.options.handlers.click) {
                 return;
@@ -25,6 +30,8 @@
             var target = $(e.originalEvent.target);
             var binData = this._getEventBinData(e.originalEvent);
 
+            this._highlightBinTrail(binData);
+            this.selectedBinData = binData;
             this.options.handlers.click(target, binData);
         },
 
@@ -33,11 +40,22 @@
             if (this.highlighted) {
                 // clear existing highlights
                 this._clearTiles();
+                // Re-highlight selected trail
+                if (this.selectedBinData) {
+                    this._highlightBinTrail(this.selectedBinData);
+                }
                 // clear highlighted flag
                 this.highlighted = false;
             }
             var binData = this._getEventBinData(e);
 
+            this._highlightBinTrail(binData);
+            if (this.options.handlers.mousemove) {
+                this.options.handlers.mousemove(target, binData);
+            }
+        },
+
+        _highlightBinTrail: function(binData) {
             if (binData) {
                 var id = binData.value;
                 // for each cache entry
@@ -54,9 +72,6 @@
                     }
                 });
                 this.highlighted = true;
-            }
-            if (this.options.handlers.mousemove) {
-                this.options.handlers.mousemove(target, binData);
             }
         },
 
