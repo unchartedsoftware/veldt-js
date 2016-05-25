@@ -69,12 +69,16 @@
                             layer: this
                         });
                     }
+                    // set cursor
+                    $(target).css('cursor', 'pointer');
                     return;
                 }
             }
             if (this.options.handlers.mousemove) {
                 this.options.handlers.mousemove(target, null);
             }
+            // set cursor
+            $(target).css('cursor', '');
         }
 
     });
