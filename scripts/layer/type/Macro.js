@@ -20,7 +20,6 @@
 
         extractExtrema: function(data) {
             var bins = new Float64Array(data);
-            console.log('derp', bins);
             return {
                 min: _.min(bins),
                 max: _.max(bins)

@@ -7,13 +7,82 @@
     var ValueTransform = require('../../mixin/ValueTransform');
 
     var TILE_SIZE = 256;
-    var HASH_RESOLUTON = 64;
-    var HASH_BIN_SIZE = TILE_SIZE / HASH_RESOLUTON;
 
-    function hashPixel(tx, ty) {
-        var xHash = Math.floor(tx / HASH_BIN_SIZE);
-        var yHash = Math.floor(ty / HASH_BIN_SIZE);
+    // TODO: currently the tiles edges are padded by the point radius to prevent
+    // cutoff of circles. This means that there is a radius*2 amount of overlap
+    // between each tile. Currently this is not taken into account for mouse
+    // events, which will give priority to tiles that are 'above' others.
+
+    function getHash(tx, ty, radius) {
+        var diameter = radius * 2;
+        var xHash = Math.floor(tx / diameter);
+        var yHash = Math.floor(ty / diameter);
         return xHash + ':' + yHash;
+    }
+
+    function fract(f) {
+        return f % 1;
+    }
+
+    function getHashes(tx, ty, radius) {
+        var diameter = radius * 2;
+        var numCells = (TILE_SIZE + diameter) / diameter;
+        var x = tx / diameter;
+        var y = ty / diameter;
+        var fx = fract(x);
+        var fy = fract(y);
+        var px = fx > 0.5;
+        var nx = fx < 0.5;
+        var py = fy > 0.5;
+        var ny = fy < 0.5;
+        var cx = Math.floor(x);
+        var cy = Math.floor(y);
+        var cells = [
+            [cx, cy]
+        ];
+        if (px) {
+            cells.push([cx+1, cy]);
+        }
+        if (py) {
+            cells.push([cx, cy+1]);
+        }
+        if (nx) {
+            cells.push([cx-1, cy]);
+        }
+        if (ny) {
+            cells.push([cx, cy-1]);
+        }
+        if (nx && ny) {
+            cells.push([cx-1, cy-1]);
+        }
+        if (px && py) {
+            cells.push([cx+1, cy+1]);
+        }
+        if (nx && py) {
+            cells.push([cx-1, cy+1]);
+        }
+        if (px && ny) {
+            cells.push([cx+1, cy-1]);
+        }
+        return cells.filter(function(cell) {
+            // remove cells outside tile (shouldn't occur?)
+            var x = cell[0];
+            var y = cell[1];
+            return x >= 0 && x < numCells && y >= 0 && y < numCells;
+        }).map(function(cell) {
+            // hash
+            return cell[0] + ':' + cell[1];
+        });
+    }
+
+    function circleCollision(x, y, origin, radius) {
+        var dx = x - origin.x;
+        var dy = y - origin.y;
+        var distSqr = (dx * dx) + (dy * dy);
+        if (distSqr < (radius * radius)) {
+            return true;
+        }
+        return false;
     }
 
     var MacroMicro = Canvas.extend({
@@ -38,6 +107,53 @@
             ValueTransform.initialize.apply(this, arguments);
         },
 
+        onClick: function(e) {
+            var target = $(e.originalEvent.target);
+            // get layer coord
+            var layerPixel = this._getLayerPointFromEvent(e.originalEvent);
+            // get tile coord
+            var coord = this._getTileCoordFromLayerPoint(layerPixel);
+            // get cache key
+            var nkey = this.cacheKeyFromCoord(coord, true);
+            // get cache entry
+            var cached = this._cache[nkey];
+            if (cached && cached.spatialHash) {
+                // pixel in tile coords
+                var tx = Math.floor(layerPixel.x % TILE_SIZE);
+                var ty = Math.floor(layerPixel.y % TILE_SIZE);
+                // spatial hash key
+                var pointRadius = this._getPointRadius();
+                var hash = getHash(tx, ty, pointRadius);
+                // get points in bin
+                var points = cached.spatialHash[hash];
+                if (points) {
+                    // find first intersecting point in the bin
+                    var point, i;
+                    for (i=0; i<points.length; i++) {
+                        point = points[i];
+                        // check for collision
+                        if (circleCollision(tx, ty, point, pointRadius)) {
+                            // execute callback
+                            if (this.options.handlers.click) {
+                                this.options.handlers.click(target, {
+                                    value: point.hit,
+                                    x: coord.x,
+                                    y: coord.z,
+                                    z: coord.z,
+                                    type: 'macro_micro',
+                                    layer: this
+                                });
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+            if (this.options.handlers.click) {
+                this.options.handlers.click(target, null);
+            }
+        },
+
         onMouseMove: function(e) {
             var target = $(e.originalEvent.target);
             // get layer coord
@@ -53,33 +169,31 @@
                 var tx = Math.floor(layerPixel.x % TILE_SIZE);
                 var ty = Math.floor(layerPixel.y % TILE_SIZE);
                 // spatial hash key
-                var hash = hashPixel(tx, ty);
+                var pointRadius = this._getPointRadius();
+                var hash = getHash(tx, ty, pointRadius);
                 // get points in bin
                 var points = cached.spatialHash[hash];
                 if (points) {
                     // find first intersecting point in the bin
-                    var pointRadius = this._getPointRadius();
-                    var self = this;
-                    points.forEach(function(point) {
-                        if (tx > (point.x - pointRadius) &&
-                            tx < (point.x + pointRadius) &&
-                            ty > (point.y - pointRadius) &&
-                            ty < (point.y + pointRadius)) {
-                            // collision
+                    var point, i;
+                    for (i=0; i<points.length; i++) {
+                        point = points[i];
+                        // check for collision
+                        if (circleCollision(tx, ty, point, pointRadius)) {
                             // execute callback
-                            if (self.options.handlers.mousemove) {
-                                self.options.handlers.mousemove(target, {
+                            if (this.options.handlers.mousemove) {
+                                this.options.handlers.mousemove(target, {
                                     value: point.hit,
                                     x: coord.x,
                                     y: coord.z,
                                     z: coord.z,
                                     type: 'macro_micro',
-                                    layer: self
+                                    layer: this
                                 });
                             }
                             return;
                         }
-                    });
+                    }
                 }
             }
             if (this.options.handlers.mousemove) {
@@ -207,6 +321,7 @@
                     var xField = micro.getXField();
                     var yField = micro.getYField();
                     var zoom = coords.z;
+                    var pointRadius = this._getPointRadius();
                     var pixels = [];
                     var spatialHash = {};
                     // calc pixel locations
@@ -226,10 +341,12 @@
                             };
                             pixels.push(pixel);
                             // spatial hash key
-                            var hash = hashPixel(tx, ty);
+                            var hashes = getHashes(tx, ty, pointRadius);
                             // add pixel to hash
-                            spatialHash[hash] = spatialHash[hash] || [];
-                            spatialHash[hash].push(pixel);
+                            hashes.forEach(function(hash) {
+                                spatialHash[hash] = spatialHash[hash] || [];
+                                spatialHash[hash].push(pixel);
+                            });
                         }
                     });
                     // store in cache
