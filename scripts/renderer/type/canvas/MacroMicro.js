@@ -94,10 +94,13 @@
         ],
 
         options: {
-            fillColor: 'rgba(10, 80, 20, 0.5)',
+            selectedFillColor: '#ff0000',
+            selectedStrokeColor: '#ffffff',
             strokeColor: '#ffffff',
             strokeWidth: 1
         },
+
+        selected: null,
 
         initialize: function() {
             if (!this.layers.micro || !this.layers.macro) {
@@ -107,8 +110,16 @@
             ValueTransform.initialize.apply(this, arguments);
         },
 
+        _clearSelected: function() {
+            if (this.selected) {
+                this.renderMicroCanvas(this.selected.canvas, this.selected.points);
+                this.selected = null;
+            }
+        },
+
         onClick: function(e) {
-            var target = $(e.originalEvent.target);
+            var canvas = e.originalEvent.target;
+            var target = $(canvas);
             // get layer coord
             var layerPixel = this._getLayerPointFromEvent(e.originalEvent);
             // get tile coord
@@ -133,6 +144,12 @@
                         point = points[i];
                         // check for collision
                         if (circleCollision(tx, ty, point, pointRadius)) {
+                            // re-render with selection
+                            this.selected = {
+                                points: cached.points,
+                                canvas: canvas
+                            };
+                            this.renderMicroCanvas(canvas, cached.points, point);
                             // execute callback
                             if (this.options.handlers.click) {
                                 this.options.handlers.click(target, {
@@ -149,9 +166,8 @@
                     }
                 }
             }
-            if (this.options.handlers.click) {
-                this.options.handlers.click(target, null);
-            }
+            // re-render without selection
+            this._clearSelected();
         },
 
         onMouseMove: function(e) {
@@ -240,8 +256,14 @@
             return Math.max(1, (TILE_SIZE / this.layers.micro.getResolution()) / 2);
         },
 
-        renderMicroCanvas: function(canvas, pixels) {
-            var fillColor = this.options.fillColor;
+        _getFillColor: function() {
+            var color = [0, 0, 0, 0];
+            this.getColorRamp()(0.5, color);
+            return 'rgba('+color[0]+','+color[1]+','+color[2]+', 0.5)';
+        },
+
+        renderMicroCanvas: function(canvas, points, selectedPixel) {
+            var fillColor = this._getFillColor();
             var strokeColor = this.options.strokeColor;
             var strokeWidth = this.options.strokeWidth;
             var pointRadius = this._getPointRadius();
@@ -262,8 +284,8 @@
             // get 2d context
             var ctx = canvas.getContext('2d');
             ctx.globalCompositeOperation = 'lighter';
-            // draw each pixel
-            pixels.forEach(function(pixel) {
+            // draw each point
+            points.forEach(function(pixel) {
                 ctx.beginPath();
                 ctx.fillStyle = fillColor;
                 ctx.strokeStyle = strokeColor;
@@ -277,6 +299,21 @@
                 ctx.fill();
                 ctx.stroke();
             });
+            // draw selected point
+            if (selectedPixel) {
+                ctx.beginPath();
+                ctx.fillStyle = this.options.selectedFillColor;
+                ctx.strokeStyle = this.options.selectedStrokeColor;
+                ctx.lineWidth = strokeWidth;
+                ctx.arc(
+                    (bufferRadius + selectedPixel.x) * devicePixelFactor,
+                    (bufferRadius + selectedPixel.y) * devicePixelFactor,
+                    pointRadius * devicePixelFactor,
+                    0, 2 * Math.PI);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
         },
 
         extractExtrema: function(res) {
@@ -319,14 +356,14 @@
                 var nkey = this.cacheKeyFromCoord(coords, true);
                 var cached = this._cache[nkey];
                 // check if pixel locations have been cached
-                if (!cached.pixels || !cached.spatialHash) {
+                if (!cached.points || !cached.spatialHash) {
                     // convert x / y to tile pixels
                     var micro = this.layers.micro;
                     var xField = micro.getXField();
                     var yField = micro.getYField();
                     var zoom = coords.z;
                     var pointRadius = this._getPointRadius();
-                    var pixels = [];
+                    var points = [];
                     var spatialHash = {};
                     // calc pixel locations
                     data.forEach(function(hit) {
@@ -338,27 +375,27 @@
                             var tx = Math.floor(layerPixel.x % TILE_SIZE);
                             var ty = Math.floor(layerPixel.y % TILE_SIZE);
                             // create pixel
-                            var pixel = {
+                            var point = {
                                 x: tx,
                                 y: ty,
                                 hit: hit
                             };
-                            pixels.push(pixel);
+                            points.push(point);
                             // spatial hash key
                             var hashes = getHashes(tx, ty, pointRadius);
                             // add pixel to hash
                             hashes.forEach(function(hash) {
                                 spatialHash[hash] = spatialHash[hash] || [];
-                                spatialHash[hash].push(pixel);
+                                spatialHash[hash].push(point);
                             });
                         }
                     });
                     // store in cache
-                    cached.pixels = pixels;
+                    cached.points = points;
                     cached.spatialHash = spatialHash;
                 }
                 // render the tile
-                this.renderMicroCanvas(canvas, cached.pixels);
+                this.renderMicroCanvas(canvas, cached.points);
             }
         }
 
