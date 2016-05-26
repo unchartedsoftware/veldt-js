@@ -16,15 +16,15 @@
     // TODO: above issue causes selection on highlighting errors when clicking
     // on overlapped tiles.
 
+    function fract(f) {
+        return f % 1;
+    }
+
     function getHash(tx, ty, radius) {
         var diameter = radius * 2;
         var xHash = Math.floor(tx / diameter);
         var yHash = Math.floor(ty / diameter);
         return xHash + ':' + yHash;
-    }
-
-    function fract(f) {
-        return f % 1;
     }
 
     function getHashes(tx, ty, radius) {
@@ -128,43 +128,92 @@
             this.selected = null;
         },
 
-        _updateSelection: function(canvas, points, point) {
-            // clear previous selection
-            this._clearSelected();
+        _updateSelection: function(canvases, points, point) {
             // save selection
             this.selected = {
                 points: points,
                 point: point,
-                canvas: canvas
+                canvases: canvases
             };
-            // render tile
-            this.renderMicroCanvas(canvas, points, point);
+            var self = this;
+            canvases.forEach(function(canvas) {
+                // render tile
+                self.renderMicroCanvas(canvas, points, point);
+            });
         },
 
-        _clearSelected: function() {
+        clearSelection: function() {
             if (this.selected) {
-                this.renderMicroCanvas(this.selected.canvas, this.selected.points);
+                var self = this;
+                this.selected.canvases.forEach(function(canvas) {
+                    // render tile
+                    self.renderMicroCanvas(canvas, self.selected.points);
+                });
                 this.selected = null;
             }
         },
 
-        onClick: function(e) {
-            var canvas = e.originalEvent.target;
-            var target = $(canvas);
-            // get layer coord
-            var layerPixel = this._getLayerPointFromEvent(e.originalEvent);
-            // get tile coord
-            var coord = this._getTileCoordFromLayerPoint(layerPixel);
+        getTileCollisions: function(coord, tx, ty, pointRadius) {
+            // spatial hash key
+            var nb = pointRadius;
+            var pb = TILE_SIZE + pointRadius;
+            // tile coords
+            var cx = coord.x;
+            var cy = coord.y;
+            var cz = coord.z;
+            // buffer check bools
+            var px = tx > pb;
+            var nx = tx < nb;
+            var py = ty > pb;
+            var ny = ty < nb;
+            // get tx pixel coords in adjecnt tiles
+            var ptx, ntx, pty, nty;
+            // get all possible tiles that could overlap point
+            var tiles = [
+                { x: cx, y: cy, z: cz, tx: tx, ty: ty }
+            ];
+            if (px) {
+                ptx = tx - (TILE_SIZE - pointRadius);
+                tiles.push({ x: cx+1, y: cy, z: cz, tx: ptx, ty: ty });
+            }
+            if (py) {
+                pty = ty - (TILE_SIZE - pointRadius);
+                tiles.push({ x: cx, y: cy+1, z: cz, tx: tx, ty: pty });
+            }
+            if (nx) {
+                ntx = tx + (TILE_SIZE + pointRadius);
+                tiles.push({ x: cx-1, y: cy, z: cz, tx: ntx, ty: ty });
+            }
+            if (ny) {
+                nty = ty + (TILE_SIZE + pointRadius);
+                tiles.push({ x: cx, y: cy-1, z: cz, tx: tx, ty: nty });
+            }
+            if (nx && ny) {
+                tiles.push({ x: cx-1, y: cy-1, z: cz, tx: ntx, ty: nty });
+            }
+            if (px && py) {
+                tiles.push({ x: cx+1, y: cy+1, z: cz, tx: ptx, ty: pty });
+            }
+            if (nx && py) {
+                tiles.push({ x: cx-1, y: cy+1, z: cz, tx: ntx, ty: pty });
+            }
+            if (px && ny) {
+                tiles.push({ x: cx+1, y: cy-1, z: cz, tx: ptx, ty: nty });
+            }
+            return tiles;
+        },
+
+        checkTileCollision: function(coord, highlight) {
+            // point radius
+            var pointRadius = this._getPointRadius();
             // get cache key
             var nkey = this.cacheKeyFromCoord(coord, true);
-            // get cache entry
             var cached = this._cache[nkey];
             if (cached && cached.spatialHash) {
-                // pixel in tile coords
-                var tx = Math.floor(layerPixel.x % TILE_SIZE);
-                var ty = Math.floor(layerPixel.y % TILE_SIZE);
+                // get tile coords
+                var tx = coord.tx;
+                var ty = coord.ty;
                 // spatial hash key
-                var pointRadius = this._getPointRadius();
                 var hash = getHash(tx, ty, pointRadius);
                 // get points in bin
                 var points = cached.spatialHash[hash];
@@ -175,32 +224,91 @@
                         point = points[i];
                         // check for collision
                         if (circleCollision(tx, ty, point, pointRadius)) {
-                            // render with selection
-                            this._updateSelection(canvas, cached.points, point);
-                            // execute callback
-                            if (this.options.handlers.click) {
-                                this.options.handlers.click(target, {
-                                    value: point.hit,
-                                    x: coord.x,
-                                    y: coord.z,
-                                    z: coord.z,
-                                    type: 'macro_micro',
-                                    layer: this
-                                });
+                            // draw selection
+                            if (highlight) {
+                                this._updateSelection(
+                                    _.values(cached.tiles),
+                                    cached.points,
+                                    point);
                             }
-                            return;
+                            // return collision object
+                            return {
+                                value: point.hit,
+                                x: coord.x,
+                                y: coord.z,
+                                z: coord.z,
+                                type: 'macro_micro',
+                                layer: this
+                            };
                         }
                     }
                 }
             }
-            if (this.options.handlers.mousemove) {
-                this.options.handlers.mousemove(target, null);
-            }
+        },
+
+        onClick: function(e) {
+            var canvas = e.originalEvent.target;
+            var target = $(canvas);
             // re-render without selection
-            this._clearSelected();
+            this.clearSelection();
+            // get layer coord
+            var layerPixel = this._getLayerPointFromEvent(e.originalEvent);
+            // get tile coord
+            var coord = this._getTileCoordFromLayerPoint(layerPixel);
+            // get tile pixel coord
+            var tx = Math.floor(layerPixel.x % TILE_SIZE);
+            var ty = Math.floor(layerPixel.y % TILE_SIZE);
+            // spatial hash key
+            var pointRadius = this._getPointRadius();
+            // get all possible tiles that could collide
+            var tiles = this.getTileCollisions(coord, tx, ty, pointRadius);
+            console.log(tiles);
+            var tile, collision, i;
+            for (i=0; i<tiles.length; i++) {
+                tile = tiles[i];
+                collision = this.checkTileCollision(tile, true);
+                if (collision) {
+                    // execute callback
+                    if (this.options.handlers.click) {
+                        this.options.handlers.click(target, collision);
+                    }
+                    return;
+                }
+            }
         },
 
         onMouseMove: function(e) {
+            var canvas = e.originalEvent.target;
+            var target = $(canvas);
+            // get layer coord
+            var layerPixel = this._getLayerPointFromEvent(e.originalEvent);
+            // get tile coord
+            var coord = this._getTileCoordFromLayerPoint(layerPixel);
+            // get tile pixel coord
+            var tx = Math.floor(layerPixel.x % TILE_SIZE);
+            var ty = Math.floor(layerPixel.y % TILE_SIZE);
+            // spatial hash key
+            var pointRadius = this._getPointRadius();
+            // get all possible tiles that could collide
+            var tiles = this.getTileCollisions(coord, tx, ty, pointRadius);
+            var tile, collision, i;
+            for (i=0; i<tiles.length; i++) {
+                tile = tiles[i];
+                collision = this.checkTileCollision(tile, false);
+                if (collision) {
+                    // execute callback
+                    if (this.options.handlers.mousemove) {
+                        this.options.handlers.mousemove(target, collision);
+                    }
+                    // set cursor
+                    $(target).css('cursor', 'pointer');
+                    return;
+                }
+            }
+            // set cursor
+            $(target).css('cursor', '');
+
+            /*
             var target = $(e.originalEvent.target);
             // get layer coord
             var layerPixel = this._getLayerPointFromEvent(e);
@@ -249,6 +357,7 @@
             }
             // set cursor
             $(target).css('cursor', '');
+            */
         },
 
         renderMacroCanvas: function(bins, resolution, ramp) {
