@@ -14,9 +14,7 @@
             // handlers
             var self = this;
             map.on('click', this.onClick, this);
-            $(this._container).on('mousemove', function(e) {
-                self.onMouseMove(e);
-            });
+            map.on('mousemove', this.onMouseMove, this);
             $(this._container).on('mouseover', function(e) {
                 self.onMouseOver(e);
             });
@@ -31,7 +29,7 @@
             this.off('tileunload', this.onTileUnload, this);
             // handlers
             map.off('click', this.onClick, this);
-            $(this._container).off('mousemove');
+            map.off('mousemove', this.onMouseMove, this);
             $(this._container).off('mouseover');
             $(this._container).off('mouseout');
             L.GridLayer.prototype.onRemove.call(this, map);

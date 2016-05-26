@@ -109,6 +109,7 @@
         },
 
         selected: null,
+        highlighted: false,
 
         initialize: function() {
             if (!this.layers.micro || !this.layers.macro) {
@@ -303,16 +304,26 @@
                 collision = this.checkTileCollision(tile, false);
                 if (collision) {
                     // execute callback
-                    if (this.options.handlers.mousemove) {
-                        this.options.handlers.mousemove(target, collision);
+                    if (!this.highlighted) {
+                        if (this.options.handlers.mouseover) {
+                            this.options.handlers.mouseover(target, collision);
+                        }
                     }
+                    // flag as highlighted
+                    this.highlighted = collision;
                     // set cursor
                     $(this._map._container).css('cursor', 'pointer');
                     return;
                 }
             }
-            // set cursor
-            $(this._map._container).css('cursor', '');
+            // mouse out
+            if (this.highlighted) {
+                if (this.options.handlers.mouseout) {
+                    this.options.handlers.mouseout(target, this.highlighted);
+                }
+            }
+            // clear highlighted flag
+            this.highlighted = null;
         },
 
         renderMacroCanvas: function(bins, resolution, ramp) {
