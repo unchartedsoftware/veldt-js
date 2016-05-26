@@ -143,8 +143,8 @@
             var binCoord = this._getBinCoordFromLayerPoint(layerPoint);
             var tileCoord = this._getTileCoordFromLayerPoint(layerPoint);
 
-            if (this.options.handlers.mousemove) {
-                this.options.handlers.mousemove(target, {
+            if (this.options.handlers.mouseover) {
+                this.options.handlers.mouseover(target, {
                     value: data,
                     x: tileCoord.x,
                     y: tileCoord.z,
@@ -174,8 +174,8 @@
             var binCoord = this._getBinCoordFromLayerPoint(layerPoint);
             var tileCoord = this._getTileCoordFromLayerPoint(layerPoint);
 
-            if (this.options.handlers.mousemove) {
-                this.options.handlers.mousemove(target, {
+            if (this.options.handlers.mouseout) {
+                this.options.handlers.mouseout(target, {
                     value: null,
                     x: tileCoord.x,
                     y: tileCoord.z,

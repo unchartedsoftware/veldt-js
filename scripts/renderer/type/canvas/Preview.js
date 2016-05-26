@@ -32,11 +32,9 @@
             if (this.highlighted) {
                 // clear existing highlight
                 this.clearTiles();
-                // clear highlighted flag
-                this.highlighted = false;
             }
             // get layer coord
-            var layerPoint = this._getLayerPointFromEvent(e);
+            var layerPoint = this._getLayerPointFromEvent(e.originalEvent);
             // get tile coord
             var coord = this._getTileCoordFromLayerPoint(layerPoint);
             // get cache key
@@ -54,31 +52,37 @@
                     _.forIn(cached.tiles, function(tile) {
                         self._drawHighlight(tile, bin.x, bin.y, bin.size);
                     });
-                    // flag as highlighted
-                    this.highlighted = true;
-                    // execute callback
-                    if (this.options.handlers.mousemove) {
-                        this.options.handlers.mousemove(target, {
-                            value: data,
-                            x: coord.x,
-                            y: coord.z,
-                            z: coord.z,
-                            bx: bin.x,
-                            by: bin.y,
-                            type: 'preview',
-                            layer: this
-                        });
+                    var collision = {
+                        value: data,
+                        x: coord.x,
+                        y: coord.z,
+                        z: coord.z,
+                        bx: bin.x,
+                        by: bin.y,
+                        type: 'preview',
+                        layer: this
+                    };
+                    if (!this.highlighted) {
+                        // execute callback
+                        if (this.options.handlers.mouseover) {
+                            this.options.handlers.mouseover(target, collision);
+                        }
                     }
+                    // flag as highlighted
+                    this.highlighted = collision;
                     // set cursor
                     $(this._map._container).css('cursor', 'pointer');
                     return;
                 }
             }
-            if (this.options.handlers.mousemove) {
-                this.options.handlers.mousemove(target, null);
+            // mouse out
+            if (this.highlighted) {
+                if (this.options.handlers.mouseout) {
+                    this.options.handlers.mouseout(target, this.highlighted);
+                }
             }
-            // set cursor
-            $(this._map._container).css('cursor', '');
+            // clear highlighted flag
+            this.highlighted = null;
         }
 
     });

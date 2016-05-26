@@ -31,11 +31,9 @@
             if (this.highlighted) {
                 // clear existing highlights
                 this.clearTiles();
-                // clear highlighted flag
-                this.highlighted = false;
             }
             // get layer coord
-            var layerPoint = this._getLayerPointFromEvent(e);
+            var layerPoint = this._getLayerPointFromEvent(e.originalEvent);
             // get tile coord
             var coord = this._getTileCoordFromLayerPoint(layerPoint);
             // get cache key
@@ -66,31 +64,37 @@
                             });
                         }
                     });
+                    var collision = {
+                        value: id,
+                        x: coord.x,
+                        y: coord.z,
+                        z: coord.z,
+                        bx: bin.x,
+                        by: bin.y,
+                        type: 'top-trails',
+                        layer: this
+                    };
                     // execute callback
-                    if (this.options.handlers.mousemove) {
-                        this.options.handlers.mousemove(target, {
-                            value: id,
-                            x: coord.x,
-                            y: coord.z,
-                            z: coord.z,
-                            bx: bin.x,
-                            by: bin.y,
-                            type: 'top-trails',
-                            layer: this
-                        });
+                    if (!this.highlighted) {
+                        if (this.options.handlers.mouseover) {
+                            this.options.handlers.mouseover(target, collision);
+                        }
                     }
+                    // flag as highlighted
+                    this.highlighted = collision;
                     // set cursor
                     $(this._map._container).css('cursor', 'pointer');
-                    // flag as highlighted
-                    this.highlighted = true;
                     return;
                 }
             }
-            if (this.options.handlers.mousemove) {
-                this.options.handlers.mousemove(target, null);
+            // mouse out
+            if (this.highlighted) {
+                if (this.options.handlers.mouseout) {
+                    this.options.handlers.mouseout(target, this.highlighted);
+                }
             }
-            // set cursor
-            $(this._map._container).css('cursor', '');
+            // clear highlighted flag
+            this.highlighted = null;
         },
 
         _highlightTrail: function(canvas, pixels) {
