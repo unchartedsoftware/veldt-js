@@ -19,10 +19,6 @@
             ValueTransform.initialize.apply(this, arguments);
         },
 
-        isTargetLayer: function( elem ) {
-            return this._container && $.contains(this._container, elem );
-        },
-
         onMouseOver: function(e) {
             var target = $(e.originalEvent.target);
             var value = target.attr('data-value');

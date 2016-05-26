@@ -94,10 +94,6 @@
             ValueTransform.initialize.apply(this, arguments);
         },
 
-        isTargetLayer: function( elem ) {
-            return this._container && $.contains(this._container, elem );
-        },
-
         clearSelection: function() {
             $(this._container).removeClass('highlight');
             this.highlight = null;

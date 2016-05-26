@@ -8,28 +8,22 @@
 
     var TILE_SIZE = 256;
 
-    // TODO: currently the tiles edges are padded by the point radius to prevent
-    // cutoff of circles. This means that there is a radius*2 amount of overlap
-    // between each tile. Currently this is not taken into account for mouse
-    // events, which will give priority to tiles that are 'above' others.
-
-    // TODO: above issue causes selection on highlighting errors when clicking
-    // on overlapped tiles.
-
-    function getHash(tx, ty, radius) {
-        var diameter = radius * 2;
-        var xHash = Math.floor(tx / diameter);
-        var yHash = Math.floor(ty / diameter);
-        return xHash + ':' + yHash;
-    }
-
     function fract(f) {
         return f % 1;
+    }
+
+    function getHash(btx, bty, radius) {
+        var diameter = radius * 2;
+        var xHash = Math.floor(btx / diameter);
+        var yHash = Math.floor(bty / diameter);
+        return xHash + ':' + yHash;
     }
 
     function getHashes(tx, ty, radius) {
         var diameter = radius * 2;
         var numCells = (TILE_SIZE + diameter) / diameter;
+        tx += radius;
+        ty += radius;
         var x = tx / diameter;
         var y = ty / diameter;
         var fx = fract(x);
@@ -78,9 +72,9 @@
         });
     }
 
-    function circleCollision(x, y, origin, radius) {
-        var dx = x - origin.x;
-        var dy = y - origin.y;
+    function circleCollision(btx, bty, origin, radius) {
+        var dx = btx - (origin.x + radius);
+        var dy = bty - (origin.y + radius);
         var distSqr = (dx * dx) + (dy * dy);
         if (distSqr < (radius * radius)) {
             return true;
@@ -128,124 +122,183 @@
             this.selected = null;
         },
 
-        _updateSelection: function(canvas, points, point) {
-            // clear previous selection
-            this._clearSelected();
+        _updateSelection: function(canvases, points, point) {
             // save selection
             this.selected = {
                 points: points,
                 point: point,
-                canvas: canvas
+                canvases: canvases
             };
-            // render tile
-            this.renderMicroCanvas(canvas, points, point);
+            var self = this;
+            canvases.forEach(function(canvas) {
+                // render tile
+                self.renderMicroCanvas(canvas, points, point);
+            });
         },
 
-        _clearSelected: function() {
+        clearSelection: function() {
             if (this.selected) {
-                this.renderMicroCanvas(this.selected.canvas, this.selected.points);
+                var self = this;
+                this.selected.canvases.forEach(function(canvas) {
+                    // render tile
+                    self.renderMicroCanvas(canvas, self.selected.points);
+                });
                 this.selected = null;
+            }
+        },
+
+        getTileCollisions: function(coord, tx, ty, pointRadius) {
+            // spatial hash key
+            var nb = pointRadius;
+            var pb = TILE_SIZE - pointRadius;
+            // tile coords
+            var cx = coord.x;
+            var cy = coord.y;
+            var cz = coord.z;
+            // buffer check bools
+            var px = tx > pb;
+            var nx = tx < nb;
+            var py = ty > pb;
+            var ny = ty < nb;
+            // get tx pixel coords in adjecnt tiles
+            var ptx, ntx, pty, nty;
+            // get all possible tiles that could overlap point
+            var btx = tx + pointRadius;
+            var bty = ty + pointRadius;
+            var tiles = [
+                { x: cx, y: cy, z: cz, tx: btx, ty: bty }
+            ];
+            if (px) {
+                ptx = tx - (TILE_SIZE - pointRadius);
+                tiles.push({ x: cx+1, y: cy, z: cz, tx: ptx, ty: bty });
+            }
+            if (py) {
+                pty = ty - (TILE_SIZE - pointRadius);
+                tiles.push({ x: cx, y: cy+1, z: cz, tx: btx, ty: pty });
+            }
+            if (nx) {
+                ntx = tx + (TILE_SIZE + pointRadius);
+                tiles.push({ x: cx-1, y: cy, z: cz, tx: ntx, ty: bty });
+            }
+            if (ny) {
+                nty = ty + (TILE_SIZE + pointRadius);
+                tiles.push({ x: cx, y: cy-1, z: cz, tx: btx, ty: nty });
+            }
+            if (nx && ny) {
+                tiles.push({ x: cx-1, y: cy-1, z: cz, tx: ntx, ty: nty });
+            }
+            if (px && py) {
+                tiles.push({ x: cx+1, y: cy+1, z: cz, tx: ptx, ty: pty });
+            }
+            if (nx && py) {
+                tiles.push({ x: cx-1, y: cy+1, z: cz, tx: ntx, ty: pty });
+            }
+            if (px && ny) {
+                tiles.push({ x: cx+1, y: cy-1, z: cz, tx: ptx, ty: nty });
+            }
+            return tiles;
+        },
+
+        checkTileCollision: function(coord, highlight) {
+            // point radius
+            var pointRadius = this._getFullPointRadius();
+            // get cache key
+            var nkey = this.cacheKeyFromCoord(coord, true);
+            var cached = this._cache[nkey];
+            if (cached && cached.spatialHash) {
+                // get tile coords
+                var tx = coord.tx;
+                var ty = coord.ty;
+                // spatial hash key
+                var hash = getHash(tx, ty, pointRadius);
+                // get points in bin
+                var points = cached.spatialHash[hash];
+                if (points) {
+                    // find first intersecting point in the bin
+                    var point, i;
+                    for (i=0; i<points.length; i++) {
+                        point = points[i];
+                        // check for collision
+                        if (circleCollision(tx, ty, point, pointRadius)) {
+                            // draw selection
+                            if (highlight) {
+                                this._updateSelection(
+                                    _.values(cached.tiles),
+                                    cached.points,
+                                    point);
+                            }
+                            // return collision object
+                            return {
+                                value: point.hit,
+                                x: coord.x,
+                                y: coord.z,
+                                z: coord.z,
+                                type: 'macro_micro',
+                                layer: this
+                            };
+                        }
+                    }
+                }
             }
         },
 
         onClick: function(e) {
             var canvas = e.originalEvent.target;
             var target = $(canvas);
+            // re-render without selection
+            this.clearSelection();
             // get layer coord
             var layerPixel = this._getLayerPointFromEvent(e.originalEvent);
             // get tile coord
             var coord = this._getTileCoordFromLayerPoint(layerPixel);
-            // get cache key
-            var nkey = this.cacheKeyFromCoord(coord, true);
-            // get cache entry
-            var cached = this._cache[nkey];
-            if (cached && cached.spatialHash) {
-                // pixel in tile coords
-                var tx = Math.floor(layerPixel.x % TILE_SIZE);
-                var ty = Math.floor(layerPixel.y % TILE_SIZE);
-                // spatial hash key
-                var pointRadius = this._getPointRadius();
-                var hash = getHash(tx, ty, pointRadius);
-                // get points in bin
-                var points = cached.spatialHash[hash];
-                if (points) {
-                    // find first intersecting point in the bin
-                    var point, i;
-                    for (i=0; i<points.length; i++) {
-                        point = points[i];
-                        // check for collision
-                        if (circleCollision(tx, ty, point, pointRadius)) {
-                            // render with selection
-                            this._updateSelection(canvas, cached.points, point);
-                            // execute callback
-                            if (this.options.handlers.click) {
-                                this.options.handlers.click(target, {
-                                    value: point.hit,
-                                    x: coord.x,
-                                    y: coord.z,
-                                    z: coord.z,
-                                    type: 'macro_micro',
-                                    layer: this
-                                });
-                            }
-                            return;
-                        }
+            // get tile pixel coord
+            var tx = Math.floor(layerPixel.x % TILE_SIZE);
+            var ty = Math.floor(layerPixel.y % TILE_SIZE);
+            // spatial hash key
+            var pointRadius = this._getFullPointRadius();
+            // get all possible tiles that could collide
+            var tiles = this.getTileCollisions(coord, tx, ty, pointRadius);
+            var tile, collision, i;
+            for (i=0; i<tiles.length; i++) {
+                tile = tiles[i];
+                collision = this.checkTileCollision(tile, true);
+                if (collision) {
+                    // execute callback
+                    if (this.options.handlers.click) {
+                        this.options.handlers.click(target, collision);
                     }
+                    return;
                 }
             }
-            if (this.options.handlers.mousemove) {
-                this.options.handlers.mousemove(target, null);
-            }
-            // re-render without selection
-            this._clearSelected();
         },
 
         onMouseMove: function(e) {
-            var target = $(e.originalEvent.target);
+            var canvas = e.originalEvent.target;
+            var target = $(canvas);
             // get layer coord
-            var layerPixel = this._getLayerPointFromEvent(e);
+            var layerPixel = this._getLayerPointFromEvent(e.originalEvent);
             // get tile coord
             var coord = this._getTileCoordFromLayerPoint(layerPixel);
-            // get cache key
-            var nkey = this.cacheKeyFromCoord(coord, true);
-            // get cache entry
-            var cached = this._cache[nkey];
-            if (cached && cached.spatialHash) {
-                // pixel in tile coords
-                var tx = Math.floor(layerPixel.x % TILE_SIZE);
-                var ty = Math.floor(layerPixel.y % TILE_SIZE);
-                // spatial hash key
-                var pointRadius = this._getPointRadius();
-                var hash = getHash(tx, ty, pointRadius);
-                // get points in bin
-                var points = cached.spatialHash[hash];
-                if (points) {
-                    // find first intersecting point in the bin
-                    var point, i;
-                    for (i=0; i<points.length; i++) {
-                        point = points[i];
-                        // check for collision
-                        if (circleCollision(tx, ty, point, pointRadius)) {
-                            // execute callback
-                            if (this.options.handlers.mousemove) {
-                                this.options.handlers.mousemove(target, {
-                                    value: point.hit,
-                                    x: coord.x,
-                                    y: coord.z,
-                                    z: coord.z,
-                                    type: 'macro_micro',
-                                    layer: this
-                                });
-                            }
-                            // set cursor
-                            $(target).css('cursor', 'pointer');
-                            return;
-                        }
+            // get tile pixel coord
+            var tx = Math.floor(layerPixel.x % TILE_SIZE);
+            var ty = Math.floor(layerPixel.y % TILE_SIZE);
+            // spatial hash key
+            var pointRadius = this._getFullPointRadius();
+            // get all possible tiles that could collide
+            var tiles = this.getTileCollisions(coord, tx, ty, pointRadius);
+            var tile, collision, i;
+            for (i=0; i<tiles.length; i++) {
+                tile = tiles[i];
+                collision = this.checkTileCollision(tile, false);
+                if (collision) {
+                    // execute callback
+                    if (this.options.handlers.mousemove) {
+                        this.options.handlers.mousemove(target, collision);
                     }
+                    // set cursor
+                    $(target).css('cursor', 'pointer');
+                    return;
                 }
-            }
-            if (this.options.handlers.mousemove) {
-                this.options.handlers.mousemove(target, null);
             }
             // set cursor
             $(target).css('cursor', '');
@@ -286,18 +339,18 @@
             return Math.max(1, (TILE_SIZE / this.layers.micro.getResolution()) / 2);
         },
 
+        _getFullPointRadius: function() {
+            return this._getPointRadius() + this.options.strokeWidth;
+        },
+
         _getFillColor: function() {
             var color = [0, 0, 0, 0];
             this.getColorRamp()(0.5, color);
             return 'rgba('+color[0]+','+color[1]+','+color[2]+', 0.5)';
         },
 
-        renderMicroCanvas: function(canvas, points, selectedPixel) {
-            var fillColor = this._getFillColor();
-            var strokeColor = this.options.strokeColor;
-            var strokeWidth = this.options.strokeWidth;
-            var pointRadius = this._getPointRadius();
-            var bufferRadius = pointRadius + strokeWidth;
+        _bufferCanvas: function(canvas, devicePixelRatio) {
+            var bufferRadius = this._getFullPointRadius();
             var bufferDiameter = bufferRadius * 2;
             // buffer the canvas so that none of the points are cut off
             // ensure the DOM size is the same as the canvas
@@ -308,9 +361,18 @@
                 'margin-left': -bufferRadius
             });
             // double the resolution if on a hi-res display
-            var devicePixelFactor = (L.Browser.retina) ? 2 : 1;
-            canvas.width = (TILE_SIZE + bufferDiameter) * devicePixelFactor;
-            canvas.height = (TILE_SIZE + bufferDiameter) * devicePixelFactor;
+            canvas.width = (TILE_SIZE + bufferDiameter) * devicePixelRatio;
+            canvas.height = (TILE_SIZE + bufferDiameter) * devicePixelRatio;
+        },
+
+        renderMicroCanvas: function(canvas, points, selectedPixel) {
+            var fillColor = this._getFillColor();
+            var strokeColor = this.options.strokeColor;
+            var strokeWidth = this.options.strokeWidth;
+            var pointRadius = this._getPointRadius();
+            var bufferRadius = pointRadius + strokeWidth;
+            var devicePixelRatio = (L.Browser.retina) ? 2 : 1;
+            this._bufferCanvas(canvas, devicePixelRatio);
             // get 2d context
             var ctx = canvas.getContext('2d');
             // additive blending
@@ -322,9 +384,9 @@
                 ctx.strokeStyle = strokeColor;
                 ctx.lineWidth = strokeWidth;
                 ctx.arc(
-                    (bufferRadius + pixel.x) * devicePixelFactor,
-                    (bufferRadius + pixel.y) * devicePixelFactor,
-                    pointRadius * devicePixelFactor,
+                    (bufferRadius + pixel.x) * devicePixelRatio,
+                    (bufferRadius + pixel.y) * devicePixelRatio,
+                    pointRadius * devicePixelRatio,
                     0, 2 * Math.PI);
                 ctx.closePath();
                 ctx.fill();
@@ -339,9 +401,9 @@
                 ctx.strokeStyle = this.options.selectedStrokeColor;
                 ctx.lineWidth = strokeWidth;
                 ctx.arc(
-                    (bufferRadius + selectedPixel.x) * devicePixelFactor,
-                    (bufferRadius + selectedPixel.y) * devicePixelFactor,
-                    pointRadius * devicePixelFactor,
+                    (bufferRadius + selectedPixel.x) * devicePixelRatio,
+                    (bufferRadius + selectedPixel.y) * devicePixelRatio,
+                    pointRadius * devicePixelRatio,
                     0, 2 * Math.PI);
                 ctx.closePath();
                 ctx.fill();
@@ -369,6 +431,7 @@
             }
             var type = res.type;
             var data = res.data;
+            var pointRadius = this._getFullPointRadius();
             if (type === 'macro') {
                 // macro
                 var bins = new Float64Array(data);
@@ -376,13 +439,15 @@
                 var ramp = this.getColorRamp();
                 var tileCanvas = this.renderMacroCanvas(bins, resolution, ramp);
                 var ctx = canvas.getContext('2d');
+                var devicePixelRatio = (L.Browser.retina) ? 2 : 1;
+                this._bufferCanvas(canvas, devicePixelRatio);
                 ctx.imageSmoothingEnabled = false;
                 ctx.drawImage(
                     tileCanvas,
                     0, 0,
                     resolution, resolution,
-                    0, 0,
-                    canvas.width, canvas.height);
+                    pointRadius * devicePixelRatio, pointRadius * devicePixelRatio,
+                    TILE_SIZE * devicePixelRatio, TILE_SIZE * devicePixelRatio);
             } else {
                 // micro
                 // modify cache entry
@@ -395,7 +460,6 @@
                     var xField = micro.getXField();
                     var yField = micro.getYField();
                     var zoom = coords.z;
-                    var pointRadius = this._getPointRadius();
                     var points = [];
                     var spatialHash = {};
                     // calc pixel locations
