@@ -93,6 +93,14 @@
             this.highlight = null;
         },
 
+        setSelection: function (word) {
+            this.clearSelection();
+            // Highlight selected word
+            $(this._container).addClass('highlight');
+            $('.word-cloud-label[data-word=' + word + ']').addClass('highlight');
+            this.highlight = word;
+        },
+
         onMouseOver: function(e) {
             var target = $(e.originalEvent.target);
             $('.word-cloud-label').removeClass('hover');
@@ -144,9 +152,7 @@
             }
             var word = target.attr('data-word');
             if (word) {
-                $(this._container).addClass('highlight');
-                $('.word-cloud-label[data-word=' + word + ']').addClass('highlight');
-                this.highlight = word;
+                this.setSelection(word);
                 if (this.options.handlers.click) {
                     var $parent = target.parents('.leaflet-html-tile');
                     this.options.handlers.click(target, {
