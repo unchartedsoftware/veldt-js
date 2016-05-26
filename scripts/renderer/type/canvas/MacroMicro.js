@@ -19,6 +19,15 @@
         return xHash + ':' + yHash;
     }
 
+    function jitterVector(maxDist) {
+        var angle = Math.random() * (Math.PI * 2);
+        var dist = Math.random() * maxDist;
+        return {
+            x: Math.cos(angle) * dist,
+            y: Math.sin(angle) * dist
+        };
+    }
+
     function getHashes(tx, ty, radius) {
         var diameter = radius * 2;
         var numCells = (TILE_SIZE + diameter) / diameter;
@@ -94,7 +103,9 @@
             selectedFillColor: '#ff0000',
             selectedStrokeColor: '#ffffff',
             strokeColor: '#ffffff',
-            strokeWidth: 1
+            strokeWidth: 1,
+            jitter: true,
+            jitterDistance: 10
         },
 
         selected: null,
@@ -296,12 +307,12 @@
                         this.options.handlers.mousemove(target, collision);
                     }
                     // set cursor
-                    $(target).css('cursor', 'pointer');
+                    $(this._map._container).css('cursor', 'pointer');
                     return;
                 }
             }
             // set cursor
-            $(target).css('cursor', '');
+            $(this._map._container).css('cursor', '');
         },
 
         renderMacroCanvas: function(bins, resolution, ramp) {
@@ -462,8 +473,13 @@
                     var zoom = coords.z;
                     var points = [];
                     var spatialHash = {};
+                    var jitterHash = {};
+                    var jitterEnabled = this.options.jitter;
+                    var jitterDist = this.options.jitterDistance;
+                    var hit, i, j;
                     // calc pixel locations
-                    data.forEach(function(hit) {
+                    for (i=0; i<data.length; i++) {
+                        hit = data[i];
                         var x = _.get(hit, xField);
                         var y = _.get(hit, yField);
                         if (x !== undefined && y !== undefined) {
@@ -471,6 +487,19 @@
                             // pixel in tile coords
                             var tx = Math.floor(layerPixel.x % TILE_SIZE);
                             var ty = Math.floor(layerPixel.y % TILE_SIZE);
+                            var hash = tx + ':' + ty;
+                            if (jitterEnabled) {
+                                if (jitterHash[hash]) {
+                                    var vec = jitterVector(jitterDist);
+                                    tx += vec.x;
+                                    ty += vec.y;
+                                    tx = Math.min(tx, TILE_SIZE);
+                                    ty = Math.min(ty, TILE_SIZE);
+                                    tx = Math.max(tx, 0);
+                                    ty = Math.max(ty, 0);
+                                }
+                                jitterHash[hash] = true;
+                            }
                             // create pixel
                             var point = {
                                 x: tx,
@@ -481,12 +510,13 @@
                             // spatial hash key
                             var hashes = getHashes(tx, ty, pointRadius);
                             // add pixel to hash
-                            hashes.forEach(function(hash) {
+                            for (j=0; j<hashes.length; j++) {
+                                hash = hashes[j];
                                 spatialHash[hash] = spatialHash[hash] || [];
                                 spatialHash[hash].push(point);
-                            });
+                            }
                         }
-                    });
+                    }
                     // store in cache
                     cached.points = points;
                     cached.spatialHash = spatialHash;

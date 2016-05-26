@@ -80,7 +80,7 @@
                         });
                     }
                     // set cursor
-                    $(target).css('cursor', 'pointer');
+                    $(this._map._container).css('cursor', 'pointer');
                     // flag as highlighted
                     this.highlighted = true;
                     return;
@@ -90,7 +90,7 @@
                 this.options.handlers.mousemove(target, null);
             }
             // set cursor
-            $(target).css('cursor', '');
+            $(this._map._container).css('cursor', '');
         },
 
         _highlightTrail: function(canvas, pixels) {
