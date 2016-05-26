@@ -70,7 +70,7 @@
                         });
                     }
                     // set cursor
-                    $(target).css('cursor', 'pointer');
+                    $(this._map._container).css('cursor', 'pointer');
                     return;
                 }
             }
@@ -78,7 +78,7 @@
                 this.options.handlers.mousemove(target, null);
             }
             // set cursor
-            $(target).css('cursor', '');
+            $(this._map._container).css('cursor', '');
         }
 
     });
