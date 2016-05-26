@@ -19,6 +19,10 @@
         onClick: function(e) {
             var target = $(e.originalEvent.target);
             $('.heatmap-ring').removeClass('highlight');
+            if (!this.isTargetLayer(e.originalEvent.target)) {
+                // this layer is not the target
+                return;
+            }
             if ( target.hasClass('heatmap-ring') ) {
                 target.addClass('highlight');
             }
