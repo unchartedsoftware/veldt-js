@@ -8,8 +8,8 @@
 
     var checkField = function(meta, field) {
         if (meta) {
-            if (meta.type !== 'long' && meta.type !== 'date') {
-                throw 'TopTerms `field` ' + field + ' is not of type `string` in meta data';
+            if (!meta.extrema) {
+                throw 'Range `field` ' + field + ' is not ordinal in meta data.';
             }
         } else {
             throw 'TopTerms `field` ' + field + ' is not recognized in meta data';
@@ -39,6 +39,7 @@
         if (!sort) {
             throw 'TopHits `sort` argument is missing';
         }
+        checkField(this._meta[sort], sort);
         if (sort !== this._params.top_hits.sort) {
             this._params.top_hits.sort = sort;
             this.clearExtrema();
