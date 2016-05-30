@@ -168,6 +168,11 @@
         [ 0x32, 0xa5, 0xf9, 0xff ]
     ]);
 
+    var FIRE = buildPerceptualLookupTable([
+        [0x96, 0x00, 0x00, 0x96],
+        [0xff, 0xff, 0x32, 0xff]
+    ]);
+
     var buildLookupFunction = function(RAMP) {
         return function(scaledValue, inColor) {
             var color = RAMP[Math.floor(scaledValue * (RAMP.length - 1))];
@@ -186,7 +191,8 @@
         spectral: buildLookupFunction(SPECTRAL),
         temperature: buildLookupFunction(TEMPERATURE),
         grey: buildLookupFunction(GREYSCALE),
-        polar: buildLookupFunction(POLAR_HOT.concat(POLAR_COLD))
+        polar: buildLookupFunction(POLAR_HOT.concat(POLAR_COLD)),
+        fire: buildLookupFunction(FIRE)
     };
 
     var setColorRamp = function(type) {

@@ -46,6 +46,7 @@
                 }
                 // clear highlighted flag
                 this.highlighted = false;
+                this._container.style.cursor = 'inherit';
             }
             var binData = this._getEventBinData(e);
 
@@ -67,11 +68,12 @@
                             var trail = cached.trails[id];
                             if (trail) {
                                 self._highlightTrail(tile, trail);
+                                self.highlighted = true;
+                                self._container.style.cursor = 'pointer';
                             }
                         });
                     }
                 });
-                this.highlighted = true;
             }
         },
 
