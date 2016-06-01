@@ -18,10 +18,21 @@
             return this._container && $.contains(this._container, elem );
         },
 
-        onClick: function (e) {
-            // Clear selection
-            this._clearTiles();
+        clearSelection: function () {
             this.selectedBinData = null;
+            this._clearTiles();
+        },
+
+        setSelection: function(id) {
+            this.clearSelection();
+            this.selectedBinData = {
+                value: id
+            };
+            this._highlightBinTrail(this.selectedBinData);
+        },
+
+        onClick: function (e) {
+            this.clearSelection();
 
             if (!this.isTargetLayer(e.originalEvent.target) ||
                 !this.options.handlers.click) {
@@ -179,6 +190,10 @@
                     trails[id] = trails[id] || [];
                     trails[id].push([ x, y ]);
                 }
+            }
+            if (this.selectedBinData) {
+                // Make sure to highlight selected trails in the tile
+                this._highlightBinTrail(this.selectedBinData);
             }
         }
 
