@@ -33,16 +33,16 @@
                 this.clearTiles();
             }
             // get layer coord
-            var layerPoint = this._getLayerPointFromEvent(e.originalEvent);
+            var layerPoint = this.getLayerPointFromEvent(e.originalEvent);
             // get tile coord
-            var coord = this._getTileCoordFromLayerPoint(layerPoint);
+            var coord = this.getTileCoordFromLayerPoint(layerPoint);
             // get cache key
             var nkey = this.cacheKeyFromCoord(coord, true);
             // get cache entry
             var cached = this._cache[nkey];
             if (cached && cached.pixels) {
                 // get bin coordinate
-                var bin = this._getBinCoordFromLayerPoint(layerPoint);
+                var bin = this.getBinCoordFromLayerPoint(layerPoint);
                 // downsample the bin res
                 var x = Math.floor(bin.x / this.options.downSampleFactor);
                 var y = Math.floor(bin.y / this.options.downSampleFactor);

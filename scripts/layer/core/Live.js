@@ -11,15 +11,6 @@
         return ((n % m) + m) % m;
     }
 
-    function getNormalizeCoords(coords) {
-        var pow = Math.pow(2, coords.z);
-        return {
-            x: mod(coords.x, pow),
-            y: mod(coords.y, pow),
-            z: coords.z
-        };
-    }
-
     var Live = L.Class.extend({
 
         initialize: function(meta, options) {
@@ -119,11 +110,20 @@
             return this._params;
         },
 
+        getNormalizedCoords: function(coords) {
+            var pow = Math.pow(2, coords.z);
+            return {
+                x: mod(coords.x, pow),
+                y: mod(coords.y, pow),
+                z: coords.z
+            };
+        },
+
         cacheKeyFromCoord: function(coords, normalize) {
             if (normalize) {
                 // leaflet layer x and y may be > n^2, and < 0 in the case
                 // of a wraparound. If normalize is true, mod the coords
-                coords = getNormalizeCoords(coords);
+                coords = this.getNormalizedCoords(coords);
             }
             return coords.z + ':' + coords.x + ':' + coords.y;
         },
@@ -188,7 +188,7 @@
         onTileLoad: function(event) {
             var self = this;
             var coords = event.coords;
-            var ncoords = getNormalizeCoords(event.coords);
+            var ncoords = this.getNormalizedCoords(event.coords);
             var tile = event.tile;
             // cache key from coords
             var key = this.cacheKeyFromCoord(event.coords);

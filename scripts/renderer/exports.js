@@ -21,7 +21,8 @@
 
     // webgl renderers
     var WebGL = {
-        Heatmap: require('./type/webgl/Heatmap')
+        Heatmap: require('./type/webgl/Heatmap'),
+        Point: require('./type/webgl/Point')
     };
 
     // pending layer renderers

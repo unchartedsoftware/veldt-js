@@ -111,8 +111,8 @@
         _click: function(circle, data, e) {
             var target = $(e.originalEvent.target);
             var layerPoint = this._getLayerPointFromLonLat(e.latlng);
-            var binCoord = this._getBinCoordFromLayerPoint(layerPoint);
-            var tileCoord = this._getTileCoordFromLayerPoint(layerPoint);
+            var binCoord = this.getBinCoordFromLayerPoint(layerPoint);
+            var tileCoord = this.getTileCoordFromLayerPoint(layerPoint);
             if (this.options.handlers.click) {
                 this.options.handlers.click(target, {
                     value: data,
@@ -140,8 +140,8 @@
             });
 
             var layerPoint = this._getLayerPointFromLonLat(e.latlng);
-            var binCoord = this._getBinCoordFromLayerPoint(layerPoint);
-            var tileCoord = this._getTileCoordFromLayerPoint(layerPoint);
+            var binCoord = this.getBinCoordFromLayerPoint(layerPoint);
+            var tileCoord = this.getTileCoordFromLayerPoint(layerPoint);
 
             if (this.options.handlers.mouseover) {
                 this.options.handlers.mouseover(target, {
@@ -171,8 +171,8 @@
             });
 
             var layerPoint = this._getLayerPointFromLonLat(e.latlng);
-            var binCoord = this._getBinCoordFromLayerPoint(layerPoint);
-            var tileCoord = this._getTileCoordFromLayerPoint(layerPoint);
+            var binCoord = this.getBinCoordFromLayerPoint(layerPoint);
+            var tileCoord = this.getTileCoordFromLayerPoint(layerPoint);
 
             if (this.options.handlers.mouseout) {
                 this.options.handlers.mouseout(target, {
