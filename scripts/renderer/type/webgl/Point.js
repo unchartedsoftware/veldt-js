@@ -8,11 +8,12 @@
     var SpatialHash = require('../../mixin/SpatialHash');
     var ValueTransform = require('../../mixin/ValueTransform');
 
-    var COMPONENT_SIZE = 4;
+    var TILE_SIZE = 256;
+    var COMPONENT_BYTE_SIZE = 4;
     var COMPONENTS_PER_POINT = 2;
     var MAX_TILES = 128;
     var MAX_POINTS_PER_TILE = 256 * 256;
-    var MAX_TILE_BYTE_SIZE = MAX_POINTS_PER_TILE * COMPONENTS_PER_POINT * COMPONENT_SIZE;
+    var MAX_TILE_BYTE_SIZE = MAX_POINTS_PER_TILE * COMPONENTS_PER_POINT * COMPONENT_BYTE_SIZE;
     var MAX_BUFFER_BYTE_SIZE = MAX_TILES * MAX_TILE_BYTE_SIZE;
 
     var POSITIONS_INDEX = 0;
@@ -24,7 +25,7 @@
         'attribute vec2 aOffset;',
         'uniform mat4 uProjectionMatrix;',
         'void main() {',
-            'vec2 modelPosition = aOffset + aPosition;',
+            'vec2 modelPosition = aPosition + aOffset;',
             'gl_Position = uProjectionMatrix * vec4( modelPosition, 0.0, 1.0 );',
         '}'
     ].join('');
@@ -47,11 +48,15 @@
         // start at angle = 0
     	var x = radius;
     	var y = 0;
-        var buffer = new ArrayBuffer(num_segments * 2 * COMPONENT_SIZE);
+        var buffer = new ArrayBuffer((num_segments + 2) * 2 * COMPONENT_BYTE_SIZE);
         var positions = new Float32Array(buffer);
+        positions[0] = 0;
+        positions[1] = 0;
+        positions[positions.length-2] = radius;
+        positions[positions.length-1] = 0;
     	for(var i = 0; i < num_segments; i++) {
-            positions[i*2] = x;
-            positions[i*2+1] = y;
+            positions[(i+1)*2] = x;
+            positions[(i+1)*2+1] = y;
     		// apply the rotation
     		t = x;
     		x = c * x - s * y;
@@ -64,7 +69,7 @@
             type: 'FLOAT'
         };
         var options = {
-            mode: 'LINE_LOOP'
+            mode: 'TRIANGLE_FAN'
         };
         return new esper.VertexBuffer(positions, pointers, options);
     }
@@ -84,7 +89,7 @@
                 frag: frag,
             },
             pointBorder: 1,
-            pointRadius: 4
+            pointRadius: 8
         },
 
         initialize: function() {
@@ -94,13 +99,10 @@
         },
 
         onWebGLInit: function() {
-            var gl = this._gl;
             // create the circle vertexbuffer
             this._circleBuffer = createCircleBuffer(this.options.pointRadius, 64);
             // create the root offset buffer
-            this._offsetBuffer = gl.createBuffer();
-            gl.bindBuffer( gl.ARRAY_BUFFER, this._offsetBuffer );
-            gl.bufferData( gl.ARRAY_BUFFER, MAX_BUFFER_BYTE_SIZE, gl.STATIC_DRAW );
+            this._offsetBuffer = new esper.VertexBuffer(MAX_BUFFER_BYTE_SIZE);
             // get the extension for hardware instancing
             this._ext = esper.WebGLContext.getExtension('ANGLE_instanced_arrays');
             if (!this._ext) {
@@ -133,10 +135,10 @@
                     byteOffset: byteOffset,
                     count: 0,
                     vertexBuffer: new esper.VertexBuffer(
-                        this._offsetBuffer,
+                        this._offsetBuffer.buffer,
                         {
                             1: {
-                                size: 3,
+                                size: 2,
                                 type: 'FLOAT',
                                 byteOffset: byteOffset
                             }
@@ -154,14 +156,12 @@
                 console.warn('No available chunks remaining to buffer data');
                 return;
             }
-            var gl = this._gl;
             // get an available chunk
             var chunk = this._availableChunks.pop();
             // set count
             chunk.count = count;
             // buffer the data into the physical chunk
-            gl.bindBuffer( gl.ARRAY_BUFFER, this._offsetBuffer );
-            gl.bufferSubData( gl.ARRAY_BUFFER, chunk.byteOffset, data );
+            this._offsetBuffer.bufferSubData(data, chunk.byteOffset);
             // flag as used
             var ncoords = this.getNormalizedCoords(coords);
             var hash = ncoords.x + ':' + ncoords.y;
@@ -189,14 +189,16 @@
                 var xField = this.getXField();
                 var yField = this.getYField();
                 var zoom = coords.z;
+                var size = Math.pow(2, zoom);
                 var fullRadius = this.options.pointRadius + this.options.pointBorder;
-                var numBytes = data.length * COMPONENT_SIZE * COMPONENTS_PER_POINT;
+                var numBytes = data.length * COMPONENT_BYTE_SIZE * COMPONENTS_PER_POINT;
                 var buffer = new ArrayBuffer(Math.min(numBytes, MAX_TILE_BYTE_SIZE));
                 var positions = new Float32Array(buffer);
                 var count = 0;
+                var numDatum = Math.min(data.length, MAX_POINTS_PER_TILE);
                 var i;
                 // calc pixel locations
-                for (i=0; i<data.length; i++) {
+                for (i=0; i<numDatum; i++) {
                     var hit = data[i];
                     var x = _.get(hit, xField);
                     var y = _.get(hit, yField);
@@ -211,7 +213,7 @@
                         };
                         // add to underlying buffer
                         positions[i*2] = layerPoint.x;
-                        positions[i*2 + 1] = layerPoint.y;
+                        positions[i*2 + 1] = (size * TILE_SIZE) - layerPoint.y;
                         // add point to spatial hash
                         this.addPoint(point, fullRadius);
                         // increment count
@@ -239,14 +241,21 @@
             gl.clear(gl.COLOR_BUFFER_BIT);
             // instance using the offsets
             var circleBuffer = this._circleBuffer;
-            var ext = this._ext;
+
+            // circleBuffer.bind();
+            // var shader = this._shader;
+            // _.forIn(this.offsets, function(offset) {
+            //     shader.setUniform('uOffset', [ offset.x, offset.y ]);
+            //     circleBuffer.draw();
+            // });
+
             // binds the circle buffer to instance
             circleBuffer.bind();
-            // binds the vertex buffer
+            var ext = this._ext;
             ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 1);
             _.forIn(this._usedChunks, function(chunk) {
                 chunk.vertexBuffer.bind();
-                ext.drawArraysInstancedANGLE(gl.TRIANGLES, 0, circleBuffer.count, chunk.count);
+                ext.drawArraysInstancedANGLE(gl.TRIANGLE_FAN, 0, circleBuffer.count, chunk.count);
             });
             // teardown
             this._shader.pop();
