@@ -23,10 +23,11 @@
         'precision highp float;',
         'attribute vec2 aPosition;',
         'attribute vec2 aOffset;',
+        'uniform mat4 uModelMatrix;',
         'uniform mat4 uProjectionMatrix;',
         'void main() {',
             'vec2 modelPosition = aPosition + aOffset;',
-            'gl_Position = uProjectionMatrix * vec4( modelPosition, 0.0, 1.0 );',
+            'gl_Position = uProjectionMatrix * uModelMatrix * vec4( modelPosition, 0.0, 1.0 );',
         '}'
     ].join('');
 
@@ -164,15 +165,15 @@
             this._offsetBuffer.bufferSubData(data, chunk.byteOffset);
             // flag as used
             var ncoords = this.getNormalizedCoords(coords);
-            var hash = ncoords.x + ':' + ncoords.y;
-            console.log('adding to', hash);
+            var hash = this.cacheKeyFromCoord(ncoords);
+            console.log('add', hash);
             this._usedChunks[hash] = chunk;
         },
 
         removeTileFromBuffer: function(coords) {
             var ncoords = this.getNormalizedCoords(coords);
-            var hash = ncoords.x + ':' + ncoords.y;
-            console.log('removing from', hash);
+            var hash = this.cacheKeyFromCoord(ncoords);
+            console.log('remove', hash);
             var chunk = this._usedChunks[hash];
             // clear the count
             chunk.count = 0;
@@ -241,21 +242,33 @@
             gl.clear(gl.COLOR_BUFFER_BIT);
             // instance using the offsets
             var circleBuffer = this._circleBuffer;
-
-            // circleBuffer.bind();
-            // var shader = this._shader;
-            // _.forIn(this.offsets, function(offset) {
-            //     shader.setUniform('uOffset', [ offset.x, offset.y ]);
-            //     circleBuffer.draw();
-            // });
-
             // binds the circle buffer to instance
             circleBuffer.bind();
             var ext = this._ext;
+            var shader = this._shader;
+            var cache = this._cache;
+            var self = this;
+            var size = Math.pow(2, this._map.getZoom());
             ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 1);
-            _.forIn(this._usedChunks, function(chunk) {
+            _.forIn(this._usedChunks, function(chunk, hash) {
+                // bind the chunk's buffer
                 chunk.vertexBuffer.bind();
-                ext.drawArraysInstancedANGLE(gl.TRIANGLE_FAN, 0, circleBuffer.count, chunk.count);
+                // for each tile referring to the data
+                var cached = cache[hash];
+                _.keys(cached.tiles).forEach(function(hash) {
+                    var coords = self.coordFromCacheKey(hash);
+                    var xWrap = Math.floor(coords.x / size);
+                    var yWrap = Math.floor(coords.y / size);
+                    // calc the translation matrix
+                    var model = self.getTranslationMatrix(
+                        size * TILE_SIZE * xWrap,
+                        size * TILE_SIZE * yWrap,
+                        0);
+                    // upload translation matrix
+                    shader.setUniform('uModelMatrix', model);
+                    // draw the istances
+                    ext.drawArraysInstancedANGLE(gl.TRIANGLE_FAN, 0, circleBuffer.count, chunk.count);
+                });
             });
             // teardown
             this._shader.pop();

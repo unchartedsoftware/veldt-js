@@ -227,7 +227,8 @@
             // @event tileload: TileEvent
             // Fired when a tile loads.
             this.fire('tileload', {
-                coords: coords
+                coords: coords,
+                tile: tile
             });
 
             if (this._noTilesToLoad()) {
