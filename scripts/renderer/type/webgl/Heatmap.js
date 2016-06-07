@@ -128,17 +128,6 @@
             });
         },
 
-        getProjectionMatrix: function() {
-            var bounds = this._map.getPixelBounds();
-            var dim = Math.pow(2, this._map.getZoom()) * 256;
-            return this.getOrthoMatrix(
-                bounds.min.x,
-                bounds.max.x,
-                (dim - bounds.max.y),
-                (dim - bounds.min.y),
-                -1, 1);
-        },
-
         renderTiles: function() {
             var self = this;
             var dim = Math.pow(2, this._map.getZoom()) * 256;

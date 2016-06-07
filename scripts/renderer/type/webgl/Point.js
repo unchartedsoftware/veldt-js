@@ -34,9 +34,9 @@
     var frag = [
         'precision highp float;',
         'uniform float uOpacity;',
+        'uniform vec4 uColor;',
         'void main() {',
-            'vec4 color = vec4(0.7, 0.3, 0.9, 1.0);',
-            'gl_FragColor = vec4(color.rgb, color.a * uOpacity);',
+            'gl_FragColor = vec4(uColor.rgb, uColor.a * uOpacity);',
         '}'
     ].join('');
 
@@ -123,9 +123,9 @@
             map.off('zoomend', this.onZoomEnd, this);
         },
 
-        onZoomEnd: function() {
+        onZoomStart: function() {
             this.clearHash();
-            WebGL.prototype.onZoomEnd.apply(this, arguments);
+            WebGL.prototype.onZoomStart.apply(this, arguments);
         },
 
         clearChunks: function() {
@@ -152,6 +152,58 @@
             this._usedChunks = {};
         },
 
+        onMouseMove: function(e) {
+            var canvas = e.originalEvent.target;
+            var target = $(canvas);
+            var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
+            var fullRadius = this.options.pointRadius + this.options.pointBorder;
+            //
+            var collision = this.pick(layerPixel, fullRadius);
+            if (collision) {
+                // set cursor
+                $(this._map._container).css('cursor', 'pointer');
+                if (!this.highlighted) {
+                    // execute callback
+                    if (this.options.handlers.mouseover) {
+                        this.options.handlers.mouseover(target, collision);
+                    }
+                }
+                // flag as highlighted
+                this.highlighted = collision;
+                // set cursor
+                $(this._map._container).css('cursor', 'pointer');
+                return;
+            }
+            // mouse out
+            if (this.highlighted) {
+                if (this.options.handlers.mouseout) {
+                    this.options.handlers.mouseout(target, this.highlighted);
+                }
+            }
+            // clear highlighted flag
+            this.highlighted = null;
+        },
+
+        onClick: function(e) {
+            // var canvas = e.originalEvent.target;
+            // var target = $(canvas);
+            // get layer coord
+            var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
+            var coord = this.getTileCoordFromLayerPoint(layerPixel);
+            var hash = this.cacheKeyFromCoord(coord);
+            var fullRadius = this.options.pointRadius + this.options.pointBorder;
+            //
+            var collision = this.pick(layerPixel, fullRadius);
+
+            if (collision) {
+                console.log(collision);
+                this.selected = this._cache[hash];
+            } else {
+                this.selected = null;
+            }
+
+        },
+
         addTileToBuffer: function(coords, data, count) {
             if (this._availableChunks.length === 0) {
                 console.warn('No available chunks remaining to buffer data');
@@ -166,14 +218,12 @@
             // flag as used
             var ncoords = this.getNormalizedCoords(coords);
             var hash = this.cacheKeyFromCoord(ncoords);
-            console.log('add', hash);
             this._usedChunks[hash] = chunk;
         },
 
         removeTileFromBuffer: function(coords) {
             var ncoords = this.getNormalizedCoords(coords);
             var hash = this.cacheKeyFromCoord(ncoords);
-            console.log('remove', hash);
             var chunk = this._usedChunks[hash];
             // clear the count
             chunk.count = 0;
@@ -197,6 +247,7 @@
                 var positions = new Float32Array(buffer);
                 var count = 0;
                 var numDatum = Math.min(data.length, MAX_POINTS_PER_TILE);
+                var points = [];
                 var i;
                 // calc pixel locations
                 for (i=0; i<numDatum; i++) {
@@ -212,15 +263,19 @@
                             y: layerPoint.y,
                             data: hit
                         };
+                        // store point
+                        points.push(point);
                         // add to underlying buffer
                         positions[i*2] = layerPoint.x;
                         positions[i*2 + 1] = (size * TILE_SIZE) - layerPoint.y;
                         // add point to spatial hash
-                        this.addPoint(point, fullRadius);
+                        this.addPoint(point, fullRadius, zoom);
                         // increment count
                         count++;
                     }
                 }
+                // store points in the cache
+                cached.points = points;
                 // buffer the data
                 this.addTileToBuffer(coords, positions, count);
             }
@@ -229,6 +284,13 @@
         onCacheUnload: function(tile, cached, coords) {
             if (cached.data && cached.data.length > 0) {
                 this.removeTileFromBuffer(coords);
+                //
+                var fullRadius = this.options.pointRadius + this.options.pointBorder;
+                var self = this;
+                cached.points.forEach(function(point) {
+                    self.removePoint(point, fullRadius, coords.z);
+                });
+                cached.points = null;
             }
         },
 
@@ -239,6 +301,7 @@
             this._shader.push();
             this._shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
             this._shader.setUniform('uOpacity', this.getOpacity());
+            this._shader.setUniform('uColor', [0.2, 0.15, 0.4, 0.5]);
             gl.clear(gl.COLOR_BUFFER_BIT);
             // instance using the offsets
             var circleBuffer = this._circleBuffer;
@@ -249,6 +312,7 @@
             var cache = this._cache;
             var self = this;
             var size = Math.pow(2, this._map.getZoom());
+            // enable instancing
             ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 1);
             _.forIn(this._usedChunks, function(chunk, hash) {
                 // bind the chunk's buffer
@@ -270,6 +334,28 @@
                     ext.drawArraysInstancedANGLE(gl.TRIANGLE_FAN, 0, circleBuffer.count, chunk.count);
                 });
             });
+            // disable instancing
+            ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 0);
+
+            // draw selected points
+            if (this.selected) {
+                circleBuffer.bind();
+                _.forIn(this.selected.tiles, function(tile) {
+                    var coords = tile.coords;
+                    var xWrap = Math.floor(coords.x / size);
+                    var yWrap = Math.floor(coords.y / size);
+                    // calc the translation matrix
+                    var model = self.getTranslationMatrix(
+                        size * TILE_SIZE * xWrap,
+                        size * TILE_SIZE * yWrap,
+                        0);
+                    // upload translation matrix
+                    shader.setUniform('uModelMatrix', model);
+                    shader.setUniform('uColor', [1.0, 1.0, 0.0, 1.0]);
+                    circleBuffer.draw();
+                });
+            }
+
             // teardown
             this._shader.pop();
             this._viewport.pop();

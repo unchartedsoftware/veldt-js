@@ -17,7 +17,7 @@
 
     function getHashes(lx, ly, radius, zoom) {
         var diameter = radius * 2;
-        var numCells = Math.pow(2, zoom) * TILE_SIZE;
+        var numCells = (Math.pow(2, zoom) * TILE_SIZE ) / diameter;
         var x = lx / diameter;
         var y = ly / diameter;
         var fx = fract(x);
@@ -66,9 +66,9 @@
         });
     }
 
-    function circleCollision(btx, bty, origin, radius) {
-        var dx = btx - (origin.x + radius);
-        var dy = bty - (origin.y + radius);
+    function circleCollision(point, origin, radius) {
+        var dx = point.x - origin.x;
+        var dy = point.y - origin.y;
         var distSqr = (dx * dx) + (dy * dy);
         if (distSqr < (radius * radius)) {
             return true;
@@ -84,11 +84,11 @@
         this._spatialHash = {};
     }
 
-    function addPoint(point, radius) {
+    function addPoint(point, radius, zoom) {
         // spatial hash key
         var x = point.x;
         var y = point.y;
-        var hashes = getHashes(x, y, radius);
+        var hashes = getHashes(x, y, radius, zoom);
         // add pixel to hash
         var i;
         for (i=0; i<hashes.length; i++) {
@@ -98,9 +98,9 @@
         }
     }
 
-    function removePoint(point, radius) {
+    function removePoint(point, radius, zoom) {
         // spatial hash key
-        var hashes = getHashes(point.x, point.y, radius);
+        var hashes = getHashes(point.x, point.y, radius, zoom);
         // add pixel to hash
         var i;
         for (i=0; i<hashes.length; i++) {
@@ -108,24 +108,24 @@
             var points = this._spatialHash[hash];
             if (points) {
                 var index = points.indexOf(point);
-                if (index > 0) {
+                if (index >= 0) {
                     points.splice(index, 1);
                 }
             }
         }
     }
 
-    function pick(x, y, radius) {
-        var hash = getHash(x, y, radius);
+    function pick(point, radius) {
+        var hash = getHash(point.x, point.y, radius);
         // get points in bin
         var points = this._spatialHash[hash];
         if (points) {
             // find first intersecting point in the bin
-            var point, i;
+            var p, i;
             for (i=0; i<points.length; i++) {
-                point = points[i];
+                p = points[i];
                 // check for collision
-                if (circleCollision(x, y, point, radius)) {
+                if (circleCollision(point, p, radius)) {
                     // return first point
                     return point;
                 }

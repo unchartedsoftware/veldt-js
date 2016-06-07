@@ -9,14 +9,28 @@
     var Overlay = Base.extend({
 
         options: {
-            zIndex: 1
+            zIndex: 1,
+            handlers: {}
         },
 
-        onAdd: function() {
+        onAdd: function(map) {
             this.on('tileload', this.onTileLoad, this);
             this.on('tileunload', this.onTileUnload, this);
             this._tiles = {};
             this._initContainer();
+            // add event handlers (after container init)
+            var self = this;
+            map.on('click', this.onClick, this);
+            $(this._container).on('mousemove', function(e) {
+                $(map._container).css('cursor', '');
+                self.onMouseMove(e);
+            });
+            $(this._container).on('mouseover', function(e) {
+                self.onMouseOver(e);
+            });
+            $(this._container).on('mouseout', function(e) {
+                self.onMouseOut(e);
+            });
             this._resetView();
             this._update();
         },
@@ -24,6 +38,11 @@
         onRemove: function(map) {
             this.off('tileload', this.onTileLoad, this);
             this.off('tileunload', this.onTileUnload, this);
+            // remove event handlers (before removing container)
+            map.off('click', this.onClick, this);
+            $(this._container).off('mousemove');
+            $(this._container).off('mouseover');
+            $(this._container).off('mouseout');
             this._removeAllTiles();
             L.DomUtil.remove(this._container);
             map._removeZoomLimit(this);
@@ -245,6 +264,22 @@
                     setTimeout(L.bind(this._pruneTiles, this), 250);
                 }
             }
+        },
+
+        onMouseMove: function() {
+            // override
+        },
+
+        onMouseOver: function() {
+            // override
+        },
+
+        onMouseOut: function() {
+            // override
+        },
+
+        onClick: function() {
+            // override
         }
 
     });

@@ -11,28 +11,12 @@
             map.on('zoomstart', this.clearExtrema, this);
             this.on('tileload', this.onTileLoad, this);
             this.on('tileunload', this.onTileUnload, this);
-            // handlers
-            var self = this;
-            map.on('click', this.onClick, this);
-            map.on('mousemove', this.onMouseMove, this);
-            $(this._container).on('mouseover', function(e) {
-                self.onMouseOver(e);
-            });
-            $(this._container).on('mouseout', function(e) {
-                self.onMouseOut(e);
-            });
         },
 
         onRemove: function(map) {
             map.off('zoomstart', this.clearExtrema, this);
             this.off('tileload', this.onTileLoad, this);
             this.off('tileunload', this.onTileUnload, this);
-            // handlers
-            map.off('click', this.onClick, this);
-            map.off('mousemove', this.onMouseMove, this);
-            $(this._container).off('mouseover');
-            $(this._container).off('mouseout');
-            L.GridLayer.prototype.onRemove.call(this, map);
         },
 
         isTargetLayer: function( elem ) {
