@@ -23,10 +23,12 @@
         'precision highp float;',
         'attribute vec2 aPosition;',
         'attribute vec2 aOffset;',
+        'uniform vec2 uOffset;',
+        'uniform int uUseUniform;',
         'uniform mat4 uModelMatrix;',
         'uniform mat4 uProjectionMatrix;',
         'void main() {',
-            'vec2 modelPosition = aPosition + aOffset;',
+            'vec2 modelPosition = (uUseUniform > 0) ? aPosition + uOffset : aPosition + aOffset;',
             'gl_Position = uProjectionMatrix * uModelMatrix * vec4( modelPosition, 0.0, 1.0 );',
         '}'
     ].join('');
@@ -40,7 +42,37 @@
         '}'
     ].join('');
 
-    function createCircleBuffer(radius, num_segments) {
+    function createCircleOutlineBuffer(radius, num_segments) {
+    	var theta = (2 * Math.PI) / num_segments;
+        // precalculate sine and cosine
+    	var c = Math.cos(theta);
+    	var s = Math.sin(theta);
+    	var t;
+        // start at angle = 0
+    	var x = radius;
+    	var y = 0;
+        var buffer = new ArrayBuffer(num_segments * 2 * COMPONENT_BYTE_SIZE);
+        var positions = new Float32Array(buffer);
+    	for(var i = 0; i < num_segments; i++) {
+            positions[i*2] = x;
+            positions[i*2+1] = y;
+    		// apply the rotation
+    		t = x;
+    		x = c * x - s * y;
+    		y = s * t + c * y;
+    	}
+        var pointers = {};
+        pointers[POSITIONS_INDEX] = {
+            size: 2,
+            type: 'FLOAT'
+        };
+        var options = {
+            mode: 'LINE_LOOP'
+        };
+        return new esper.VertexBuffer(positions, pointers, options);
+    }
+
+    function createCircleFillBuffer(radius, num_segments) {
     	var theta = (2 * Math.PI) / num_segments;
         // precalculate sine and cosine
     	var c = Math.cos(theta);
@@ -89,7 +121,10 @@
                 vert: vert,
                 frag: frag,
             },
-            pointBorder: 1,
+            pointOutline: 1,
+            pointOutlineColor: [0.0, 0.0, 0.0, 1.0],
+            pointColor: [0.2, 0.15, 0.4, 0.5],
+            selectedColor: [1.0, 0.0, 0.0, 1.0],
             pointRadius: 8
         },
 
@@ -101,7 +136,8 @@
 
         onWebGLInit: function() {
             // create the circle vertexbuffer
-            this._circleBuffer = createCircleBuffer(this.options.pointRadius, 64);
+            this._circleFillBuffer = createCircleFillBuffer(this.options.pointRadius, 32);
+            this._circleOutlineBuffer = createCircleOutlineBuffer(this.options.pointRadius, 32);
             // create the root offset buffer
             this._offsetBuffer = new esper.VertexBuffer(MAX_BUFFER_BYTE_SIZE);
             // get the extension for hardware instancing
@@ -156,7 +192,7 @@
             var canvas = e.originalEvent.target;
             var target = $(canvas);
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
-            var fullRadius = this.options.pointRadius + this.options.pointBorder;
+            var fullRadius = this.options.pointRadius + this.options.pointOutline;
             //
             var collision = this.pick(layerPixel, fullRadius);
             if (collision) {
@@ -191,13 +227,16 @@
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
             var coord = this.getTileCoordFromLayerPoint(layerPixel);
             var hash = this.cacheKeyFromCoord(coord);
-            var fullRadius = this.options.pointRadius + this.options.pointBorder;
+            var fullRadius = this.options.pointRadius + this.options.pointOutline;
             //
             var collision = this.pick(layerPixel, fullRadius);
 
             if (collision) {
                 console.log(collision);
-                this.selected = this._cache[hash];
+                this.selected = {
+                    tiles: this._cache[hash].tiles,
+                    point: collision
+                };
             } else {
                 this.selected = null;
             }
@@ -241,7 +280,7 @@
                 var yField = this.getYField();
                 var zoom = coords.z;
                 var size = Math.pow(2, zoom);
-                var fullRadius = this.options.pointRadius + this.options.pointBorder;
+                var fullRadius = this.options.pointRadius + this.options.pointOutline;
                 var numBytes = data.length * COMPONENT_BYTE_SIZE * COMPONENTS_PER_POINT;
                 var buffer = new ArrayBuffer(Math.min(numBytes, MAX_TILE_BYTE_SIZE));
                 var positions = new Float32Array(buffer);
@@ -285,7 +324,7 @@
             if (cached.data && cached.data.length > 0) {
                 this.removeTileFromBuffer(coords);
                 //
-                var fullRadius = this.options.pointRadius + this.options.pointBorder;
+                var fullRadius = this.options.pointRadius + this.options.pointOutline;
                 var self = this;
                 cached.points.forEach(function(point) {
                     self.removePoint(point, fullRadius, coords.z);
@@ -294,24 +333,22 @@
             }
         },
 
-        renderFrame: function() {
-            // setup
+        drawCircleFill: function() {
+            var self = this;
             var gl = this._gl;
-            this._viewport.push();
-            this._shader.push();
-            this._shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
-            this._shader.setUniform('uOpacity', this.getOpacity());
-            this._shader.setUniform('uColor', [0.2, 0.15, 0.4, 0.5]);
-            gl.clear(gl.COLOR_BUFFER_BIT);
-            // instance using the offsets
-            var circleBuffer = this._circleBuffer;
-            // binds the circle buffer to instance
-            circleBuffer.bind();
             var ext = this._ext;
             var shader = this._shader;
             var cache = this._cache;
-            var self = this;
+            var fillBuffer = this._circleFillBuffer;
             var size = Math.pow(2, this._map.getZoom());
+            // enable blending
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+            // set fill color
+            shader.setUniform('uColor', this.options.pointColor);
+            shader.setUniform('uUseUniform', 0);
+            // binds the circle buffer to instance
+            fillBuffer.bind();
             // enable instancing
             ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 1);
             _.forIn(this._usedChunks, function(chunk, hash) {
@@ -331,15 +368,80 @@
                     // upload translation matrix
                     shader.setUniform('uModelMatrix', model);
                     // draw the istances
-                    ext.drawArraysInstancedANGLE(gl.TRIANGLE_FAN, 0, circleBuffer.count, chunk.count);
+                    ext.drawArraysInstancedANGLE(gl[fillBuffer.mode], 0, fillBuffer.count, chunk.count);
                 });
+                // unbind
+                chunk.vertexBuffer.unbind();
             });
             // disable instancing
             ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 0);
+            // unbind circle buffer
+            fillBuffer.unbind();
+        },
 
+        drawCircleOutline: function() {
+            var self = this;
+            var gl = this._gl;
+            var ext = this._ext;
+            var shader = this._shader;
+            var cache = this._cache;
+            var outlineBuffer = this._circleOutlineBuffer;
+            var size = Math.pow(2, this._map.getZoom());
+            // enable blending
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+            // set line width
+            gl.lineWidth(this.options.pointOutline);
+            // set fill color
+            shader.setUniform('uColor', this.options.pointOutlineColor);
+            shader.setUniform('uUseUniform', 0);
+            // binds the circle buffer to instance
+            outlineBuffer.bind();
+            // enable instancing
+            ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 1);
+            _.forIn(this._usedChunks, function(chunk, hash) {
+                // bind the chunk's buffer
+                chunk.vertexBuffer.bind();
+                // for each tile referring to the data
+                var cached = cache[hash];
+                _.keys(cached.tiles).forEach(function(hash) {
+                    var coords = self.coordFromCacheKey(hash);
+                    var xWrap = Math.floor(coords.x / size);
+                    var yWrap = Math.floor(coords.y / size);
+                    // calc the translation matrix
+                    var model = self.getTranslationMatrix(
+                        size * TILE_SIZE * xWrap,
+                        size * TILE_SIZE * yWrap,
+                        0);
+                    // upload translation matrix
+                    shader.setUniform('uModelMatrix', model);
+                    // draw the istances
+                    ext.drawArraysInstancedANGLE(gl[outlineBuffer.mode], 0, outlineBuffer.count, chunk.count);
+                });
+                // unbind
+                chunk.vertexBuffer.unbind();
+            });
+            // disable instancing
+            ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 0);
+            // unbind circle buffer
+            outlineBuffer.unbind();
+        },
+
+        drawSelectedFill: function() {
+            var self = this;
+            var gl = this._gl;
+            var shader = this._shader;
+            var size = Math.pow(2, this._map.getZoom());
             // draw selected points
             if (this.selected) {
-                circleBuffer.bind();
+                var fillBuffer = this._circleFillBuffer;
+                // re-bind the circle buffer
+                fillBuffer.bind();
+                // disable blending
+                gl.disable(gl.BLEND);
+                // use uniform for offset
+                shader.setUniform('uUseUniform', 1);
+                var point = this.selected.point;
                 _.forIn(this.selected.tiles, function(tile) {
                     var coords = tile.coords;
                     var xWrap = Math.floor(coords.x / size);
@@ -351,10 +453,66 @@
                         0);
                     // upload translation matrix
                     shader.setUniform('uModelMatrix', model);
-                    shader.setUniform('uColor', [1.0, 1.0, 0.0, 1.0]);
-                    circleBuffer.draw();
+                    shader.setUniform('uOffset', [point.x, (size * TILE_SIZE) - point.y]);
+                    shader.setUniform('uColor', self.options.selectedColor);
+                    fillBuffer.draw();
                 });
+                // unbind the circle buffer
+                fillBuffer.unbind();
             }
+        },
+
+        drawSelectedOutline: function() {
+            var self = this;
+            var gl = this._gl;
+            var shader = this._shader;
+            var size = Math.pow(2, this._map.getZoom());
+            // draw selected points
+            if (this.selected) {
+                var outlineBuffer = this._circleOutlineBuffer;
+                // re-bind the circle buffer
+                outlineBuffer.bind();
+                // disable blending
+                gl.disable(gl.BLEND);
+                // use uniform for offset
+                shader.setUniform('uUseUniform', 1);
+                var point = this.selected.point;
+                _.forIn(this.selected.tiles, function(tile) {
+                    var coords = tile.coords;
+                    var xWrap = Math.floor(coords.x / size);
+                    var yWrap = Math.floor(coords.y / size);
+                    // calc the translation matrix
+                    var model = self.getTranslationMatrix(
+                        size * TILE_SIZE * xWrap,
+                        size * TILE_SIZE * yWrap,
+                        0);
+                    // upload translation matrix
+                    shader.setUniform('uModelMatrix', model);
+                    shader.setUniform('uOffset', [point.x, (size * TILE_SIZE) - point.y]);
+                    shader.setUniform('uColor', self.options.pointOutlineColor);
+                    outlineBuffer.draw();
+                });
+                // unbind the circle buffer
+                outlineBuffer.unbind();
+            }
+        },
+
+        renderFrame: function() {
+            // setup
+            var gl = this._gl;
+            this._viewport.push();
+            this._shader.push();
+
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            this._shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
+            this._shader.setUniform('uOpacity', this.getOpacity());
+
+            this.drawCircleFill();
+            this.drawCircleOutline();
+
+            this.drawSelectedFill();
+            this.drawSelectedOutline();
 
             // teardown
             this._shader.pop();

@@ -127,7 +127,7 @@
                 // check for collision
                 if (circleCollision(point, p, radius)) {
                     // return first point
-                    return point;
+                    return p;
                 }
             }
         }
