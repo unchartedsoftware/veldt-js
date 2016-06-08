@@ -122,10 +122,10 @@
                 frag: frag,
             },
             pointOutline: 1,
+            pointRadius: 8,
             pointOutlineColor: [0.0, 0.0, 0.0, 1.0],
-            pointColor: [0.2, 0.15, 0.4, 0.5],
-            selectedColor: [1.0, 0.0, 0.0, 1.0],
-            pointRadius: 8
+            pointFillColor: [0.2, 0.15, 0.4, 0.5],
+            selectedFillColor: [1.0, 0.0, 0.0, 1.0]
         },
 
         initialize: function() {
@@ -193,7 +193,6 @@
             var target = $(canvas);
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
             var fullRadius = this.options.pointRadius + this.options.pointOutline;
-            //
             var collision = this.pick(layerPixel, fullRadius);
             if (collision) {
                 // set cursor
@@ -221,22 +220,25 @@
         },
 
         onClick: function(e) {
-            // var canvas = e.originalEvent.target;
-            // var target = $(canvas);
-            // get layer coord
+            var canvas = e.originalEvent.target;
+             var target = $(canvas);
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
             var coord = this.getTileCoordFromLayerPoint(layerPixel);
             var hash = this.cacheKeyFromCoord(coord);
             var fullRadius = this.options.pointRadius + this.options.pointOutline;
-            //
+            var size = Math.pow(2, this._map.getZoom());
             var collision = this.pick(layerPixel, fullRadius);
-
             if (collision) {
-                console.log(collision);
                 this.selected = {
                     tiles: this._cache[hash].tiles,
-                    point: collision
+                    point: [
+                        collision.x,
+                        (size * TILE_SIZE) - collision.y
+                    ]
                 };
+                if (this.options.handlers.click) {
+                    this.options.handlers.click(target, collision);
+                }
             } else {
                 this.selected = null;
             }
@@ -333,24 +335,33 @@
             }
         },
 
-        drawCircleFill: function() {
+        getModelMatrix: function(coords) {
+            var size = Math.pow(2, this._map.getZoom());
+            var xWrap = Math.floor(coords.x / size);
+            var yWrap = Math.floor(coords.y / size);
+            return this.getTranslationMatrix(
+                size * TILE_SIZE * xWrap,
+                size * TILE_SIZE * yWrap,
+                0);
+        },
+
+        drawInstanced: function(buffer, color) {
             var self = this;
             var gl = this._gl;
             var ext = this._ext;
             var shader = this._shader;
             var cache = this._cache;
-            var fillBuffer = this._circleFillBuffer;
-            var size = Math.pow(2, this._map.getZoom());
             // enable blending
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
             // set fill color
-            shader.setUniform('uColor', this.options.pointColor);
+            shader.setUniform('uColor', color);
             shader.setUniform('uUseUniform', 0);
-            // binds the circle buffer to instance
-            fillBuffer.bind();
+            // binds the buffer to instance
+            buffer.bind();
             // enable instancing
             ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 1);
+            // for each allocated chunk
             _.forIn(this._usedChunks, function(chunk, hash) {
                 // bind the chunk's buffer
                 chunk.vertexBuffer.bind();
@@ -358,142 +369,41 @@
                 var cached = cache[hash];
                 _.keys(cached.tiles).forEach(function(hash) {
                     var coords = self.coordFromCacheKey(hash);
-                    var xWrap = Math.floor(coords.x / size);
-                    var yWrap = Math.floor(coords.y / size);
-                    // calc the translation matrix
-                    var model = self.getTranslationMatrix(
-                        size * TILE_SIZE * xWrap,
-                        size * TILE_SIZE * yWrap,
-                        0);
                     // upload translation matrix
-                    shader.setUniform('uModelMatrix', model);
+                    shader.setUniform('uModelMatrix', self.getModelMatrix(coords));
                     // draw the istances
-                    ext.drawArraysInstancedANGLE(gl[fillBuffer.mode], 0, fillBuffer.count, chunk.count);
+                    ext.drawArraysInstancedANGLE(gl[buffer.mode], 0, buffer.count, chunk.count);
                 });
                 // unbind
                 chunk.vertexBuffer.unbind();
             });
             // disable instancing
             ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 0);
-            // unbind circle buffer
-            fillBuffer.unbind();
+            // unbind buffer
+            buffer.unbind();
         },
 
-        drawCircleOutline: function() {
-            var self = this;
-            var gl = this._gl;
-            var ext = this._ext;
-            var shader = this._shader;
-            var cache = this._cache;
-            var outlineBuffer = this._circleOutlineBuffer;
-            var size = Math.pow(2, this._map.getZoom());
-            // enable blending
-            gl.enable(gl.BLEND);
-            gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-            // set line width
-            gl.lineWidth(this.options.pointOutline);
-            // set fill color
-            shader.setUniform('uColor', this.options.pointOutlineColor);
-            shader.setUniform('uUseUniform', 0);
-            // binds the circle buffer to instance
-            outlineBuffer.bind();
-            // enable instancing
-            ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 1);
-            _.forIn(this._usedChunks, function(chunk, hash) {
-                // bind the chunk's buffer
-                chunk.vertexBuffer.bind();
-                // for each tile referring to the data
-                var cached = cache[hash];
-                _.keys(cached.tiles).forEach(function(hash) {
-                    var coords = self.coordFromCacheKey(hash);
-                    var xWrap = Math.floor(coords.x / size);
-                    var yWrap = Math.floor(coords.y / size);
-                    // calc the translation matrix
-                    var model = self.getTranslationMatrix(
-                        size * TILE_SIZE * xWrap,
-                        size * TILE_SIZE * yWrap,
-                        0);
-                    // upload translation matrix
-                    shader.setUniform('uModelMatrix', model);
-                    // draw the istances
-                    ext.drawArraysInstancedANGLE(gl[outlineBuffer.mode], 0, outlineBuffer.count, chunk.count);
-                });
-                // unbind
-                chunk.vertexBuffer.unbind();
-            });
-            // disable instancing
-            ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 0);
-            // unbind circle buffer
-            outlineBuffer.unbind();
-        },
-
-        drawSelectedFill: function() {
-            var self = this;
-            var gl = this._gl;
-            var shader = this._shader;
-            var size = Math.pow(2, this._map.getZoom());
+        drawIndividual: function(buffer, color, tiles, point) {
             // draw selected points
             if (this.selected) {
-                var fillBuffer = this._circleFillBuffer;
-                // re-bind the circle buffer
-                fillBuffer.bind();
+                var self = this;
+                var gl = this._gl;
+                var shader = this._shader;
+                // bind the buffer
+                buffer.bind();
                 // disable blending
                 gl.disable(gl.BLEND);
                 // use uniform for offset
                 shader.setUniform('uUseUniform', 1);
-                var point = this.selected.point;
-                _.forIn(this.selected.tiles, function(tile) {
-                    var coords = tile.coords;
-                    var xWrap = Math.floor(coords.x / size);
-                    var yWrap = Math.floor(coords.y / size);
-                    // calc the translation matrix
-                    var model = self.getTranslationMatrix(
-                        size * TILE_SIZE * xWrap,
-                        size * TILE_SIZE * yWrap,
-                        0);
+                _.forIn(tiles, function(tile) {
                     // upload translation matrix
-                    shader.setUniform('uModelMatrix', model);
-                    shader.setUniform('uOffset', [point.x, (size * TILE_SIZE) - point.y]);
-                    shader.setUniform('uColor', self.options.selectedColor);
-                    fillBuffer.draw();
+                    shader.setUniform('uModelMatrix', self.getModelMatrix(tile.coords));
+                    shader.setUniform('uOffset', point);
+                    shader.setUniform('uColor', color);
+                    buffer.draw();
                 });
-                // unbind the circle buffer
-                fillBuffer.unbind();
-            }
-        },
-
-        drawSelectedOutline: function() {
-            var self = this;
-            var gl = this._gl;
-            var shader = this._shader;
-            var size = Math.pow(2, this._map.getZoom());
-            // draw selected points
-            if (this.selected) {
-                var outlineBuffer = this._circleOutlineBuffer;
-                // re-bind the circle buffer
-                outlineBuffer.bind();
-                // disable blending
-                gl.disable(gl.BLEND);
-                // use uniform for offset
-                shader.setUniform('uUseUniform', 1);
-                var point = this.selected.point;
-                _.forIn(this.selected.tiles, function(tile) {
-                    var coords = tile.coords;
-                    var xWrap = Math.floor(coords.x / size);
-                    var yWrap = Math.floor(coords.y / size);
-                    // calc the translation matrix
-                    var model = self.getTranslationMatrix(
-                        size * TILE_SIZE * xWrap,
-                        size * TILE_SIZE * yWrap,
-                        0);
-                    // upload translation matrix
-                    shader.setUniform('uModelMatrix', model);
-                    shader.setUniform('uOffset', [point.x, (size * TILE_SIZE) - point.y]);
-                    shader.setUniform('uColor', self.options.pointOutlineColor);
-                    outlineBuffer.draw();
-                });
-                // unbind the circle buffer
-                outlineBuffer.unbind();
+                // unbind the buffer
+                buffer.unbind();
             }
         },
 
@@ -502,17 +412,39 @@
             var gl = this._gl;
             this._viewport.push();
             this._shader.push();
-
+            // clear buffer
             gl.clear(gl.COLOR_BUFFER_BIT);
-
+            // set uniforms
             this._shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
             this._shader.setUniform('uOpacity', this.getOpacity());
 
-            this.drawCircleFill();
-            this.drawCircleOutline();
+            // draw instanced points
 
-            this.drawSelectedFill();
-            this.drawSelectedOutline();
+            // draw instanced fill
+            this.drawInstanced(
+                this._circleFillBuffer,
+                this.options.pointFillColor);
+            // draw instanced outlines
+            this.drawInstanced(
+                this._circleOutlineBuffer,
+                this.options.pointOutlineColor);
+
+            // draw individual points
+
+            if (this.selected) {
+                // draw individual fill
+                this.drawIndividual(
+                    this._circleFillBuffer,
+                    this.options.selectedFillColor,
+                    this.selected.tiles,
+                    this.selected.point);
+                // draw individual outline
+                this.drawIndividual(
+                    this._circleOutlineBuffer,
+                    this.options.pointOutlineColor,
+                    this.selected.tiles,
+                    this.selected.point);
+            }
 
             // teardown
             this._shader.pop();
