@@ -13,6 +13,10 @@
 
     var Live = L.Class.extend({
 
+        options: {
+            transform: function(val) { return val; }
+        },
+
         initialize: function(meta, options) {
             options = options || {};
             // set renderer
@@ -220,9 +224,9 @@
                         return;
                     }
                     cached.isPending = false;
-                    cached.data = data;
+                    cached.data = self.options.transform(data);
                     // update the extrema
-                    if (data && self.updateExtrema(data)) {
+                    if (cached.data && self.updateExtrema(cached.data)) {
                         // extrema changed
                         self.onCacheLoadExtremaUpdate(tile, cached, coords);
                     } else {

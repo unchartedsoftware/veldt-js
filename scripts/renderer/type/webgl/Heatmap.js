@@ -116,6 +116,9 @@
                 bins[i * 4 + 2] = color[2];
                 bins[i * 4 + 3] = color[3];
             }
+            // ensure we use the correct context
+            esper.WebGLContext.bind(this._container);
+            // create the texture
             cached.texture = new esper.Texture2D({
                 height: resolution,
                 width: resolution,

@@ -16,6 +16,8 @@
     var MAX_TILE_BYTE_SIZE = MAX_POINTS_PER_TILE * COMPONENTS_PER_POINT * COMPONENT_BYTE_SIZE;
     var MAX_BUFFER_BYTE_SIZE = MAX_TILES * MAX_TILE_BYTE_SIZE;
 
+    var NUM_SLICES = 64;
+
     var POSITIONS_INDEX = 0;
     var OFFSETS_INDEX = 1;
 
@@ -125,7 +127,10 @@
             pointRadius: 8,
             pointOutlineColor: [0.0, 0.0, 0.0, 1.0],
             pointFillColor: [0.2, 0.15, 0.4, 0.5],
-            selectedFillColor: [1.0, 0.0, 0.0, 1.0]
+            selectedOutlineColor: [0.0, 0.0, 0.0, 1.0],
+            selectedFillColor: [1.0, 0.0, 0.0, 1.0],
+            highlightedOutlineColor: [0.0, 0.0, 0.0, 1.0],
+            highlightedFillColor: [1.0, 0.0, 1.0, 1.0]
         },
 
         initialize: function() {
@@ -136,8 +141,8 @@
 
         onWebGLInit: function() {
             // create the circle vertexbuffer
-            this._circleFillBuffer = createCircleFillBuffer(this.options.pointRadius, 32);
-            this._circleOutlineBuffer = createCircleOutlineBuffer(this.options.pointRadius, 32);
+            this._circleFillBuffer = createCircleFillBuffer(this.options.pointRadius, NUM_SLICES);
+            this._circleOutlineBuffer = createCircleOutlineBuffer(this.options.pointRadius, NUM_SLICES);
             // create the root offset buffer
             this._offsetBuffer = new esper.VertexBuffer(MAX_BUFFER_BYTE_SIZE);
             // get the extension for hardware instancing
@@ -165,6 +170,8 @@
         },
 
         clearChunks: function() {
+            // ensure we use the correct context
+            esper.WebGLContext.bind(this._container);
             this._availableChunks = new Array(MAX_TILES);
             for (var i=0; i<MAX_TILES; i++) {
                 var byteOffset = i * MAX_TILE_BYTE_SIZE;
@@ -194,17 +201,41 @@
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
             var fullRadius = this.options.pointRadius + this.options.pointOutline;
             var collision = this.pick(layerPixel, fullRadius);
+            var coord = this.getTileCoordFromLayerPoint(layerPixel);
+            var hash = this.cacheKeyFromCoord(coord);
+            var size = Math.pow(2, this._map.getZoom());
             if (collision) {
                 // set cursor
                 $(this._map._container).css('cursor', 'pointer');
-                if (!this.highlighted) {
-                    // execute callback
+                // mimic mouseover / mouseout events
+                if (this.highlighted) {
+                    if (this.highlighted.value !== collision) {
+                        // new collision
+                        // execute mouseout for old
+                        if (this.options.handlers.mouseout) {
+                            this.options.handlers.mouseout(target, this.highlighted.value);
+                        }
+                        // execute mouseover for new
+                        if (this.options.handlers.mouseover) {
+                            this.options.handlers.mouseover(target, collision);
+                        }
+                    }
+                } else {
+                    // no previous collision, execute mouseover
                     if (this.options.handlers.mouseover) {
                         this.options.handlers.mouseover(target, collision);
                     }
                 }
+
                 // flag as highlighted
-                this.highlighted = collision;
+                this.highlighted = {
+                    tiles: this._cache[hash].tiles,
+                    value: collision,
+                    point: [
+                        collision.x,
+                        (size * TILE_SIZE) - collision.y
+                    ]
+                };
                 // set cursor
                 $(this._map._container).css('cursor', 'pointer');
                 return;
@@ -212,7 +243,7 @@
             // mouse out
             if (this.highlighted) {
                 if (this.options.handlers.mouseout) {
-                    this.options.handlers.mouseout(target, this.highlighted);
+                    this.options.handlers.mouseout(target, this.highlighted.point);
                 }
             }
             // clear highlighted flag
@@ -231,6 +262,7 @@
             if (collision) {
                 this.selected = {
                     tiles: this._cache[hash].tiles,
+                    value: collision,
                     point: [
                         collision.x,
                         (size * TILE_SIZE) - collision.y
@@ -385,26 +417,24 @@
 
         drawIndividual: function(buffer, color, tiles, point) {
             // draw selected points
-            if (this.selected) {
-                var self = this;
-                var gl = this._gl;
-                var shader = this._shader;
-                // bind the buffer
-                buffer.bind();
-                // disable blending
-                gl.disable(gl.BLEND);
-                // use uniform for offset
-                shader.setUniform('uUseUniform', 1);
-                _.forIn(tiles, function(tile) {
-                    // upload translation matrix
-                    shader.setUniform('uModelMatrix', self.getModelMatrix(tile.coords));
-                    shader.setUniform('uOffset', point);
-                    shader.setUniform('uColor', color);
-                    buffer.draw();
-                });
-                // unbind the buffer
-                buffer.unbind();
-            }
+            var self = this;
+            var gl = this._gl;
+            var shader = this._shader;
+            // bind the buffer
+            buffer.bind();
+            // disable blending
+            gl.disable(gl.BLEND);
+            // use uniform for offset
+            shader.setUniform('uUseUniform', 1);
+            _.forIn(tiles, function(tile) {
+                // upload translation matrix
+                shader.setUniform('uModelMatrix', self.getModelMatrix(tile.coords));
+                shader.setUniform('uOffset', point);
+                shader.setUniform('uColor', color);
+                buffer.draw();
+            });
+            // unbind the buffer
+            buffer.unbind();
         },
 
         renderFrame: function() {
@@ -441,9 +471,24 @@
                 // draw individual outline
                 this.drawIndividual(
                     this._circleOutlineBuffer,
-                    this.options.pointOutlineColor,
+                    this.options.selectedOutlineColor,
                     this.selected.tiles,
                     this.selected.point);
+            }
+
+            if (this.highlighted) {
+                // draw individual fill
+                this.drawIndividual(
+                    this._circleFillBuffer,
+                    this.options.highlightedFillColor,
+                    this.highlighted.tiles,
+                    this.highlighted.point);
+                // draw individual outline
+                this.drawIndividual(
+                    this._circleOutlineBuffer,
+                    this.options.highlightedOutlineColor,
+                    this.highlighted.tiles,
+                    this.highlighted.point);
             }
 
             // teardown
