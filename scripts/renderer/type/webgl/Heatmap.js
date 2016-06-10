@@ -7,6 +7,8 @@
     var ColorRamp = require('../../mixin/ColorRamp');
     var ValueTransform = require('../../mixin/ValueTransform');
 
+    var TILE_SIZE = 256;
+
     var vert = [
         'precision highp float;',
         'attribute vec2 aPosition;',
@@ -51,9 +53,9 @@
             this._renderable = new esper.Renderable({
                 vertices: {
                     0: [
-                        [0, -256],
-                        [256, -256],
-                        [256, 0],
+                        [0, -TILE_SIZE],
+                        [TILE_SIZE, -TILE_SIZE],
+                        [TILE_SIZE, 0],
                         [0, 0]
                     ],
                     1: [
@@ -133,7 +135,7 @@
 
         renderTiles: function() {
             var self = this;
-            var dim = Math.pow(2, this._map.getZoom()) * 256;
+            var dim = Math.pow(2, this._map.getZoom()) * TILE_SIZE;
             // for each tile
             _.forIn(this._cache, function(cached) {
                 if (!cached.texture) {
@@ -146,8 +148,8 @@
                     var coord = self.coordFromCacheKey(key);
                     // create model matrix
                     var model = self.getTranslationMatrix(
-                        256 * coord.x,
-                        dim - (256 * coord.y),
+                        TILE_SIZE * coord.x,
+                        dim - (TILE_SIZE * coord.y),
                         0);
                     self._shader.setUniform('uModelMatrix', model);
                     // draw the tile

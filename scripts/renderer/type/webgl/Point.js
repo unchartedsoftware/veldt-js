@@ -26,11 +26,13 @@
         'attribute vec2 aPosition;',
         'attribute vec2 aOffset;',
         'uniform vec2 uOffset;',
+        'uniform float uScale;',
         'uniform int uUseUniform;',
         'uniform mat4 uModelMatrix;',
         'uniform mat4 uProjectionMatrix;',
         'void main() {',
-            'vec2 modelPosition = (uUseUniform > 0) ? aPosition + uOffset : aPosition + aOffset;',
+            'vec2 scaledPos = uScale * aPosition;',
+            'vec2 modelPosition = (uUseUniform > 0) ? scaledPos + uOffset : scaledPos + aOffset;',
             'gl_Position = uProjectionMatrix * uModelMatrix * vec4( modelPosition, 0.0, 1.0 );',
         '}'
     ].join('');
@@ -44,25 +46,26 @@
         '}'
     ].join('');
 
-    function createCircleOutlineBuffer(radius, num_segments) {
-    	var theta = (2 * Math.PI) / num_segments;
+    function createCircleOutlineBuffer(numSegments) {
+        var theta = (2 * Math.PI) / numSegments;
+        var radius = 1.0;
         // precalculate sine and cosine
-    	var c = Math.cos(theta);
-    	var s = Math.sin(theta);
-    	var t;
+        var c = Math.cos(theta);
+        var s = Math.sin(theta);
+        var t;
         // start at angle = 0
-    	var x = radius;
-    	var y = 0;
-        var buffer = new ArrayBuffer(num_segments * 2 * COMPONENT_BYTE_SIZE);
+        var x = radius;
+        var y = 0;
+        var buffer = new ArrayBuffer(numSegments * 2 * COMPONENT_BYTE_SIZE);
         var positions = new Float32Array(buffer);
-    	for(var i = 0; i < num_segments; i++) {
+        for(var i = 0; i < numSegments; i++) {
             positions[i*2] = x;
             positions[i*2+1] = y;
-    		// apply the rotation
-    		t = x;
-    		x = c * x - s * y;
-    		y = s * t + c * y;
-    	}
+            // apply the rotation
+            t = x;
+            x = c * x - s * y;
+            y = s * t + c * y;
+        }
         var pointers = {};
         pointers[POSITIONS_INDEX] = {
             size: 2,
@@ -74,29 +77,30 @@
         return new esper.VertexBuffer(positions, pointers, options);
     }
 
-    function createCircleFillBuffer(radius, num_segments) {
-    	var theta = (2 * Math.PI) / num_segments;
+    function createCircleFillBuffer(numSegments) {
+        var theta = (2 * Math.PI) / numSegments;
+        var radius = 1.0;
         // precalculate sine and cosine
-    	var c = Math.cos(theta);
-    	var s = Math.sin(theta);
-    	var t;
+        var c = Math.cos(theta);
+        var s = Math.sin(theta);
+        var t;
         // start at angle = 0
-    	var x = radius;
-    	var y = 0;
-        var buffer = new ArrayBuffer((num_segments + 2) * 2 * COMPONENT_BYTE_SIZE);
+        var x = radius;
+        var y = 0;
+        var buffer = new ArrayBuffer((numSegments + 2) * 2 * COMPONENT_BYTE_SIZE);
         var positions = new Float32Array(buffer);
         positions[0] = 0;
         positions[1] = 0;
         positions[positions.length-2] = radius;
         positions[positions.length-1] = 0;
-    	for(var i = 0; i < num_segments; i++) {
+        for(var i = 0; i < numSegments; i++) {
             positions[(i+1)*2] = x;
             positions[(i+1)*2+1] = y;
-    		// apply the rotation
-    		t = x;
-    		x = c * x - s * y;
-    		y = s * t + c * y;
-    	}
+            // apply the rotation
+            t = x;
+            x = c * x - s * y;
+            y = s * t + c * y;
+        }
 
         var pointers = {};
         pointers[POSITIONS_INDEX] = {
@@ -124,13 +128,15 @@
                 frag: frag,
             },
             pointOutline: 1,
-            pointRadius: 8,
             pointOutlineColor: [0.0, 0.0, 0.0, 1.0],
             pointFillColor: [0.2, 0.15, 0.4, 0.5],
+            pointRadius: 8,
             selectedOutlineColor: [0.0, 0.0, 0.0, 1.0],
-            selectedFillColor: [1.0, 0.0, 0.0, 1.0],
+            selectedFillColor: [0.8, 0.4, 0.2, 0.5],
+            selectedRadius: 10,
             highlightedOutlineColor: [0.0, 0.0, 0.0, 1.0],
-            highlightedFillColor: [1.0, 0.0, 1.0, 1.0]
+            highlightedFillColor: [0.2, 0.15, 0.4, 0.5],
+            highlightedRadius: 10,
         },
 
         initialize: function() {
@@ -141,8 +147,8 @@
 
         onWebGLInit: function() {
             // create the circle vertexbuffer
-            this._circleFillBuffer = createCircleFillBuffer(this.options.pointRadius, NUM_SLICES);
-            this._circleOutlineBuffer = createCircleOutlineBuffer(this.options.pointRadius, NUM_SLICES);
+            this._circleFillBuffer = createCircleFillBuffer(NUM_SLICES);
+            this._circleOutlineBuffer = createCircleOutlineBuffer(NUM_SLICES);
             // create the root offset buffer
             this._offsetBuffer = new esper.VertexBuffer(MAX_BUFFER_BYTE_SIZE);
             // get the extension for hardware instancing
@@ -151,7 +157,7 @@
                 throw 'ANGLE_instanced_arrays WebGL extension is not supported';
             }
             // clear the chunks
-            this.clearChunks();
+            this.initChunks();
         },
 
         onAdd: function(map) {
@@ -169,7 +175,7 @@
             WebGL.prototype.onZoomStart.apply(this, arguments);
         },
 
-        clearChunks: function() {
+        initChunks: function() {
             // ensure we use the correct context
             esper.WebGLContext.bind(this._container);
             this._availableChunks = new Array(MAX_TILES);
@@ -226,7 +232,6 @@
                         this.options.handlers.mouseover(target, collision);
                     }
                 }
-
                 // flag as highlighted
                 this.highlighted = {
                     tiles: this._cache[hash].tiles,
@@ -243,7 +248,7 @@
             // mouse out
             if (this.highlighted) {
                 if (this.options.handlers.mouseout) {
-                    this.options.handlers.mouseout(target, this.highlighted.point);
+                    this.options.handlers.mouseout(target, this.highlighted.value);
                 }
             }
             // clear highlighted flag
@@ -377,7 +382,7 @@
                 0);
         },
 
-        drawInstanced: function(buffer, color) {
+        drawInstanced: function(buffer, color, radius) {
             var self = this;
             var gl = this._gl;
             var ext = this._ext;
@@ -389,6 +394,7 @@
             // set fill color
             shader.setUniform('uColor', color);
             shader.setUniform('uUseUniform', 0);
+            shader.setUniform('uScale', radius);
             // binds the buffer to instance
             buffer.bind();
             // enable instancing
@@ -415,7 +421,7 @@
             buffer.unbind();
         },
 
-        drawIndividual: function(buffer, color, tiles, point) {
+        drawIndividual: function(buffer, color, radius, tiles, point) {
             // draw selected points
             var self = this;
             var gl = this._gl;
@@ -426,6 +432,7 @@
             gl.disable(gl.BLEND);
             // use uniform for offset
             shader.setUniform('uUseUniform', 1);
+            shader.setUniform('uScale', radius);
             _.forIn(tiles, function(tile) {
                 // upload translation matrix
                 shader.setUniform('uModelMatrix', self.getModelMatrix(tile.coords));
@@ -453,42 +460,50 @@
             // draw instanced fill
             this.drawInstanced(
                 this._circleFillBuffer,
-                this.options.pointFillColor);
+                this.options.pointFillColor,
+                this.options.pointRadius);
             // draw instanced outlines
             this.drawInstanced(
                 this._circleOutlineBuffer,
-                this.options.pointOutlineColor);
+                this.options.pointOutlineColor,
+                this.options.pointRadius);
 
             // draw individual points
-
-            if (this.selected) {
-                // draw individual fill
-                this.drawIndividual(
-                    this._circleFillBuffer,
-                    this.options.selectedFillColor,
-                    this.selected.tiles,
-                    this.selected.point);
-                // draw individual outline
-                this.drawIndividual(
-                    this._circleOutlineBuffer,
-                    this.options.selectedOutlineColor,
-                    this.selected.tiles,
-                    this.selected.point);
-            }
 
             if (this.highlighted) {
                 // draw individual fill
                 this.drawIndividual(
                     this._circleFillBuffer,
                     this.options.highlightedFillColor,
+                    this.options.highlightedRadius,
                     this.highlighted.tiles,
                     this.highlighted.point);
                 // draw individual outline
+                gl.lineWidth(this.options.pointOutline);
                 this.drawIndividual(
                     this._circleOutlineBuffer,
                     this.options.highlightedOutlineColor,
+                    this.options.highlightedRadius,
                     this.highlighted.tiles,
                     this.highlighted.point);
+            }
+
+            if (this.selected) {
+                // draw individual fill
+                this.drawIndividual(
+                    this._circleFillBuffer,
+                    this.options.selectedFillColor,
+                    this.options.selectedRadius,
+                    this.selected.tiles,
+                    this.selected.point);
+                // draw individual outline
+                gl.lineWidth(this.options.pointOutline);
+                this.drawIndividual(
+                    this._circleOutlineBuffer,
+                    this.options.selectedOutlineColor,
+                    this.options.selectedRadius,
+                    this.selected.tiles,
+                    this.selected.point);
             }
 
             // teardown
