@@ -5,10 +5,8 @@
     // canvas renderers
     var Canvas = {
         Heatmap: require('./type/canvas/Heatmap'),
-        MacroMicro: require('./type/canvas/MacroMicro'),
         TopTrails: require('./type/canvas/TopTrails'),
-        Preview: require('./type/canvas/Preview'),
-        PointsOfInterest: require('./type/canvas/PointsOfInterest')
+        Preview: require('./type/canvas/Preview')
     };
 
     // html renderers
