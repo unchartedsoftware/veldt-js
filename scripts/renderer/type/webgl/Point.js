@@ -450,6 +450,7 @@
                 this.options.pointFillColor,
                 this.options.pointRadius);
             // draw instanced outlines
+            gl.lineWidth(this.options.pointOutline);
             this.drawInstanced(
                 this._circleOutlineBuffer,
                 this.options.pointOutlineColor,

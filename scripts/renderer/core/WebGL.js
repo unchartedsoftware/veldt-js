@@ -67,9 +67,10 @@
                 // execute callback
                 var width = self._container.width;
                 var height = self._container.height;
+                var devicePixelRatio = (L.Browser.retina) ? 2 : 1;
                 self._viewport = new esper.Viewport({
-                    width: width,
-                    height: height
+                    width: width * devicePixelRatio,
+                    height: height * devicePixelRatio
                 });
                 self._initialized = true;
                 self._shader = shader;
@@ -132,11 +133,14 @@
 
         _positionContainer: function() {
             var size = this._map.getSize();
-            // set canvas size
-            this._container.width = size.x;
-            this._container.height = size.y;
+            var devicePixelRatio = (L.Browser.retina) ? 2 : 1;
             // set viewport size
-            this._viewport.resize(size.x, size.y);
+            this._viewport.resize(
+                size.x * devicePixelRatio,
+                size.y * devicePixelRatio);
+            // set canvas size
+            this._gl.canvas.style.width = size.x + 'px';
+            this._gl.canvas.style.height = size.y + 'px';
             // re-position container
             var topLeft = this._map.containerPointToLayerPoint([0, 0]);
             L.DomUtil.setPosition(this._container, topLeft);
