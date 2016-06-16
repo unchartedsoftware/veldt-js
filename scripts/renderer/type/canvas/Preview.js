@@ -7,8 +7,8 @@
     var Preview = Canvas.extend({
 
         options: {
-            lineWidth: 2,
-            lineColor: 'lightblue'
+            lineWidth: 1,
+            lineColor: '#fff'
         },
 
         highlighted: false,
