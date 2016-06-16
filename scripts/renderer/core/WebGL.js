@@ -25,6 +25,8 @@
 
         onZoomEnd: function() {
             this._isZooming = false;
+            var gl = this._gl;
+            gl.clear(gl.COLOR_BUFFER_BIT);
             this.renderFrame();
         },
 

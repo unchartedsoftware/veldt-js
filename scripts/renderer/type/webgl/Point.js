@@ -4,9 +4,8 @@
 
     var esper = require('esper');
     var WebGL = require('../../core/WebGL');
-    var ColorRamp = require('../../mixin/ColorRamp');
     var SpatialHash = require('../../mixin/SpatialHash');
-    var ValueTransform = require('../../mixin/ValueTransform');
+    var Shaders = require('./Shaders');
 
     var TILE_SIZE = 256;
     var COMPONENT_BYTE_SIZE = 4;
@@ -17,34 +16,18 @@
     var MAX_BUFFER_BYTE_SIZE = MAX_TILES * MAX_TILE_BYTE_SIZE;
 
     var NUM_SLICES = 64;
+    var POINT_RADIUS = 8;
+    var POINT_RADIUS_INC = 2;
 
     var POSITIONS_INDEX = 0;
     var OFFSETS_INDEX = 1;
 
-    var vert = [
-        'precision highp float;',
-        'attribute vec2 aPosition;',
-        'attribute vec2 aOffset;',
-        'uniform vec2 uOffset;',
-        'uniform float uScale;',
-        'uniform int uUseUniform;',
-        'uniform mat4 uModelMatrix;',
-        'uniform mat4 uProjectionMatrix;',
-        'void main() {',
-            'vec2 scaledPos = uScale * aPosition;',
-            'vec2 modelPosition = (uUseUniform > 0) ? scaledPos + uOffset : scaledPos + aOffset;',
-            'gl_Position = uProjectionMatrix * uModelMatrix * vec4( modelPosition, 0.0, 1.0 );',
-        '}'
-    ].join('');
-
-    var frag = [
-        'precision highp float;',
-        'uniform float uOpacity;',
-        'uniform vec4 uColor;',
-        'void main() {',
-            'gl_FragColor = vec4(uColor.rgb, uColor.a * uOpacity);',
-        '}'
-    ].join('');
+    function applyJitter(point, maxDist) {
+        var angle = Math.random() * (Math.PI * 2);
+        var dist = Math.random() * maxDist;
+        point.x += Math.cos(angle) * dist;
+        point.y += Math.sin(angle) * dist;
+    }
 
     function createCircleOutlineBuffer(numSegments) {
         var theta = (2 * Math.PI) / numSegments;
@@ -117,31 +100,26 @@
 
         includes: [
             // mixins
-            ColorRamp,
-            ValueTransform,
             SpatialHash
         ],
 
         options: {
-            shaders: {
-                vert: vert,
-                frag: frag,
-            },
+            shaders: Shaders.point,
             pointOutline: 1,
             pointOutlineColor: [0.0, 0.0, 0.0, 1.0],
             pointFillColor: [0.2, 0.15, 0.4, 0.5],
-            pointRadius: 8,
+            pointRadius: POINT_RADIUS,
             selectedOutlineColor: [0.0, 0.0, 0.0, 1.0],
             selectedFillColor: [0.8, 0.4, 0.2, 0.5],
-            selectedRadius: 10,
+            selectedRadius: POINT_RADIUS + POINT_RADIUS_INC,
             highlightedOutlineColor: [0.0, 0.0, 0.0, 1.0],
-            highlightedFillColor: [0.2, 0.15, 0.4, 0.5],
-            highlightedRadius: 10,
+            highlightedFillColor: [0.3, 0.25, 0.5, 0.5],
+            highlightedRadius: POINT_RADIUS + POINT_RADIUS_INC,
+            jitter: true,
+            jitterDistance: 10
         },
 
         initialize: function() {
-            ColorRamp.initialize.apply(this, arguments);
-            ValueTransform.initialize.apply(this, arguments);
             SpatialHash.initialize.apply(this, arguments);
         },
 
@@ -158,6 +136,10 @@
             }
             // clear the chunks
             this.initChunks();
+        },
+
+        getCollisionRadius: function() {
+            return this.options.pointRadius + this.options.pointOutline;
         },
 
         onAdd: function(map) {
@@ -205,14 +187,12 @@
             var canvas = e.originalEvent.target;
             var target = $(canvas);
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
-            var fullRadius = this.options.pointRadius + this.options.pointOutline;
-            var collision = this.pick(layerPixel, fullRadius);
+            var radius = this.getCollisionRadius();
+            var collision = this.pick(layerPixel, radius);
             var coord = this.getTileCoordFromLayerPoint(layerPixel);
             var hash = this.cacheKeyFromCoord(coord);
             var size = Math.pow(2, this._map.getZoom());
             if (collision) {
-                // set cursor
-                $(this._map._container).css('cursor', 'pointer');
                 // mimic mouseover / mouseout events
                 if (this.highlighted) {
                     if (this.highlighted.value !== collision) {
@@ -261,9 +241,9 @@
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
             var coord = this.getTileCoordFromLayerPoint(layerPixel);
             var hash = this.cacheKeyFromCoord(coord);
-            var fullRadius = this.options.pointRadius + this.options.pointOutline;
+            var radius = this.getCollisionRadius();
             var size = Math.pow(2, this._map.getZoom());
-            var collision = this.pick(layerPixel, fullRadius);
+            var collision = this.pick(layerPixel, radius);
             if (collision) {
                 this.selected = {
                     tiles: this._cache[hash].tiles,
@@ -319,7 +299,7 @@
                 var yField = this.getYField();
                 var zoom = coords.z;
                 var size = Math.pow(2, zoom);
-                var fullRadius = this.options.pointRadius + this.options.pointOutline;
+                var radius = this.getCollisionRadius();
                 var numBytes = data.length * COMPONENT_BYTE_SIZE * COMPONENTS_PER_POINT;
                 var buffer = new ArrayBuffer(Math.min(numBytes, MAX_TILE_BYTE_SIZE));
                 var positions = new Float32Array(buffer);
@@ -327,6 +307,7 @@
                 var numDatum = Math.min(data.length, MAX_POINTS_PER_TILE);
                 var points = [];
                 var i;
+                var collisions = {};
                 // calc pixel locations
                 for (i=0; i<numDatum; i++) {
                     var hit = data[i];
@@ -341,13 +322,20 @@
                             y: layerPoint.y,
                             data: hit
                         };
+                        var hash = point.x + ':' + point.y;
+                        if (this.options.jitter) {
+                            if (collisions[hash]) {
+                                applyJitter(point, this.options.jitterDistance);
+                            }
+                            collisions[hash] = true;
+                        }
                         // store point
                         points.push(point);
                         // add to underlying buffer
-                        positions[i*2] = layerPoint.x;
-                        positions[i*2 + 1] = (size * TILE_SIZE) - layerPoint.y;
+                        positions[i*2] = point.x;
+                        positions[i*2 + 1] = (size * TILE_SIZE) - point.y;
                         // add point to spatial hash
-                        this.addPoint(point, fullRadius, zoom);
+                        this.addPoint(point, radius, zoom);
                         // increment count
                         count++;
                     }
@@ -362,11 +350,10 @@
         onCacheUnload: function(tile, cached, coords) {
             if (cached.data && cached.data.length > 0) {
                 this.removeTileFromBuffer(coords);
-                //
-                var fullRadius = this.options.pointRadius + this.options.pointOutline;
+                var radius = this.getCollisionRadius();
                 var self = this;
                 cached.points.forEach(function(point) {
-                    self.removePoint(point, fullRadius, coords.z);
+                    self.removePoint(point, radius, coords.z);
                 });
                 cached.points = null;
             }
@@ -447,13 +434,13 @@
         renderFrame: function() {
             // setup
             var gl = this._gl;
-            this._viewport.push();
-            this._shader.push();
-            // clear buffer
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            var viewport = this._viewport;
+            var shader = this._shader;
+            viewport.push();
+            shader.push();
             // set uniforms
-            this._shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
-            this._shader.setUniform('uOpacity', this.getOpacity());
+            shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
+            shader.setUniform('uOpacity', this.getOpacity());
 
             // draw instanced points
 
@@ -507,8 +494,8 @@
             }
 
             // teardown
-            this._shader.pop();
-            this._viewport.pop();
+            shader.pop();
+            viewport.pop();
         }
 
     });

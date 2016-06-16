@@ -6,32 +6,9 @@
     var WebGL = require('../../core/WebGL');
     var ColorRamp = require('../../mixin/ColorRamp');
     var ValueTransform = require('../../mixin/ValueTransform');
+    var Shaders = require('./Shaders');
 
     var TILE_SIZE = 256;
-
-    var vert = [
-        'precision highp float;',
-        'attribute vec2 aPosition;',
-        'attribute vec2 aTextureCoord;',
-        'uniform mat4 uProjectionMatrix;',
-        'uniform mat4 uModelMatrix;',
-        'varying vec2 vTextureCoord;',
-        'void main() {',
-            'vTextureCoord = aTextureCoord;',
-            'gl_Position = uProjectionMatrix * uModelMatrix * vec4( aPosition, 0.0, 1.0 );',
-        '}'
-    ].join('');
-
-    var frag = [
-        'precision highp float;',
-        'uniform sampler2D uTextureSampler;',
-        'uniform float uOpacity;',
-        'varying vec2 vTextureCoord;',
-        'void main() {',
-            'vec4 color = texture2D(uTextureSampler, vTextureCoord);',
-            'gl_FragColor = vec4(color.rgb, color.a * uOpacity);',
-        '}'
-    ].join('');
 
     var Heatmap = WebGL.extend({
 
@@ -42,33 +19,37 @@
         ],
 
         options: {
-            shaders: {
-                vert: vert,
-                frag: frag,
-            }
+            shaders: Shaders.heatmap
         },
 
         onWebGLInit: function() {
-            // create tile renderable
-            this._renderable = new esper.Renderable({
-                vertices: {
-                    0: [
-                        [0, -TILE_SIZE],
-                        [TILE_SIZE, -TILE_SIZE],
-                        [TILE_SIZE, 0],
-                        [0, 0]
-                    ],
-                    1: [
-                        [0, 0],
-                        [1, 0],
-                        [1, 1],
-                        [0, 1]
-                    ]
+            var vertices = new Float32Array([
+                // positions
+                0, -TILE_SIZE,
+                TILE_SIZE, -TILE_SIZE,
+                TILE_SIZE, 0,
+                0, -TILE_SIZE,
+                TILE_SIZE, 0,
+                0, 0,
+                // uvs
+                0, 0,
+                1, 0,
+                1, 1,
+                0, 0,
+                1, 1,
+                0, 1
+            ]);
+            this._quadBuffer = new esper.VertexBuffer(vertices, {
+                0: {
+                    size: 2,
+                    type: 'FLOAT',
+                    byteOffset: 0
                 },
-                indices: [
-                    0, 1, 2,
-                    0, 2, 3
-                ]
+                1: {
+                    size: 2,
+                    type: 'FLOAT',
+                    byteOffset: 2 * 6 * 4
+                }
             });
         },
 
@@ -78,7 +59,7 @@
         },
 
         onCacheLoad: function(tile, cached, coords) {
-            if (cached.data) {
+            if (cached.data && cached.data.byteLength > 0) {
                 this.bufferTileTexture(cached, coords);
             }
         },
@@ -86,7 +67,7 @@
         onCacheLoadExtremaUpdate: function() {
             var self = this;
             _.forIn(this._cache, function(cached) {
-                if (cached.data) {
+                if (cached.data && cached.data.byteLength > 0) {
                     self.bufferTileTexture(cached);
                 }
             });
@@ -135,7 +116,11 @@
 
         renderTiles: function() {
             var self = this;
+            var buffer = this._quadBuffer;
+            var shader = this._shader;
             var dim = Math.pow(2, this._map.getZoom()) * TILE_SIZE;
+            // bind buffer
+            buffer.bind();
             // for each tile
             _.forIn(this._cache, function(cached) {
                 if (!cached.texture) {
@@ -151,23 +136,24 @@
                         TILE_SIZE * coord.x,
                         dim - (TILE_SIZE * coord.y),
                         0);
-                    self._shader.setUniform('uModelMatrix', model);
+                    shader.setUniform('uModelMatrix', model);
                     // draw the tile
-                    self._renderable.draw();
+                    buffer.draw();
                 });
                 // no need to unbind texture
             });
+            // unbind buffer
+            buffer.unbind();
         },
 
         renderFrame: function() {
             // setup
-            var gl = this._gl;
             this._viewport.push();
             this._shader.push();
+            // set uniforms
             this._shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
             this._shader.setUniform('uOpacity', this.getOpacity());
             this._shader.setUniform('uTextureSampler', 0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
             // draw
             this.renderTiles();
             // teardown

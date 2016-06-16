@@ -6,11 +6,17 @@
 
     var NO_OP = function() {};
 
+    var numOverlayLayers = 0;
+
     var Overlay = Base.extend({
 
         options: {
             zIndex: 1,
             handlers: {}
+        },
+
+        _resetMouseCursor: function() {
+            $(this._map._container).css('cursor', '');
         },
 
         onAdd: function(map) {
@@ -19,18 +25,14 @@
             this._tiles = {};
             this._initContainer();
             // add event handlers (after container init)
-            var self = this;
             map.on('click', this.onClick, this);
-            $(this._container).on('mousemove', function(e) {
-                $(map._container).css('cursor', '');
-                self.onMouseMove(e);
-            });
-            $(this._container).on('mouseover', function(e) {
-                self.onMouseOver(e);
-            });
-            $(this._container).on('mouseout', function(e) {
-                self.onMouseOut(e);
-            });
+            if (numOverlayLayers === 0) {
+                // whenever a mouse event occurs, before any overlay layer
+                // processes the event, we clear the style of the mouse cursor
+                map.on('mousemove', this._resetMouseCursor, this);
+            }
+            numOverlayLayers++;
+            map.on('mousemove', this.onMouseMove, this);
             this._resetView();
             this._update();
         },
@@ -40,9 +42,11 @@
             this.off('tileunload', this.onTileUnload, this);
             // remove event handlers (before removing container)
             map.off('click', this.onClick, this);
-            $(this._container).off('mousemove');
-            $(this._container).off('mouseover');
-            $(this._container).off('mouseout');
+            numOverlayLayers--;
+            if (numOverlayLayers === 0) {
+                map.off('mousemove', this._resetMouseCursor, this);
+            }
+            map.off('mousemove', this.onMouseMove, this);
             this._removeAllTiles();
             L.DomUtil.remove(this._container);
             map._removeZoomLimit(this);
