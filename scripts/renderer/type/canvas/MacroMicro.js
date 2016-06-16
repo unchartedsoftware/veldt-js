@@ -260,9 +260,9 @@
             // re-render without selection
             this.clearSelection();
             // get layer coord
-            var layerPixel = this._getLayerPointFromEvent(e.originalEvent);
+            var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
             // get tile coord
-            var coord = this._getTileCoordFromLayerPoint(layerPixel);
+            var coord = this.getTileCoordFromLayerPoint(layerPixel);
             // get tile pixel coord
             var tx = Math.floor(layerPixel.x % TILE_SIZE);
             var ty = Math.floor(layerPixel.y % TILE_SIZE);
@@ -288,9 +288,9 @@
             var canvas = e.originalEvent.target;
             var target = $(canvas);
             // get layer coord
-            var layerPixel = this._getLayerPointFromEvent(e.originalEvent);
+            var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
             // get tile coord
-            var coord = this._getTileCoordFromLayerPoint(layerPixel);
+            var coord = this.getTileCoordFromLayerPoint(layerPixel);
             // get tile pixel coord
             var tx = Math.floor(layerPixel.x % TILE_SIZE);
             var ty = Math.floor(layerPixel.y % TILE_SIZE);

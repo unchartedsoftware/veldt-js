@@ -48,12 +48,12 @@
             };
         },
 
-        _getLayerPointFromEvent: function(e) {
+        getLayerPointFromEvent: function(e) {
             var lonlat = this._map.mouseEventToLatLng(e);
             return this._getLayerPointFromLonLat(lonlat);
         },
 
-        _getTileCoordFromLayerPoint: function(layerPoint) {
+        getTileCoordFromLayerPoint: function(layerPoint) {
             var tileSize = this.options.tileSize;
             return {
                 x: Math.floor(layerPoint.x / tileSize),
@@ -62,7 +62,7 @@
             };
         },
 
-        _getBinCoordFromLayerPoint: function(layerPoint, res) {
+        getBinCoordFromLayerPoint: function(layerPoint, res) {
             var tileSize = this.options.tileSize;
             var resolution = res || this.getResolution() || tileSize;
             var tx = mod(layerPoint.x, tileSize);

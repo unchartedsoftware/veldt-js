@@ -2,6 +2,8 @@
 
     'use strict';
 
+    var moment = require('moment');
+
     var DEFAULT_TILE_SIZE = 256;
     var DEFAULT_X_FIELD = 'pixel.x';
     var DEFAULT_Y_FIELD = 'pixel.y';
@@ -76,18 +78,38 @@
         var tileSize = this.options.tileSize || DEFAULT_TILE_SIZE;
         var pow = Math.pow(2, zoom);
         var extent = tileSize * pow;
-        var xRange = Math.abs(binning.right - binning.left);
-        var yRange = Math.abs(binning.bottom - binning.top);
-        var nx, ny;
-        if (binning.left > binning.right) {
-            nx = 1 - ((x - binning.right) / xRange);
+        var meta = this.getMeta();
+
+        var left, right, bottom, top;
+        if (meta[binning.x].type === 'date') {
+            left = moment(binning.left).valueOf();
+            right = moment(binning.right).valueOf();
+            x = moment(x).valueOf();
         } else {
-            nx = (x - binning.left) / xRange;
+            left = binning.left;
+            right = binning.right;
         }
-        if (binning.top > binning.bottom) {
-            ny = 1 - ((y - binning.bottom) / yRange);
+        if (meta[binning.y].type === 'date') {
+            bottom = moment(binning.bottom).valueOf();
+            top = moment(binning.top).valueOf();
+            y = moment(y).valueOf();
         } else {
-            ny = (y - binning.top) / yRange;
+            bottom = binning.bottom;
+            top = binning.top;
+        }
+
+        var xRange = Math.abs(right - left);
+        var yRange = Math.abs(bottom - top);
+        var nx, ny;
+        if (left > right) {
+            nx = 1 - ((x - right) / xRange);
+        } else {
+            nx = (x - left) / xRange;
+        }
+        if (top > bottom) {
+            ny = 1 - ((y - bottom) / yRange);
+        } else {
+            ny = (y - top) / yRange;
         }
         return {
             x: extent * nx,

@@ -6,17 +6,33 @@
 
     var NO_OP = function() {};
 
+    var numOverlayLayers = 0;
+
     var Overlay = Base.extend({
 
         options: {
-            zIndex: 1
+            zIndex: 1,
+            handlers: {}
         },
 
-        onAdd: function() {
+        _resetMouseCursor: function() {
+            $(this._map._container).css('cursor', '');
+        },
+
+        onAdd: function(map) {
             this.on('tileload', this.onTileLoad, this);
             this.on('tileunload', this.onTileUnload, this);
             this._tiles = {};
             this._initContainer();
+            // add event handlers (after container init)
+            map.on('click', this.onClick, this);
+            if (numOverlayLayers === 0) {
+                // whenever a mouse event occurs, before any overlay layer
+                // processes the event, we clear the style of the mouse cursor
+                map.on('mousemove', this._resetMouseCursor, this);
+            }
+            numOverlayLayers++;
+            map.on('mousemove', this.onMouseMove, this);
             this._resetView();
             this._update();
         },
@@ -24,6 +40,13 @@
         onRemove: function(map) {
             this.off('tileload', this.onTileLoad, this);
             this.off('tileunload', this.onTileUnload, this);
+            // remove event handlers (before removing container)
+            map.off('click', this.onClick, this);
+            numOverlayLayers--;
+            if (numOverlayLayers === 0) {
+                map.off('mousemove', this._resetMouseCursor, this);
+            }
+            map.off('mousemove', this.onMouseMove, this);
             this._removeAllTiles();
             L.DomUtil.remove(this._container);
             map._removeZoomLimit(this);
@@ -227,7 +250,8 @@
             // @event tileload: TileEvent
             // Fired when a tile loads.
             this.fire('tileload', {
-                coords: coords
+                coords: coords,
+                tile: tile
             });
 
             if (this._noTilesToLoad()) {
@@ -244,6 +268,22 @@
                     setTimeout(L.bind(this._pruneTiles, this), 250);
                 }
             }
+        },
+
+        onMouseMove: function() {
+            // override
+        },
+
+        onMouseOver: function() {
+            // override
+        },
+
+        onMouseOut: function() {
+            // override
+        },
+
+        onClick: function() {
+            // override
         }
 
     });
