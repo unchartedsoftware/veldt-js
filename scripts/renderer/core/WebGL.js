@@ -5,6 +5,8 @@
     var esper = require('esper');
     var Overlay = require('./Overlay');
 
+    var TILE_SIZE = 256;
+
     var WebGL = Overlay.extend({
 
         onAdd: function(map) {
@@ -65,13 +67,17 @@
                     return;
                 }
                 // execute callback
-                var width = self._container.width;
-                var height = self._container.height;
-                var devicePixelRatio = (L.Browser.retina) ? 2 : 1;
+                var size = self._map.getSize();
+                var devicePixelRatio = window.devicePixelRatio;
+                // set viewport size
                 self._viewport = new esper.Viewport({
-                    width: width * devicePixelRatio,
-                    height: height * devicePixelRatio
+                    width: size.x * devicePixelRatio,
+                    height: size.y * devicePixelRatio
                 });
+                // set canvas size
+                self._gl.canvas.style.width = size.x + 'px';
+                self._gl.canvas.style.height = size.y + 'px';
+                // flag as ready
                 self._initialized = true;
                 self._shader = shader;
                 self._draw();
@@ -122,7 +128,7 @@
 
         getProjectionMatrix: function() {
             var bounds = this._map.getPixelBounds();
-            var dim = Math.pow(2, this._map.getZoom()) * 256;
+            var dim = Math.pow(2, this._map.getZoom()) * TILE_SIZE;
             return this.getOrthoMatrix(
                 bounds.min.x,
                 bounds.max.x,
@@ -133,7 +139,7 @@
 
         _positionContainer: function() {
             var size = this._map.getSize();
-            var devicePixelRatio = (L.Browser.retina) ? 2 : 1;
+            var devicePixelRatio = window.devicePixelRatio;
             // set viewport size
             this._viewport.resize(
                 size.x * devicePixelRatio,
