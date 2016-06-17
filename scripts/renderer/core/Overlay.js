@@ -6,17 +6,19 @@
 
     var NO_OP = function() {};
 
-    var numOverlayLayers = 0;
+    var maps = {};
+
+    var resetMouseCursorStyle = function() {
+        // we only want this bound ONCE per map
+        var map = this;
+        $(map).css('cursor', '');
+    };
 
     var Overlay = Base.extend({
 
         options: {
             zIndex: 1,
             handlers: {}
-        },
-
-        _resetMouseCursor: function() {
-            $(this._map._container).css('cursor', '');
         },
 
         onAdd: function(map) {
@@ -26,12 +28,13 @@
             this._initContainer();
             // add event handlers (after container init)
             map.on('click', this.onClick, this);
-            if (numOverlayLayers === 0) {
+            if (!maps[map.id]) {
                 // whenever a mouse event occurs, before any overlay layer
                 // processes the event, we clear the style of the mouse cursor
-                map.on('mousemove', this._resetMouseCursor, this);
+                map.on('mousemove', resetMouseCursorStyle, map);
+                maps[map.id] = 0;
             }
-            numOverlayLayers++;
+            maps[map.id]++;
             map.on('mousemove', this.onMouseMove, this);
             this._resetView();
             this._update();
@@ -42,9 +45,9 @@
             this.off('tileunload', this.onTileUnload, this);
             // remove event handlers (before removing container)
             map.off('click', this.onClick, this);
-            numOverlayLayers--;
-            if (numOverlayLayers === 0) {
-                map.off('mousemove', this._resetMouseCursor, this);
+            maps[map.id]--;
+            if (maps[map.id] === 0) {
+                map.off('mousemove', resetMouseCursorStyle, map);
             }
             map.off('mousemove', this.onMouseMove, this);
             this._removeAllTiles();

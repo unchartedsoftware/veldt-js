@@ -11,6 +11,9 @@
     // image layer
     var Image = require('./core/Image');
 
+    // composite layer
+    var Composite = require('./core/Composite');
+
     // live tile layers
     var Heatmap = require('./type/Heatmap');
     var TopTrails = require('./type/TopTrails');
@@ -26,6 +29,7 @@
         Debug: Debug,
         Pending: Pending,
         Image: Image,
+        Composite: Composite,
         Heatmap: Heatmap,
         TopCount: TopCount,
         TopTrails: TopTrails,
