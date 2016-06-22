@@ -24,13 +24,14 @@
                 var renderer;
                 // recursively extend and initialize
                 if (options.rendererClass.prototype) {
-                    // console.log(this.type);
-                    // console.log(JSON.stringify(this.options));
                     renderer = new options.rendererClass();
                 } else {
                     renderer = options.rendererClass;
                 }
+                // extend this object
                 $.extend(true, this, renderer);
+                // copy prototype options property by value, this is important
+                this.options = $.extend(true, {}, this.options);
                 delete options.rendererClass;
             }
             // set options
