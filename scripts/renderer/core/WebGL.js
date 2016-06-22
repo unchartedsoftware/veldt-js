@@ -159,6 +159,9 @@
                     if (!this._isZooming) {
                         // position the container and resize viewport
                         this._positionContainer();
+                        // clear buffer
+                        var gl = this._gl;
+                        gl.clear(gl.COLOR_BUFFER_BIT);
                         // draw the frame
                         this.renderFrame();
                     }

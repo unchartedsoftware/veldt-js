@@ -4,9 +4,6 @@
 
     var boolQueryCheck = require('../query/Bool');
 
-    var MIN = Number.MAX_VALUE;
-    var MAX = 0;
-
     function mod(n, m) {
         return ((n % m) + m) % m;
     }
@@ -43,15 +40,15 @@
                 binning: {}
             };
             // set extrema / cache
+            this._cache = {};
             this.clearExtrema();
         },
 
         clearExtrema: function() {
             this._extrema = {
-                min: MIN,
-                max: MAX
+                min: Number.MAX_VALUE,
+                max: 0
             };
-            this._cache = {};
         },
 
         getExtrema: function() {
