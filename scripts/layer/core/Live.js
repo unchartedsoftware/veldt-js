@@ -21,14 +21,17 @@
             options = options || {};
             // set renderer
             if (options.rendererClass) {
+                var renderer;
                 // recursively extend and initialize
                 if (options.rendererClass.prototype) {
-                    $.extend(true, this, options.rendererClass.prototype);
-                    options.rendererClass.prototype.initialize.apply(this, arguments);
+                    // console.log(this.type);
+                    // console.log(JSON.stringify(this.options));
+                    renderer = new options.rendererClass();
                 } else {
-                    $.extend(true, this, options.rendererClass);
-                    options.rendererClass.initialize.apply(this, arguments);
+                    renderer = options.rendererClass;
                 }
+                $.extend(true, this, renderer);
+                delete options.rendererClass;
             }
             // set options
             L.setOptions(this, options);
@@ -235,7 +238,7 @@
                     }
                 });
             }
-        },
+        }
 
     });
 
