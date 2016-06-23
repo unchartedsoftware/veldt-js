@@ -143,10 +143,11 @@
         },
 
         onTileUnload: function(event) {
+            var coords = event.coords;
             // cache key from coords
-            var key = this.cacheKeyFromCoord(event.coords);
+            var key = this.cacheKeyFromCoord(coords);
             // cache key from normalized coords
-            var nkey = this.cacheKeyFromCoord(event.coords, true);
+            var nkey = this.cacheKeyFromCoord(coords, true);
             // get cache entry
             var cached = this._cache[nkey];
             // could the be case where the cache is cleared before tiles are
@@ -161,33 +162,13 @@
                 // get the tile being deleted
                 var tile = cached.tiles[key];
                 // no more tiles use this cached data, so delete it
-                this.onCacheUnload(tile, cached, event.coords);
+                this.fire('cacheunload', {
+                    tile: tile,
+                    coords: coords,
+                    entry: cached
+                });
                 delete this._cache[nkey];
             }
-        },
-
-        onCacheUnload: function(/*tile, cached, coords*/) {
-            // executed when the data for a tile is purged from the cache
-            // allows for any associated visuals to be purged if required
-        },
-
-        onCacheHit: function(/*tile, cached, coords*/) {
-            // this is executed for a tile whose data is already in memory.
-            // probably just draw the tile.
-        },
-
-        onCacheLoad: function(/*tile, cached, coords*/) {
-            // this is executed when the data for a tile is retreived and cached
-            // probably just draw the tile.
-        },
-
-        onCacheLoadExtremaUpdate: function(/*tile, cached, coords*/) {
-            // this is executed when the data for a tile is retreived and is
-            // outside the current extrema. probably just redraw all tiles.
-        },
-
-        requestTile: function() {
-            // override
         },
 
         onTileLoad: function(event) {
@@ -206,7 +187,11 @@
                 cached.tiles[key] = tile;
                 if (!cached.isPending) {
                     // cache entry already exists
-                    self.onCacheHit(tile, cached, coords);
+                    self.fire('cachehit', {
+                        tile: tile,
+                        coords: coords,
+                        entry: cached
+                    });
                 }
             } else {
                 // create a cache entry
@@ -224,18 +209,33 @@
                         // tile is no longer being tracked, ignore
                         return;
                     }
+                    // flag as no longer pending
                     cached.isPending = false;
+                    // transform and store tile data in cache
                     cached.data = self.options.transform(data);
-                    // update the extrema
-                    if (cached.data && self.updateExtrema(cached.data)) {
-                        // extrema changed
-                        self.onCacheLoadExtremaUpdate(tile, cached, coords);
-                    } else {
+                    if (cached.data) {
                         // data is loaded into cache
-                        self.onCacheLoad(tile, cached, coords);
+                        self.fire('cacheload', {
+                            tile: tile,
+                            coords: coords,
+                            entry: cached
+                        });
+                        // update the extrema
+                        if (self.updateExtrema(cached.data)) {
+                            // if extrema changed, fire event
+                            self.fire('extremachange', {
+                                tile: tile,
+                                coords: coords,
+                                entry: cached
+                            });
+                        }
                     }
                 });
             }
+        },
+
+        requestTile: function() {
+            // override
         }
 
     });

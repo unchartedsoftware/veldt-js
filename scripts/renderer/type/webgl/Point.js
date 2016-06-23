@@ -185,7 +185,6 @@
 
         onMouseMove: function(e) {
             var canvas = e.originalEvent.target;
-            var target = $(canvas);
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
             var radius = this.getCollisionRadius();
             var collision = this.pick(layerPixel, radius);
@@ -198,19 +197,22 @@
                     if (this.highlighted.value !== collision) {
                         // new collision
                         // execute mouseout for old
-                        if (this.options.handlers.mouseout) {
-                            this.options.handlers.mouseout(target, this.highlighted.value);
-                        }
+                        this.fire('mouseout', {
+                            elem: canvas,
+                            value: this.highlighted.value
+                        });
                         // execute mouseover for new
-                        if (this.options.handlers.mouseover) {
-                            this.options.handlers.mouseover(target, collision);
-                        }
+                        this.fire('mouseover', {
+                            elem: canvas,
+                            value: collision
+                        });
                     }
                 } else {
                     // no previous collision, execute mouseover
-                    if (this.options.handlers.mouseover) {
-                        this.options.handlers.mouseover(target, collision);
-                    }
+                    this.fire('mouseover', {
+                        elem: canvas,
+                        value: collision
+                    });
                 }
                 // flag as highlighted
                 this.highlighted = {
@@ -227,9 +229,10 @@
             }
             // mouse out
             if (this.highlighted) {
-                if (this.options.handlers.mouseout) {
-                    this.options.handlers.mouseout(target, this.highlighted.value);
-                }
+                this.fire('mouseout', {
+                    elem: canvas,
+                    value: this.highlighted.value
+                });
             }
             // clear highlighted flag
             this.highlighted = null;
@@ -237,7 +240,6 @@
 
         onClick: function(e) {
             var canvas = e.originalEvent.target;
-             var target = $(canvas);
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
             var coord = this.getTileCoordFromLayerPoint(layerPixel);
             var hash = this.cacheKeyFromCoord(coord);
@@ -253,9 +255,10 @@
                         (size * TILE_SIZE) - collision.y
                     ]
                 };
-                if (this.options.handlers.click) {
-                    this.options.handlers.click(target, collision);
-                }
+                this.fire('click', {
+                    elem: canvas,
+                    value: collision
+                });
             } else {
                 this.selected = null;
             }
@@ -291,7 +294,9 @@
             // no need to actually unbuffer the data
         },
 
-        onCacheLoad: function(tile, cached, coords) {
+        onCacheLoad: function(event) {
+            var cached = event.entry;
+            var coords = event.coords;
             if (cached.data && cached.data.length > 0) {
                 // convert x / y to tile pixels
                 var data = cached.data;
@@ -347,7 +352,9 @@
             }
         },
 
-        onCacheUnload: function(tile, cached, coords) {
+        onCacheUnload: function(event) {
+            var cached = event.entry;
+            var coords = event.coords;
             if (cached.data && cached.data.length > 0) {
                 this.removeTileFromBuffer(coords);
                 var radius = this.getCollisionRadius();

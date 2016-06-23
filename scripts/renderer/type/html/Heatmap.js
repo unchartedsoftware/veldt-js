@@ -23,19 +23,18 @@
             var target = $(e.originalEvent.target);
             var value = target.attr('data-value');
             if (value) {
-                if (this.options.handlers.mouseover) {
-                    var $parent = target.parents('.leaflet-html-tile');
-                    this.options.handlers.mouseover(target, {
-                        value: parseInt(value, 10),
-                        x: parseInt($parent.attr('data-x'), 10),
-                        y: parseInt($parent.attr('data-y'), 10),
-                        z: this._map.getZoom(),
-                        bx: parseInt(target.attr('data-bx'), 10),
-                        by: parseInt(target.attr('data-by'), 10),
-                        type: 'heatmap',
-                        layer: this
-                    });
-                }
+                var $parent = target.parents('.leaflet-html-tile');
+                this.fire('mouseover', {
+                    elem: e.originalEvent.target,
+                    value: parseInt(value, 10),
+                    x: parseInt($parent.attr('data-x'), 10),
+                    y: parseInt($parent.attr('data-y'), 10),
+                    z: this._map.getZoom(),
+                    bx: parseInt(target.attr('data-bx'), 10),
+                    by: parseInt(target.attr('data-by'), 10),
+                    type: 'heatmap',
+                    layer: this
+                });
             }
         },
 
@@ -43,19 +42,18 @@
             var target = $(e.originalEvent.target);
             var value = target.attr('data-value');
             if (value) {
-                if (this.options.handlers.mouseout) {
-                    var $parent = target.parents('.leaflet-html-tile');
-                    this.options.handlers.mouseout(target, {
-                        value: value,
-                        x: parseInt($parent.attr('data-x'), 10),
-                        y: parseInt($parent.attr('data-y'), 10),
-                        z: this._map.getZoom(),
-                        bx: parseInt(target.attr('data-bx'), 10),
-                        by: parseInt(target.attr('data-by'), 10),
-                        type: 'heatmap',
-                        layer: this
-                    });
-                }
+                var $parent = target.parents('.leaflet-html-tile');
+                this.fire('mouseout', {
+                    elem: e.originalEvent.target,
+                    value: parseInt(value, 10),
+                    x: parseInt($parent.attr('data-x'), 10),
+                    y: parseInt($parent.attr('data-y'), 10),
+                    z: this._map.getZoom(),
+                    bx: parseInt(target.attr('data-bx'), 10),
+                    by: parseInt(target.attr('data-by'), 10),
+                    type: 'heatmap',
+                    layer: this
+                });
             }
         },
 
@@ -73,19 +71,18 @@
             }
             var value = target.attr('data-value');
             if (value) {
-                if (this.options.handlers.click) {
-                    var $parent = target.parents('.leaflet-html-tile');
-                    this.options.handlers.click(target, {
-                        value: value,
-                        x: parseInt($parent.attr('data-x'), 10),
-                        y: parseInt($parent.attr('data-y'), 10),
-                        z: this._map.getZoom(),
-                        bx: parseInt(target.attr('data-bx'), 10),
-                        by: parseInt(target.attr('data-by'), 10),
-                        type: 'heatmap',
-                        layer: this
-                    });
-                }
+                var $parent = target.parents('.leaflet-html-tile');
+                this.fire('click', {
+                    elem: e.originalEvent.target,
+                    value: parseInt(value, 10),
+                    x: parseInt($parent.attr('data-x'), 10),
+                    y: parseInt($parent.attr('data-y'), 10),
+                    z: this._map.getZoom(),
+                    bx: parseInt(target.attr('data-bx'), 10),
+                    by: parseInt(target.attr('data-by'), 10),
+                    type: 'heatmap',
+                    layer: this
+                });
             }
         },
 
