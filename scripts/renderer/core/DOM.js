@@ -25,6 +25,7 @@
             this.off('cachehit', this.onCacheHit, this);
             this.off('cacheunload', this.onCacheUnload, this);
             this.off('extremachange', this.onExtremaChange, this);
+            L.GridLayer.prototype.onRemove.call(this, map);
         },
 
         isTargetLayer: function( elem ) {
