@@ -11,7 +11,7 @@
     var resetMouseCursorStyle = function() {
         // we only want this bound ONCE per map
         var map = this;
-        $(map).css('cursor', '');
+        $(map._container).css('cursor', '');
     };
 
     var Overlay = Base.extend({
