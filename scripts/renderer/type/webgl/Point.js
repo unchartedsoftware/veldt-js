@@ -187,10 +187,9 @@
             var canvas = e.originalEvent.target;
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
             var radius = this.getCollisionRadius();
-            var collision = this.pick(layerPixel, radius);
-            var coord = this.getTileCoordFromLayerPoint(layerPixel);
-            var hash = this.cacheKeyFromCoord(coord);
-            var size = Math.pow(2, this._map.getZoom());
+            var zoom = this._map.getZoom();
+            var collision = this.pick(layerPixel, radius, zoom);
+            var size = Math.pow(2, zoom);
             if (collision) {
                 // mimic mouseover / mouseout events
                 if (this.highlighted) {
@@ -214,6 +213,9 @@
                         value: collision
                     });
                 }
+                // use collision point to find tile
+                var coord = this.getTileCoordFromLayerPoint(collision);
+                var hash = this.cacheKeyFromCoord(coord);
                 // flag as highlighted
                 this.highlighted = {
                     tiles: this._cache[hash].tiles,
@@ -241,12 +243,15 @@
         onClick: function(e) {
             var canvas = e.originalEvent.target;
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
-            var coord = this.getTileCoordFromLayerPoint(layerPixel);
-            var hash = this.cacheKeyFromCoord(coord);
             var radius = this.getCollisionRadius();
-            var size = Math.pow(2, this._map.getZoom());
-            var collision = this.pick(layerPixel, radius);
+            var zoom = this._map.getZoom();
+            var size = Math.pow(2, zoom);
+            var collision = this.pick(layerPixel, radius, zoom);
             if (collision) {
+                // use collision point to find tile
+                var coord = this.getTileCoordFromLayerPoint(collision);
+                var hash = this.cacheKeyFromCoord(coord);
+                // flag as selected
                 this.selected = {
                     tiles: this._cache[hash].tiles,
                     value: collision,

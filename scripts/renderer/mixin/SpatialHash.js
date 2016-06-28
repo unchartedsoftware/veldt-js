@@ -8,6 +8,10 @@
         return f % 1;
     }
 
+    function mod(n, m) {
+        return ((n % m) + m) % m;
+    }
+
     function getHash(lx, ly, radius) {
         var diameter = radius * 2;
         var xHash = Math.floor(lx / diameter);
@@ -17,7 +21,7 @@
 
     function getHashes(lx, ly, radius, zoom) {
         var diameter = radius * 2;
-        var numCells = (Math.pow(2, zoom) * TILE_SIZE ) / diameter;
+        var numCells = Math.ceil((Math.pow(2, zoom) * TILE_SIZE) / diameter);
         var x = lx / diameter;
         var y = ly / diameter;
         var fx = fract(x);
@@ -55,20 +59,39 @@
         if (px && ny) {
             cells.push([cx+1, cy-1]);
         }
-        return cells.filter(function(cell) {
-            // remove cells outside tile (shouldn't occur?)
-            var x = cell[0];
-            var y = cell[1];
-            return x >= 0 && x < numCells && y >= 0 && y < numCells;
-        }).map(function(cell) {
+        // return hashes
+        return cells.map(function(cell) {
+            // mod the cell coords if they overflow
+            cell[0] = mod(cell[0], numCells);
+            cell[1] = mod(cell[1], numCells);
             // hash
             return cell[0] + ':' + cell[1];
         });
     }
 
-    function circleCollision(point, origin, radius) {
-        var dx = point.x - origin.x;
-        var dy = point.y - origin.y;
+    function circleCollision(point, origin, radius, zoom) {
+        var dim = Math.pow(2, zoom) * TILE_SIZE;
+        var p, o;
+        // check cases where the point is near the opposing horizontal extrema
+        // of the map and ensure that the distance calculated is the shortest
+        if (point.x < radius && dim - origin.x < radius) {
+            p = point;
+            o = {
+                x: origin.x - dim,
+                y: origin.y
+            };
+        } else if (dim - point.x < radius && origin.x < radius) {
+            p = {
+                x: point.x - dim,
+                y: point.y
+            };
+            o = origin;
+        } else {
+            p = point;
+            o = origin;
+        }
+        var dx = p.x - o.x;
+        var dy = p.y - o.y;
         var distSqr = (dx * dx) + (dy * dy);
         if (distSqr < (radius * radius)) {
             return true;
@@ -115,7 +138,7 @@
         }
     }
 
-    function pick(point, radius) {
+    function pick(point, radius, zoom) {
         var hash = getHash(point.x, point.y, radius);
         // get points in bin
         var points = this._spatialHash[hash];
@@ -125,7 +148,7 @@
             for (i=0; i<points.length; i++) {
                 p = points[i];
                 // check for collision
-                if (circleCollision(point, p, radius)) {
+                if (circleCollision(point, p, radius, zoom)) {
                     // return first point
                     return p;
                 }
