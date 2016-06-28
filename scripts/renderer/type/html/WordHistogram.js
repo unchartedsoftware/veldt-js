@@ -263,7 +263,7 @@
                 $entry.append($topic);
                 $html.append($entry);
             });
-            $html.css('top', ( this.options.tileSize / 2 ) - (totalHeight / 2));
+            $html.css('top', (this.options.tileSize / 2) - (totalHeight / 2));
             container.innerHTML = $html[0].outerHTML;
         }
     });

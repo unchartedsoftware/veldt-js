@@ -6,8 +6,8 @@
 }
 
 .blinking {
-    background-color: rgba( 150, 150, 150, 0.2 );
-    border: 1px solid rgba( 0, 0, 0, 0.1 );
+    background-color: rgba(150, 150, 150, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.1);
 
     -webkit-animation-name: blinker;
     -webkit-animation-duration: 1.2s;

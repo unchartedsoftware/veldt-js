@@ -66,7 +66,7 @@
                 // this layer is not the target
                 return;
             }
-            if ( target.hasClass('heatmap-pixel') ) {
+            if (target.hasClass('heatmap-pixel')) {
                 target.addClass('highlight');
             }
             var value = target.attr('data-value');

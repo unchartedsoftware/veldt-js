@@ -28,8 +28,8 @@
             L.GridLayer.prototype.onRemove.call(this, map);
         },
 
-        isTargetLayer: function( elem ) {
-            return this._container && $.contains(this._container, elem );
+        isTargetLayer: function(elem) {
+            return this._container && $.contains(this._container, elem);
         },
 
         onCacheHit: function(event) {

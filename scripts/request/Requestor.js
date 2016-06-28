@@ -70,11 +70,11 @@
         establishConnection(this, callback);
     }
 
-    Requestor.prototype.getHash = function( /*req*/ ) {
+    Requestor.prototype.getHash = function(/*req*/) {
         // override
     };
 
-    Requestor.prototype.getURL = function( /*res*/ ) {
+    Requestor.prototype.getURL = function(/*res*/) {
         // override
     };
 

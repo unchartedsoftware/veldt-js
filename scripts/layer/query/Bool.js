@@ -20,7 +20,7 @@
 
     function checkQueries(meta, queries) {
         if (_.isArray(queries)) {
-            queries.forEach( function(query) {
+            queries.forEach(function(query) {
                 checkQuery(meta,query);
             });
             return queries;
