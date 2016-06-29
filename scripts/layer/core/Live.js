@@ -144,10 +144,20 @@
 
         onTileUnload: function(event) {
             var coords = event.coords;
+            // respect the TMS setting in the options
+            if (this.options && this.options.tms) {
+                coords = {
+                    x: event.coords.x,
+                    y: Math.pow(2, event.coords.z) - 1 - event.coords.y,
+                    z: event.coords.z
+                };
+            }
+
             // cache key from coords
             var key = this.cacheKeyFromCoord(coords);
             // cache key from normalized coords
             var nkey = this.cacheKeyFromCoord(coords, true);
+
             // get cache entry
             var cached = this._cache[nkey];
             // could the be case where the cache is cleared before tiles are
@@ -155,7 +165,7 @@
             if (!cached) {
                 return;
             }
-            // remove the tile from the cache
+                       // remove the tile from the cache
             delete cached.tiles[key];
             // don't remove cache entry unless to tiles use it anymore
             if (_.keys(cached.tiles).length === 0) {
@@ -173,13 +183,23 @@
 
         onTileLoad: function(event) {
             var self = this;
+
             var coords = event.coords;
-            var ncoords = this.getNormalizedCoords(event.coords);
+            // respect the TMS setting in the options
+            if (this.options && this.options.tms) {
+                coords = {
+                    x: event.coords.x,
+                    y: Math.pow(2, event.coords.z) - 1 - event.coords.y,
+                    z: event.coords.z
+                };
+            }
+
+            var ncoords = this.getNormalizedCoords(coords);
             var tile = event.tile;
             // cache key from coords
-            var key = this.cacheKeyFromCoord(event.coords);
+            var key = this.cacheKeyFromCoord(coords);
             // cache key from normalized coords
-            var nkey = this.cacheKeyFromCoord(event.coords, true);
+            var nkey = this.cacheKeyFromCoord(coords, true);
             // check cache
             var cached = this._cache[nkey];
             if (cached) {

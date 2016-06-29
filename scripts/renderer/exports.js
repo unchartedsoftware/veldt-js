@@ -2,6 +2,12 @@
 
     'use strict';
 
+    var Core = {
+        HTML: require('./core/HTML'),
+        WebGL: require('./core/WebGL'),
+        Canvas: require('./core/Canvas')
+    };
+
     // canvas renderers
     var Canvas = {
         Heatmap: require('./type/canvas/Heatmap'),
@@ -38,6 +44,7 @@
     };
 
     module.exports = {
+        Core: Core,
         HTML: HTML,
         Canvas: Canvas,
         WebGL: WebGL,

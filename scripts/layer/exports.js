@@ -14,6 +14,9 @@
     // composite layer
     var Composite = require('./core/Composite');
 
+    // live layer - base type for extension
+    var Live = require('./core/Live');
+
     // live tile layers
     var Heatmap = require('./type/Heatmap');
     var TopTrails = require('./type/TopTrails');
@@ -30,6 +33,7 @@
         Pending: Pending,
         Image: Image,
         Composite: Composite,
+        Live: Live,
         Heatmap: Heatmap,
         TopCount: TopCount,
         TopTrails: TopTrails,

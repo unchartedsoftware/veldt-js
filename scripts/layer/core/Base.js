@@ -37,9 +37,8 @@
             return (this._brightness !== undefined) ? this._brightness : 1;
         },
 
-       _getLayerPointFromLonLat: function(lonlatPoint) {
-            var pixel = this._map.project(lonlatPoint);
-            var zoom = this._map.getZoom();
+        getLayerPointFromLonLat: function(lonlatPoint, zoom) {
+            var pixel = this._map.project(lonlatPoint, zoom);
             var pow = Math.pow(2, zoom);
             var tileSize = this.options.tileSize;
             return {
@@ -50,7 +49,7 @@
 
         getLayerPointFromEvent: function(e) {
             var lonlat = this._map.mouseEventToLatLng(e);
-            return this._getLayerPointFromLonLat(lonlat);
+            return this._getLayerPointFromLonLat(lonlat, this._map.getZoom());
         },
 
         getTileCoordFromLayerPoint: function(layerPoint) {
@@ -66,7 +65,8 @@
             var tileSize = this.options.tileSize;
             var resolution = res || this.getResolution() || tileSize;
             var tx = mod(layerPoint.x, tileSize);
-            var ty = mod(layerPoint.y, tileSize);
+            var y = this.options.tms ? resolution - layerPoint.y : layerPoint.y;
+            var ty = mod(y, tileSize);
             var pixelSize = tileSize / resolution;
             var bx = Math.floor(tx / pixelSize);
             var by = Math.floor(ty / pixelSize);
