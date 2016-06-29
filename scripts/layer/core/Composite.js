@@ -25,6 +25,7 @@
             _.forIn(functions, function(layers, func) {
                 self._extend(layers, func);
             });
+            this.layers = layers;
         },
 
         _extend: function(layers, func) {

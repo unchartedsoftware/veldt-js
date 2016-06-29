@@ -28,7 +28,7 @@
         },
 
         onMouseMove: function(e) {
-            var target = $(e.originalEvent.target);
+            var target = e.originalEvent.target;
             if (this.highlighted) {
                 // clear existing highlight
                 this.clearTiles();
@@ -64,9 +64,10 @@
                     };
                     if (!this.highlighted) {
                         // execute callback
-                        if (this.options.handlers.mouseover) {
-                            this.options.handlers.mouseover(target, collision);
-                        }
+                        this.fire('mouseover', {
+                            elem: target,
+                            value: collision
+                        });
                     }
                     // flag as highlighted
                     this.highlighted = collision;
@@ -77,9 +78,10 @@
             }
             // mouse out
             if (this.highlighted) {
-                if (this.options.handlers.mouseout) {
-                    this.options.handlers.mouseout(target, this.highlighted);
-                }
+                this.fire('mouseout', {
+                    elem: target,
+                    value: this.highlighted
+                });
             }
             // clear highlighted flag
             this.highlighted = null;

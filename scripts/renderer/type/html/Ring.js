@@ -23,7 +23,7 @@
                 // this layer is not the target
                 return;
             }
-            if ( target.hasClass('heatmap-ring') ) {
+            if (target.hasClass('heatmap-ring')) {
                 target.addClass('highlight');
             }
         },

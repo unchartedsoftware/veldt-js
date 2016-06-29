@@ -6,10 +6,6 @@
 
     var Canvas = DOM.extend({
 
-        options: {
-            handlers: {}
-        },
-
         onAdd: function(map) {
             DOM.prototype.onAdd.call(this, map);
             // handlers

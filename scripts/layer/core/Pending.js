@@ -69,10 +69,11 @@
         _updateTile: function(coord, tile) {
             // get hash
             var hash = this._getTileHash(coord);
-            $(tile).addClass(this._getTileClass(hash));
+            $(tile).addClass(this._getTileClass(hash) + ' pending');
             if (this._pendingTiles[hash] > 0) {
                 this.renderTile(tile, coord);
             } else {
+                $(tile).removeClass('pending');
                 tile.innerHTML = '';
             }
         },

@@ -18,7 +18,7 @@
                 'varying vec2 vTextureCoord;',
                 'void main() {',
                     'vTextureCoord = aTextureCoord;',
-                    'gl_Position = uProjectionMatrix * uModelMatrix * vec4( aPosition, 0.0, 1.0 );',
+                    'gl_Position = uProjectionMatrix * uModelMatrix * vec4(aPosition, 0.0, 1.0);',
                 '}'
             ].join(''),
             frag: [
@@ -50,7 +50,7 @@
                 'void main() {',
                     'vec2 scaledPos = uScale * aPosition;',
                     'vec2 modelPosition = (uUseUniform > 0) ? scaledPos + uOffset : scaledPos + aOffset;',
-                    'gl_Position = uProjectionMatrix * uModelMatrix * vec4( modelPosition, 0.0, 1.0 );',
+                    'gl_Position = uProjectionMatrix * uModelMatrix * vec4(modelPosition, 0.0, 1.0);',
                 '}'
             ].join(''),
             frag: [

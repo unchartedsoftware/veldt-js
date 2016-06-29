@@ -11,19 +11,22 @@
     var resetMouseCursorStyle = function() {
         // we only want this bound ONCE per map
         var map = this;
-        $(map).css('cursor', '');
+        $(map._container).css('cursor', '');
     };
 
     var Overlay = Base.extend({
 
         options: {
-            zIndex: 1,
-            handlers: {}
+            zIndex: 1
         },
 
         onAdd: function(map) {
             this.on('tileload', this.onTileLoad, this);
             this.on('tileunload', this.onTileUnload, this);
+            this.on('cacheload', this.onCacheLoad, this);
+            this.on('cachehit', this.onCacheHit, this);
+            this.on('cacheunload', this.onCacheUnload, this);
+            this.on('extremachange', this.onExtremaChange, this);
             this._tiles = {};
             this._initContainer();
             // add event handlers (after container init)
@@ -43,6 +46,10 @@
         onRemove: function(map) {
             this.off('tileload', this.onTileLoad, this);
             this.off('tileunload', this.onTileUnload, this);
+            this.off('cacheload', this.onCacheLoad, this);
+            this.off('cachehit', this.onCacheHit, this);
+            this.off('cacheunload', this.onCacheUnload, this);
+            this.off('extremachange', this.onExtremaChange, this);
             // remove event handlers (before removing container)
             map.off('click', this.onClick, this);
             maps[map.id]--;
@@ -273,15 +280,23 @@
             }
         },
 
+        onCacheHit: function() {
+            // override
+        },
+
+        onCacheLoad: function() {
+            // override
+        },
+
+        onExtremaChange: function() {
+            // override
+        },
+
+        onCacheUnload: function() {
+            // override
+        },
+
         onMouseMove: function() {
-            // override
-        },
-
-        onMouseOver: function() {
-            // override
-        },
-
-        onMouseOut: function() {
             // override
         },
 

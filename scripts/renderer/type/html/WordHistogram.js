@@ -93,18 +93,18 @@
             $('.word-histogram-entry').removeClass('hover');
             var word = target.attr('data-word');
             if (word) {
-                $('.word-histogram-entry[data-word=' + word + ']').addClass('hover');
-                if (this.options.handlers.mouseover) {
-                    var $parent = target.parents('.leaflet-html-tile');
-                    this.options.handlers.mouseover(target, {
-                        value: word,
-                        x: parseInt($parent.attr('data-x'), 10),
-                        y: parseInt($parent.attr('data-y'), 10),
-                        z: this._map.getZoom(),
-                        type: 'word-histogram',
-                        layer: this
-                    });
-                }
+                $('.word-histogram-entry[data-word="' + word + '"]').addClass('hover');
+                var $parent = target.parents('.leaflet-html-tile');
+                // fire event
+                this.fire('mouseover', {
+                    elem: e.originalEvent.target,
+                    value: word,
+                    x: parseInt($parent.attr('data-x'), 10),
+                    y: parseInt($parent.attr('data-y'), 10),
+                    z: this._map.getZoom(),
+                    type: 'word-histogram',
+                    layer: this
+                });
             }
         },
 
@@ -113,17 +113,17 @@
             $('.word-histogram-entry').removeClass('hover');
             var word = target.attr('data-word');
             if (word) {
-                if (this.options.handlers.mouseout) {
-                    var $parent = target.parents('.leaflet-html-tile');
-                    this.options.handlers.mouseout(target, {
-                        value: word,
-                        x: parseInt($parent.attr('data-x'), 10),
-                        y: parseInt($parent.attr('data-y'), 10),
-                        z: this._map.getZoom(),
-                        type: 'word-histogram',
-                        layer: this
-                    });
-                }
+                var $parent = target.parents('.leaflet-html-tile');
+                // fire event
+                this.fire('mouseout', {
+                    elem: e.originalEvent.target,
+                    value: word,
+                    x: parseInt($parent.attr('data-x'), 10),
+                    y: parseInt($parent.attr('data-y'), 10),
+                    z: this._map.getZoom(),
+                    type: 'word-histogram',
+                    layer: this
+                });
             }
         },
 
@@ -140,19 +140,19 @@
             var word = target.attr('data-word');
             if (word) {
                 $(this._container).addClass('highlight');
-                $('.word-histogram-entry[data-word=' + word + ']').addClass('highlight');
+                $('.word-histogram-entry[data-word="' + word + '"]').addClass('highlight');
                 this.highlight = word;
-                if (this.options.handlers.click) {
-                    var $parent = target.parents('.leaflet-html-tile');
-                    this.options.handlers.click(target, {
-                        value: word,
-                        x: parseInt($parent.attr('data-x'), 10),
-                        y: parseInt($parent.attr('data-y'), 10),
-                        z: this._map.getZoom(),
-                        type: 'word-histogram',
-                        layer: this
-                    });
-                }
+                var $parent = target.parents('.leaflet-html-tile');
+                // fire event
+                this.fire('click', {
+                    elem: e.originalEvent.target,
+                    value: word,
+                    x: parseInt($parent.attr('data-x'), 10),
+                    y: parseInt($parent.attr('data-y'), 10),
+                    z: this._map.getZoom(),
+                    type: 'word-histogram',
+                    layer: this
+                });
             } else {
                 this.clearSelection();
             }
@@ -263,7 +263,7 @@
                 $entry.append($topic);
                 $html.append($entry);
             });
-            $html.css('top', ( this.options.tileSize / 2 ) - (totalHeight / 2));
+            $html.css('top', (this.options.tileSize / 2) - (totalHeight / 2));
             container.innerHTML = $html[0].outerHTML;
         }
     });

@@ -26,8 +26,9 @@
         build: 'build'
     };
 
+    var WATCHED_PROJECT = 'prism-app-template';
     var GO_PATH = process.env.GOPATH;
-    var COPY_PATH = GO_PATH + '/src/github.com/unchartedsoftware/prism-app-template/build/public/';
+    var COPY_PATH = GO_PATH + '/src/github.com/unchartedsoftware/' + WATCHED_PROJECT + '/build/public/';
 
     gulp.task('copy-build', [ 'build' ], function() {
         return gulp.src([

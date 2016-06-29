@@ -58,13 +58,15 @@
             ValueTransform.initialize.apply(this, arguments);
         },
 
-        onCacheLoad: function(tile, cached, coords) {
+        onCacheLoad: function(event) {
+            var cached = event.entry;
+            var coords = event.coords;
             if (cached.data && cached.data.byteLength > 0) {
                 this.bufferTileTexture(cached, coords);
             }
         },
 
-        onCacheLoadExtremaUpdate: function() {
+        onExtremaChange: function() {
             var self = this;
             _.forIn(this._cache, function(cached) {
                 if (cached.data && cached.data.byteLength > 0) {

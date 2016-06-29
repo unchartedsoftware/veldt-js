@@ -104,18 +104,17 @@
             $('.word-cloud-label').removeClass('hover');
             var word = target.attr('data-word');
             if (word) {
-                $('.word-cloud-label[data-word=' + word + ']').addClass('hover');
-                if (this.options.handlers.mouseover) {
-                    var $parent = target.parents('.leaflet-html-tile');
-                    this.options.handlers.mouseover(target, {
-                        value: word,
-                        x: parseInt($parent.attr('data-x'), 10),
-                        y: parseInt($parent.attr('data-y'), 10),
-                        z: this._map.getZoom(),
-                        type: 'word-cloud',
-                        layer: this
-                    });
-                }
+                $('.word-cloud-label[data-word="' + word + '"]').addClass('hover');
+                var $parent = target.parents('.leaflet-html-tile');
+                this.fire('mouseover', {
+                    elem: e.originalEvent.target,
+                    value: word,
+                    x: parseInt($parent.attr('data-x'), 10),
+                    y: parseInt($parent.attr('data-y'), 10),
+                    z: this._map.getZoom(),
+                    type: 'word-cloud',
+                    layer: this
+                });
             }
         },
 
@@ -124,17 +123,16 @@
             $('.word-cloud-label').removeClass('hover');
             var word = target.attr('data-word');
             if (word) {
-                if (this.options.handlers.mouseout) {
-                    var $parent = target.parents('.leaflet-html-tile');
-                    this.options.handlers.mouseout(target, {
-                        value: word,
-                        x: parseInt($parent.attr('data-x'), 10),
-                        y: parseInt($parent.attr('data-y'), 10),
-                        z: this._map.getZoom(),
-                        type: 'word-cloud',
-                        layer: this
-                    });
-                }
+                var $parent = target.parents('.leaflet-html-tile');
+                this.fire('mouseout', {
+                    elem: e.originalEvent.target,
+                    value: word,
+                    x: parseInt($parent.attr('data-x'), 10),
+                    y: parseInt($parent.attr('data-y'), 10),
+                    z: this._map.getZoom(),
+                    type: 'word-cloud',
+                    layer: this
+                });
             }
         },
 
@@ -151,19 +149,18 @@
             var word = target.attr('data-word');
             if (word) {
                 $(this._container).addClass('highlight');
-                $('.word-cloud-label[data-word=' + word + ']').addClass('highlight');
+                $('.word-cloud-label[data-word="' + word + '"]').addClass('highlight');
                 this.highlight = word;
-                if (this.options.handlers.click) {
-                    var $parent = target.parents('.leaflet-html-tile');
-                    this.options.handlers.click(target, {
-                        value: word,
-                        x: parseInt($parent.attr('data-x'), 10),
-                        y: parseInt($parent.attr('data-y'), 10),
-                        z: this._map.getZoom(),
-                        type: 'word-cloud',
-                        layer: this
-                    });
-                }
+                var $parent = target.parents('.leaflet-html-tile');
+                this.fire('click', {
+                    elem: e.originalEvent.target,
+                    value: word,
+                    x: parseInt($parent.attr('data-x'), 10),
+                    y: parseInt($parent.attr('data-y'), 10),
+                    z: this._map.getZoom(),
+                    type: 'word-cloud',
+                    layer: this
+                });
             } else {
                 this.clearSelection();
             }
