@@ -38,7 +38,7 @@
         },
 
         getLayerPointFromLonLat: function(lonlatPoint, zoom) {
-            var pixel = this._map.project(lonlatPoint, zoom);
+            var pixel = this._map.project(lonlatPoint, zoom ? zoom : this._map.getZoom());
             var pow = Math.pow(2, zoom);
             var tileSize = this.options.tileSize;
             return {
