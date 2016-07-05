@@ -32,11 +32,14 @@
             DOM.prototype.onRemove.call(this, map);
         },
 
-        createTile: function() {
+        createTile: function(coords, done) {
             var tile = L.DomUtil.create('canvas', 'leaflet-tile');
             tile.style['pointer-events'] = 'all';
             tile.width = this.options.tileSize;
             tile.height = this.options.tileSize;
+            this._requestTile(coords, tile, function() {
+                done(null, tile);
+            });
             return tile;
         },
 

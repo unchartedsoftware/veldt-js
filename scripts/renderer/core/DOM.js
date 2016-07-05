@@ -9,7 +9,6 @@
         onAdd: function(map) {
             L.GridLayer.prototype.onAdd.call(this, map);
             map.on('zoomstart', this.clearExtrema, this);
-            this.on('tileload', this.onTileLoad, this);
             this.on('tileunload', this.onTileUnload, this);
             this.on('cacheload', this.onCacheLoad, this);
             this.on('cachehit', this.onCacheHit, this);
@@ -18,14 +17,13 @@
         },
 
         onRemove: function(map) {
+            L.GridLayer.prototype.onRemove.call(this, map);
             map.off('zoomstart', this.clearExtrema, this);
-            this.off('tileload', this.onTileLoad, this);
             this.off('tileunload', this.onTileUnload, this);
             this.off('cacheload', this.onCacheLoad, this);
             this.off('cachehit', this.onCacheHit, this);
             this.off('cacheunload', this.onCacheUnload, this);
             this.off('extremachange', this.onExtremaChange, this);
-            L.GridLayer.prototype.onRemove.call(this, map);
         },
 
         isTargetLayer: function(elem) {

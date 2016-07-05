@@ -21,7 +21,6 @@
         },
 
         onAdd: function(map) {
-            this.on('tileload', this.onTileLoad, this);
             this.on('tileunload', this.onTileUnload, this);
             this.on('cacheload', this.onCacheLoad, this);
             this.on('cachehit', this.onCacheHit, this);
@@ -29,7 +28,7 @@
             this.on('extremachange', this.onExtremaChange, this);
             this._tiles = {};
             this._initContainer();
-            // add event handlers (after container init)
+            // add event handlers
             map.on('click', this.onClick, this);
             if (!maps[map.id]) {
                 // whenever a mouse event occurs, before any overlay layer
@@ -44,30 +43,28 @@
         },
 
         onRemove: function(map) {
-            this.off('tileload', this.onTileLoad, this);
+            // remove layer
+            this._removeAllTiles();
+            L.DomUtil.remove(this._container);
+            map._removeZoomLimit(this);
+            this._tileZoom = null;
+            // remove handlers
             this.off('tileunload', this.onTileUnload, this);
             this.off('cacheload', this.onCacheLoad, this);
             this.off('cachehit', this.onCacheHit, this);
             this.off('cacheunload', this.onCacheUnload, this);
             this.off('extremachange', this.onExtremaChange, this);
-            // remove event handlers (before removing container)
             map.off('click', this.onClick, this);
             maps[map.id]--;
             if (maps[map.id] === 0) {
                 map.off('mousemove', resetMouseCursorStyle, map);
             }
             map.off('mousemove', this.onMouseMove, this);
-            this._removeAllTiles();
-            L.DomUtil.remove(this._container);
-            map._removeZoomLimit(this);
-            this._tileZoom = null;
         },
 
         // No-op these functions
-        createTile: NO_OP,
         _updateOpacity: NO_OP,
         _initTile: NO_OP,
-        _tileReady: NO_OP,
         _updateLevels: NO_OP,
         _removeTilesAtZoom: NO_OP,
         _setZoomTransforms: NO_OP,
@@ -240,19 +237,44 @@
             });
         },
 
-        _addTile: function (coords) {
-            var key = this._tileCoordsToKey(coords);
-            // save tile in cache
-            var tile = this._tiles[key] = {
+        createTile: function(coords, done) {
+            var tile = {
                 coords: coords,
                 current: true
             };
+            this._requestTile(coords, tile, function() {
+                done(null, tile);
+            });
+            return tile;
+        },
+
+        _addTile: function (coords) {
+
+            var tile = this.createTile(this._wrapCoords(coords), L.bind(this._tileReady, this, coords));
+            var key = this._tileCoordsToKey(coords);
+            this._tiles[key] = tile;
+
             // @event tileloadstart: TileEvent
             // Fired when a tile is requested and starts loading.
             this.fire('tileloadstart', {
                 coords: coords
             });
+        },
 
+        _tileReady: function(coords, err, tile) {
+            if (!this._map) {
+                return;
+            }
+            if (err) {
+                // @event tileerror: TileErrorEvent
+                // Fired when there is an error loading a tile.
+                this.fire('tileerror', {
+                    error: err,
+                    tile: tile,
+                    coords: coords
+                });
+            }
+            // tile loaded
             tile.loaded = +new Date();
             tile.active = true;
             this._pruneTiles();

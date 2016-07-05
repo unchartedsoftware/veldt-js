@@ -31,8 +31,11 @@
             DOM.prototype.onRemove.call(this, map);
         },
 
-        createTile: function() {
+        createTile: function(coords, done) {
             var tile = L.DomUtil.create('div', 'leaflet-tile leaflet-html-tile');
+            this._requestTile(coords, tile, function() {
+                done(null, tile);
+            });
             return tile;
         },
 
