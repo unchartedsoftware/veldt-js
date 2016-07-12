@@ -4,6 +4,8 @@
 
     function validToCopy(funcName) {
         return funcName !== 'constructor' &&
+            funcName !== 'on' &&
+            funcName !== 'off' &&
             funcName[0] !== '_';
     }
 
@@ -21,19 +23,45 @@
                     }
                 });
             });
+            // set properties
+            this._layers = layers;
+            this._functions = functions;
+            this._handlers = {};
             // extend this composite class for each function
             var self = this;
             _.forIn(functions, function(layers, func) {
                 self._extend(func);
             });
-            this.layers = layers;
-            this.functions = functions;
+        },
+
+        on: function(evt, func) {
+            this._layers.forEach(function(layer) {
+                layer.on(evt, func);
+            });
+            this._handlers[evt] = this._handlers[evt] || [];
+            this._handlers[evt].push(func);
+        },
+
+        off: function(evt, func) {
+            var handlers = this._handlers[evt];
+            if (handlers) {
+                var index = handlers.indexOf(func);
+                if (index !== -1) {
+                    this._layers.forEach(function(layer) {
+                        layer.off(evt, func);
+                    });
+                    handlers.splice(index, 1);
+                    if (handlers.length === 0) {
+                        delete this._handlers[evt];
+                    }
+                }
+            }
         },
 
         _extend: function(func) {
-            var self = this;
+            var functions = this._functions;
             this[func] = function() {
-                var layers = self.functions[func];
+                var layers = functions[func];
                 var layer, i;
                 var result;
                 for (i=0; i<layers.length; i++) {
@@ -47,12 +75,12 @@
         },
 
         addSubLayer: function(layer) {
-            var index = this.layers.indexOf(layer);
+            var index = this._layers.indexOf(layer);
             if (index !== -1) {
                 return;
             }
             var self = this;
-            var functions = this.functions;
+            var functions = this._functions;
             _.forIn(layer, function(val, key) {
                 // if it is a function and valid to copy
                 if (_.isFunction(val) && validToCopy(key)) {
@@ -66,15 +94,21 @@
                 }
             });
             // add to layers
-            this.layers.push(layer);
+            this._layers.push(layer);
+            // add handlers to layer
+            _.forIn(this._handlers, function(handlers, evt) {
+                handlers.forEach(function(func) {
+                    layer.on(evt, func);
+                });
+            });
         },
 
         removeSubLayer: function(layer) {
-            var index = this.layers.indexOf(layer);
+            var index = this._layers.indexOf(layer);
             if (index === -1) {
                 return;
             }
-            var functions = this.functions;
+            var functions = this._functions;
             var self = this;
             // remove all functions used exclusively by this layer
             _.forIn(layer, function(val, key) {
@@ -93,7 +127,13 @@
                 }
             });
             // remove layer
-            this.layers.splice(index, 1);
+            this._layers.splice(index, 1);
+            // remove handlers from layer
+            _.forIn(this._handlers, function(handlers, evt) {
+                handlers.forEach(function(func) {
+                    layer.off(evt, func);
+                });
+            });
         }
     });
 

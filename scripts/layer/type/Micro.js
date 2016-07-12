@@ -5,7 +5,6 @@
     var Live = require('../core/Live');
     var Elastic = require('../param/Elastic');
     var Tiling = require('../param/Tiling');
-    var MacroMicro = require('../param/MacroMicro');
     var TopHits = require('../agg/TopHits');
 
     var Micro = Live.extend({
@@ -14,7 +13,6 @@
             // params
             Elastic,
             Tiling,
-            MacroMicro,
             // aggs
             TopHits
         ],

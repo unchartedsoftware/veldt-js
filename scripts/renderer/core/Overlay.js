@@ -250,7 +250,7 @@
 
         _addTile: function (coords) {
 
-            var tile = this.createTile(this._wrapCoords(coords), L.bind(this._tileReady, this, coords));
+            var tile = this.createTile(coords, L.bind(this._tileReady, this, coords));
             var key = this._tileCoordsToKey(coords);
             this._tiles[key] = tile;
 
@@ -291,7 +291,6 @@
                 // @event load: Event
                 // Fired when the grid layer loaded all visible tiles.
                 this.fire('load');
-
                 if (L.Browser.ielt9 || !this._map._fadeAnimated) {
                     L.Util.requestAnimFrame(this._pruneTiles, this);
                 } else {

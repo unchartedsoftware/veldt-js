@@ -185,13 +185,13 @@
                 cached.tiles[key] = tile;
                 if (!cached.isPending) {
                     // cache entry already exists
-                    self.fire('cachehit', {
+                    this.fire('cachehit', {
                         tile: tile,
                         coords: coords,
                         entry: cached
                     });
                     // execute callback
-                    callback();
+                    window.requestAnimationFrame(callback);
                 } else {
                     // tile is already pending, add callback
                     cached.callbacks.push(callback);

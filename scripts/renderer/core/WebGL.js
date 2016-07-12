@@ -39,6 +39,7 @@
             } else {
                 this._draw();
             }
+            this._isZooming = false;
         },
 
         onWebGLInit: function() {
