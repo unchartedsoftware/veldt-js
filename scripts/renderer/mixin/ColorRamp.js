@@ -51,6 +51,14 @@
 
     var GRADIENT_STEPS = 200;
 
+    var buildFlatLookupTable = function(color) {
+        var output = [];
+        for (var i = 0; i < GRADIENT_STEPS; i++) {
+            output.push(color);
+        }
+        return output;
+    };
+
     // Interpolate between a set of colors using even perceptual distance and interpolation in CIE L*a*b* space
     var buildPerceptualLookupTable = function(baseColors) {
         var outputGradient = [];
@@ -167,6 +175,8 @@
         [ 0x32, 0xa5, 0xf9, 0xff ]
     ]);
 
+    var FLAT = buildFlatLookupTable([0xff, 0xff, 0xff, 0xff]);
+
     var buildLookupFunction = function(RAMP) {
         return function(scaledValue, inColor) {
             var color = RAMP[Math.floor(scaledValue * (RAMP.length - 1))];
@@ -185,7 +195,8 @@
         spectral: buildLookupFunction(SPECTRAL),
         temperature: buildLookupFunction(TEMPERATURE),
         grey: buildLookupFunction(GREYSCALE),
-        polar: buildLookupFunction(POLAR_HOT.concat(POLAR_COLD))
+        polar: buildLookupFunction(POLAR_HOT.concat(POLAR_COLD)),
+        flat: buildLookupFunction(FLAT)
     };
 
     var setColorRamp = function(type) {
