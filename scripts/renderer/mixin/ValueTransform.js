@@ -46,11 +46,17 @@
 
     function linearTransform(val, min, max) {
         var range = max - min;
+        if (range === 0) {
+            return 1;
+        }
         return (val - min) / range;
     }
 
     function inverseLinearTransform(nval, min, max) {
         var range = max - min;
+        if (range === 0) {
+            return 1;
+        }
         return min + nval * range;
     }
 
@@ -78,6 +84,7 @@
     var setTransformFunc = function(type) {
         var func = type.toLowerCase();
         this._transformFunc = Transform[func];
+        this._transformType = type;
         this._inverseFunc = Inverse[func];
     };
 
@@ -88,6 +95,15 @@
 
     var getValueRange = function() {
         return this._range;
+    };
+
+    var getTransformEnum = function() {
+        if (this._transformType === 'linear') {
+            return 1;
+        } else if (this._transformType === 'sigmoid') {
+            return 2;
+        }
+        return 0;
     };
 
     var interpolateToRange = function(nval) {
@@ -122,6 +138,7 @@
         setTransformFunc: setTransformFunc,
         setValueRange: setValueRange,
         getValueRange: getValueRange,
+        getTransformEnum: getTransformEnum,
         transformValue: transformValue,
         untransformValue: untransformValue,
         interpolateToRange: interpolateToRange
