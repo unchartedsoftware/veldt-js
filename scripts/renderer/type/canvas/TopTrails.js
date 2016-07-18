@@ -20,6 +20,35 @@
         },
 
         highlighted: false,
+        selectedBinData: null,
+
+        clearSelection: function () {
+            this.selectedBinData = null;
+            this._clearTiles();
+        },
+
+        setSelection: function(id) {
+            this.clearSelection();
+            this.selectedBinData = {
+                value: id
+            };
+            this._highlightBinTrail(this.selectedBinData);
+        },
+
+        onClick: function (e) {
+            this.clearSelection();
+
+            if (!this.isTargetLayer(e.originalEvent.target) ||
+                !this.options.handlers.click) {
+                return;
+            }
+            var target = $(e.originalEvent.target);
+            var binData = this._getEventBinData(e.originalEvent);
+
+            this._highlightBinTrail(binData);
+            this.selectedBinData = binData;
+            this.options.handlers.click(target, binData);
+        },
 
         initialize: function() {
             ColorRamp.initialize.apply(this, arguments);
@@ -30,8 +59,45 @@
             var target = e.originalEvent.target;
             if (this.highlighted) {
                 // clear existing highlights
-                this.clearTiles();
+                this._clearTiles();
+                // Re-highlight selected trail
+                if (this.selectedBinData) {
+                    this._highlightBinTrail(this.selectedBinData);
+                }
+                // clear highlighted flag
+                this.highlighted = false;
+                this._container.style.cursor = 'inherit';
             }
+            var binData = this._getEventBinData(e);
+
+            this._highlightBinTrail(binData);
+            if (this.options.handlers.mousemove) {
+                this.options.handlers.mousemove(target, binData);
+            }
+        },
+
+        _highlightBinTrail: function(binData) {
+            if (binData) {
+                var id = binData.value;
+                // for each cache entry
+                var self = this;
+                _.forIn(this._cache, function(cached) {
+                    if (cached.data) {
+                        // for each tile relying on that data
+                        _.forIn(cached.tiles, function(tile) {
+                            var trail = cached.trails[id];
+                            if (trail) {
+                                self._highlightTrail(tile, trail);
+                                self.highlighted = true;
+                                self._container.style.cursor = 'pointer';
+                            }
+                        });
+                    }
+                });
+            }
+        },
+
+        _getEventBinData: function (e) {
             // get layer coord
             var layerPoint = this.getLayerPointFromEvent(e.originalEvent);
             // get tile coord
@@ -164,6 +230,10 @@
                     trails[id] = trails[id] || [];
                     trails[id].push([ x, y ]);
                 }
+            }
+            if (this.selectedBinData) {
+                // Make sure to highlight selected trails in the tile
+                this._highlightBinTrail(this.selectedBinData);
             }
         }
 

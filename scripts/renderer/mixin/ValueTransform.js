@@ -121,7 +121,11 @@
         var max = this._extrema.max;
         var clamped = Math.max(Math.min(val, max), min);
         // normalize the value
-        return this._transformFunc(clamped, min, max);
+        if (min !== max) {
+            return this._transformFunc(clamped, min, max);
+        }
+        // if min === max, always return 1
+        return 1;
     };
 
     var untransformValue = function(nval) {
@@ -130,7 +134,11 @@
         // clamp the value between the extreme (shouldn't be necessary)
         var clamped = Math.max(Math.min(nval, 1), 0);
         // unnormalize the value
-        return this._inverseFunc(clamped, min, max);
+        if (min !== max) {
+            return this._inverseFunc(clamped, min, max);
+        }
+        // if min === max, always return 1
+        return 1;
     };
 
     module.exports = {
