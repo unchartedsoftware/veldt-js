@@ -350,17 +350,19 @@
                         count++;
                     }
                 }
-                // store points in the cache
-                cached.points = points;
-                // buffer the data
-                this.addTileToBuffer(coords, positions, count);
+                if (count > 0) {
+                    // store points in the cache
+                    cached.points = points;
+                    // buffer the data
+                    this.addTileToBuffer(coords, positions, count);
+                }
             }
         },
 
         onCacheUnload: function(event) {
             var cached = event.entry;
             var coords = event.coords;
-            if (cached.data && cached.data.length > 0) {
+            if (cached.points) { //cached.data && cached.data.length > 0) {
                 this.removeTileFromBuffer(coords);
                 var radius = this.getCollisionRadius();
                 var self = this;
@@ -387,6 +389,7 @@
             var ext = this._ext;
             var shader = this._shader;
             var cache = this._cache;
+            var zoom = this._map.getZoom();
             // enable blending
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
@@ -406,6 +409,10 @@
                 var cached = cache[hash];
                 _.keys(cached.tiles).forEach(function(hash) {
                     var coords = self.coordFromCacheKey(hash);
+                    if (coords.z !== zoom) {
+                        // NOTE: we have to check here if the tiles are stale or not
+                        return;
+                    }
                     // upload translation matrix
                     shader.setUniform('uModelMatrix', self.getModelMatrix(coords));
                     // draw the istances
@@ -425,6 +432,7 @@
             var self = this;
             var gl = this._gl;
             var shader = this._shader;
+            var zoom = this._map.getZoom();
             // bind the buffer
             buffer.bind();
             // disable blending
@@ -433,6 +441,10 @@
             shader.setUniform('uUseUniform', 1);
             shader.setUniform('uScale', radius);
             _.forIn(tiles, function(tile) {
+                if (tile.coords.z !== zoom) {
+                    // NOTE: we have to check here if the tiles are stale or not
+                    return;
+                }
                 // upload translation matrix
                 shader.setUniform('uModelMatrix', self.getModelMatrix(tile.coords));
                 shader.setUniform('uOffset', point);

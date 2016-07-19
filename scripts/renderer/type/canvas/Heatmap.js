@@ -41,10 +41,10 @@
                     rval = self.interpolateToRange(nval);
                     ramp(rval, color);
                 }
-                data[i * 4] = color[0];
-                data[i * 4 + 1] = color[1];
-                data[i * 4 + 2] = color[2];
-                data[i * 4 + 3] = color[3];
+                data[i * 4] = Math.round(color[0] * 255);
+                data[i * 4 + 1] = Math.round(color[1] * 255);
+                data[i * 4 + 2] = Math.round(color[2] * 255);
+                data[i * 4 + 3] = Math.round(color[3] * 255);
             }
             ctx.putImageData(imageData, 0, 0);
             return canvas;

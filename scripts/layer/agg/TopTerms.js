@@ -9,7 +9,7 @@
             }
         } else {
             throw 'TopTerms `field` ' + field + ' is not recognized in meta data';
-        }        
+        }
     };
 
     var setTopTerms = function(field, size) {

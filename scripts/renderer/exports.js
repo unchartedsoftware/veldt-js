@@ -17,6 +17,7 @@
 
     // html renderers
     var HTML = {
+        Empty: require('./type/html/Empty'),
         Heatmap: require('./type/html/Heatmap'),
         Ring: require('./type/html/Ring'),
         WordCloud: require('./type/html/WordCloud'),

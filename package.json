@@ -15,7 +15,7 @@
   ],
   "dependencies": {
     "async": "1.5.2",
-    "esper": "0.10.3",
+    "esper": "0.10.4",
     "json-stable-stringify": "1.0.1",
     "moment": "2.13.0"
   },

@@ -36,7 +36,10 @@
             Overlay.prototype._initContainer.call(this);
             if (!this._gl) {
                 this._initGL();
+            } else {
+                this._draw();
             }
+            this._isZooming = false;
         },
 
         onWebGLInit: function() {
@@ -153,7 +156,7 @@
         },
 
         _draw: function() {
-            if (this._initialized) {
+            if (this._map && this._initialized) {
                 if (!this.isHidden()) {
                     // re-position canvas
                     if (!this._isZooming) {

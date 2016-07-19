@@ -181,10 +181,8 @@
             }
         },
 
-        onTileLoad: function(event) {
+        _requestTile: function(coords, tile, callback) {
             var self = this;
-
-            var coords = event.coords;
             // respect the TMS setting in the options
             if (this.options && this.options.tms) {
                 coords = {
@@ -194,8 +192,6 @@
                 };
             }
 
-            var ncoords = this.getNormalizedCoords(coords);
-            var tile = event.tile;
             // cache key from coords
             var key = this.cacheKeyFromCoord(coords);
             // cache key from normalized coords
@@ -207,18 +203,24 @@
                 cached.tiles[key] = tile;
                 if (!cached.isPending) {
                     // cache entry already exists
-                    self.fire('cachehit', {
+                    this.fire('cachehit', {
                         tile: tile,
                         coords: coords,
                         entry: cached
                     });
+                    // execute callback
+                    window.requestAnimationFrame(callback);
+                } else {
+                    // tile is already pending, add callback
+                    cached.callbacks.push(callback);
                 }
             } else {
                 // create a cache entry
                 this._cache[nkey] = {
                     isPending: true,
                     tiles: {},
-                    data: null
+                    data: null,
+                    callbacks: [ callback ]
                 };
                 // add tile to the cache entry
                 this._cache[nkey].tiles[key] = tile;
@@ -234,6 +236,11 @@
                     // transform and store tile data in cache
                     cached.data = self.options.transform(data);
                     if (cached.data) {
+                        // execute pending callbacks
+                        cached.callbacks.forEach(function(callback) {
+                            callback();
+                        });
+                        cached.callbacks = [];
                         // data is loaded into cache
                         self.fire('cacheload', {
                             tile: tile,

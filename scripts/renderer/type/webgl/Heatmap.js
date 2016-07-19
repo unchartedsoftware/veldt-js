@@ -10,6 +10,21 @@
 
     var TILE_SIZE = 256;
 
+    function encode(enc, val) {
+        enc[0] = (val / 16777216.0) & 0xFF;
+        enc[1] = (val / 65536.0) & 0xFF;
+        enc[2] = (val / 256.0) & 0xFF;
+        enc[3] = val & 0xFF;
+        return enc;
+    }
+
+    function decode(enc) {
+        return (enc[0] * 16777216.0) +
+            (enc[1] * 65536.0) +
+            (enc[2] * 256.0) +
+            enc[3];
+    }
+
     var Heatmap = WebGL.extend({
 
         includes: [
@@ -80,47 +95,41 @@
             var resolution = Math.sqrt(data.length);
             var buffer = new ArrayBuffer(data.length * 4);
             var bins = new Uint8Array(buffer);
-            var color = [0, 0, 0, 0];
-            var nval, rval, bin, i;
-            var ramp = this.getColorRamp();
-            var self = this;
+            var enc = [0, 0, 0, 0];
+            var bin, i;
+            var sum = 0;
             for (i=0; i<data.length; i++) {
                 bin = data[i];
-                if (bin === 0) {
-                    color[0] = 0;
-                    color[1] = 0;
-                    color[2] = 0;
-                    color[3] = 0;
-                } else {
-                    nval = self.transformValue(bin);
-                    rval = self.interpolateToRange(nval);
-                    ramp(rval, color);
-                }
-                bins[i * 4] = color[0];
-                bins[i * 4 + 1] = color[1];
-                bins[i * 4 + 2] = color[2];
-                bins[i * 4 + 3] = color[3];
+                sum += bin;
+                encode(enc, bin);
+                bins[i * 4] = enc[0];
+                bins[i * 4 + 1] = enc[1];
+                bins[i * 4 + 2] = enc[2];
+                bins[i * 4 + 3] = enc[3];
             }
-            // ensure we use the correct context
-            esper.WebGLContext.bind(this._container);
-            // create the texture
-            cached.texture = new esper.Texture2D({
-                height: resolution,
-                width: resolution,
-                src: bins,
-                format: 'RGBA',
-                type: 'UNSIGNED_BYTE',
-                wrap: 'CLAMP_TO_EDGE',
-                filter: 'NEAREST',
-                invertY: true
-            });
+            if (sum > 0) {
+                // ensure we use the correct context
+                esper.WebGLContext.bind(this._container);
+                // create the texture
+                cached.texture = new esper.Texture2D({
+                    height: resolution,
+                    width: resolution,
+                    src: bins,
+                    format: 'RGBA',
+                    type: 'UNSIGNED_BYTE',
+                    wrap: 'CLAMP_TO_EDGE',
+                    filter: 'NEAREST',
+                    invertY: true
+                });
+            }
         },
 
         renderTiles: function() {
             var self = this;
             var buffer = this._quadBuffer;
             var shader = this._shader;
-            var dim = Math.pow(2, this._map.getZoom()) * TILE_SIZE;
+            var zoom = this._map.getZoom();
+            var dim = Math.pow(2, zoom) * TILE_SIZE;
             // bind buffer
             buffer.bind();
             // for each tile
@@ -132,11 +141,15 @@
                 cached.texture.push(0);
                 _.forIn(cached.tiles, function(tile, key) {
                     // find the tiles position from its key
-                    var coord = self.coordFromCacheKey(key);
+                    var coords = self.coordFromCacheKey(key);
+                    // NOTE: we have to check here if the tiles are stale or not
+                    if (coords.z !== zoom) {
+                        return;
+                    }
                     // create model matrix
                     var model = self.getTranslationMatrix(
-                        TILE_SIZE * coord.x,
-                        dim - (TILE_SIZE * coord.y),
+                        TILE_SIZE * coords.x,
+                        dim - (TILE_SIZE * coords.y),
                         0);
                     shader.setUniform('uModelMatrix', model);
                     // draw the tile
@@ -155,7 +168,13 @@
             // set uniforms
             this._shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
             this._shader.setUniform('uOpacity', this.getOpacity());
+            this._shader.setUniform('uRangeMin', this.getValueRange().min);
+            this._shader.setUniform('uRangeMax', this.getValueRange().max);
+            this._shader.setUniform('uMin', this.getExtrema().min);
+            this._shader.setUniform('uMax', this.getExtrema().max);
+            this._shader.setUniform('uTransformType', this.getTransformEnum());
             this._shader.setUniform('uTextureSampler', 0);
+            this._shader.setUniform('uRamp', this.getColorRampTable());
             // draw
             this.renderTiles();
             // teardown

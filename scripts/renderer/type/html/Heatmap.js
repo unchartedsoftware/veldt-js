@@ -92,7 +92,7 @@
             }
             var bins = new Float64Array(data);
             var resolution = Math.sqrt(bins.length);
-            var rampFunc = this.getColorRamp();
+            var ramp = this.getColorRamp();
             var pixelSize = this.options.tileSize / resolution;
             var self = this;
             var color = [0, 0, 0, 0];
@@ -109,13 +109,13 @@
                     top = Math.floor(i / resolution);
                     nval = self.transformValue(bin);
                     rval = self.interpolateToRange(nval);
-                    rampFunc(rval, color);
+                    ramp(rval, color);
                 }
                 var rgba = 'rgba(' +
-                    color[0] + ',' +
-                    color[1] + ',' +
-                    color[2] + ',' +
-                    (color[3] / 255) + ')';
+                    Math.round(color[0] * 255) + ',' +
+                    Math.round(color[1] * 255) + ',' +
+                    Math.round(color[2] * 255) + ',' +
+                    color[3] + ')';
                 html += '<div class="heatmap-pixel" ' +
                     'data-value="' + bin + '" ' +
                     'data-bx="' + left + '" ' +

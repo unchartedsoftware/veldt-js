@@ -1,4 +1,4 @@
-( function() {
+(function() {
 
     'use strict';
 
@@ -34,36 +34,36 @@
         return gulp.src([
             paths.build + '/' + name + '.js',
             paths.build + '/' + name + '.css'
-        ]).pipe( gulp.dest( COPY_PATH ) );
+        ]).pipe(gulp.dest(COPY_PATH));
     });
 
-    function handleError( err ) {
-        console.error( err );
-        this.emit( 'end' );
+    function handleError(err) {
+        console.error(err);
+        this.emit('end');
     }
 
-    function bundle( b, output ) {
+    function bundle(b, output) {
         return b.bundle()
-            .on( 'error', handleError )
-            .pipe( source( output ) )
-            .pipe( gulp.dest( paths.build ) );
+            .on('error', handleError)
+            .pipe(source(output))
+            .pipe(gulp.dest(paths.build));
     }
 
-    function bundleMin( b, output ) {
+    function bundleMin(b, output) {
         return b.bundle()
-            .on( 'error', handleError )
-            .pipe( source( output ) )
-            .pipe( buffer() )
-            .pipe( uglify() )
-            .pipe( gulp.dest( paths.build ) );
+            .on('error', handleError)
+            .pipe(source(output))
+            .pipe(buffer())
+            .pipe(uglify())
+            .pipe(gulp.dest(paths.build));
     }
 
-    function build( root, output, minify ) {
-        var b = browserify( root, {
+    function build(root, output, minify) {
+        var b = browserify(root, {
             debug: !minify,
             standalone: name
         });
-        return ( minify ) ? bundleMin( b, output ) : bundle( b, output );
+        return (minify) ? bundleMin(b, output) : bundle(b, output);
     }
 
     gulp.task('clean', function () {
@@ -71,36 +71,36 @@
     });
 
     gulp.task('lint', function() {
-        return gulp.src( paths.scripts )
-            .pipe( jshint('.jshintrc') )
-            .pipe( jshint.reporter('jshint-stylish') );
+        return gulp.src(paths.scripts)
+            .pipe(jshint('.jshintrc'))
+            .pipe(jshint.reporter('jshint-stylish'));
     });
 
     gulp.task('build-min-scripts', function() {
-        return build( paths.root, name + '.min.js', true );
+        return build(paths.root, name + '.min.js', true);
     });
 
     gulp.task('build-scripts', function() {
-        return build( paths.root, name + '.js', false );
+        return build(paths.root, name + '.js', false);
     });
 
     gulp.task('build-styles', function () {
-        return gulp.src( paths.styles )
-            .pipe( csso() )
-            .pipe( concat( name + '.css') )
-            .pipe( gulp.dest( paths.build ) );
+        return gulp.src(paths.styles)
+            .pipe(csso())
+            .pipe(concat(name + '.css'))
+            .pipe(gulp.dest(paths.build));
     });
 
-    gulp.task('build', function( done ) {
+    gulp.task('build', function(done) {
         runSequence(
             [ 'clean', 'lint' ],
             [ 'build-scripts', 'build-min-scripts', 'build-styles' ],
-            done );
+            done);
     });
 
-    gulp.task('watch', [ 'copy-build' ], function( done ) {
-        gulp.watch( paths.scripts, [ 'copy-build' ] );
-        gulp.watch( paths.styles, [ 'copy-build' ] );
+    gulp.task('watch', [ 'copy-build' ], function(done) {
+        gulp.watch(paths.scripts, [ 'copy-build' ]);
+        gulp.watch(paths.styles, [ 'copy-build' ]);
         done();
     });
 
