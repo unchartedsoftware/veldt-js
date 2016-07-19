@@ -26,10 +26,6 @@
             this.off('extremachange', this.onExtremaChange, this);
         },
 
-        isTargetLayer: function(elem) {
-            return this._container && $.contains(this._container, elem);
-        },
-
         onCacheHit: function(event) {
             var cached = event.entry;
             var tile = event.tile;
@@ -68,6 +64,7 @@
         },
 
         onCacheUnload: function() {
+            // override
         },
 
         createTile: function() {
