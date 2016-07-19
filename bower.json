@@ -1,6 +1,6 @@
 {
   "name": "prism-client",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": "Kevin Birk <kbirk@uncharted.software>",
   "main": [
     "build/prism.js",

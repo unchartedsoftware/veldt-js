@@ -4,6 +4,10 @@
 
     var Base = require('./Base');
 
+    function mod(n, m) {
+        return ((n % m) + m) % m;
+    }
+
     var Pending = Base.extend({
 
         options: {
@@ -53,8 +57,18 @@
             return 'leaflet-pending-' + hash;
         },
 
-        _getTileHash: function(coord) {
-            return coord.z + '-' + coord.x + '-' + coord.y;
+        _getNormalizedCoords: function(coords) {
+            var pow = Math.pow(2, coords.z);
+            return {
+                x: mod(coords.x, pow),
+                y: mod(coords.y, pow),
+                z: coords.z
+            };
+        },
+
+        _getTileHash: function(coords) {
+            var ncoords = this._getNormalizedCoords(coords);
+            return ncoords.z + '-' + ncoords.x + '-' + ncoords.y;
         },
 
         _getTilesWithHash: function(hash) {
