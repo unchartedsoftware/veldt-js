@@ -155,7 +155,8 @@
                     // draw the tile
                     buffer.draw();
                 });
-                // no need to unbind texture
+                // unbind texture
+                cached.texture.pop(0);
             });
             // unbind buffer
             buffer.unbind();
