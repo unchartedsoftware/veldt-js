@@ -5,15 +5,13 @@
     var Live = require('../core/Live');
     var Elastic = require('../param/Elastic');
     var Binning = require('../param/Binning');
-    var MacroMicro = require('../param/MacroMicro');
 
     var Macro = Live.extend({
 
         includes: [
             // params
             Elastic,
-            Binning,
-            MacroMicro
+            Binning
         ],
 
         type: 'macro',

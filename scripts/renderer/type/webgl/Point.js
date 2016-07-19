@@ -184,34 +184,38 @@
         },
 
         onMouseMove: function(e) {
-            var canvas = e.originalEvent.target;
-            var target = $(canvas);
+            var target = e.originalEvent.target;
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
             var radius = this.getCollisionRadius();
-            var collision = this.pick(layerPixel, radius);
-            var coord = this.getTileCoordFromLayerPoint(layerPixel);
-            var hash = this.cacheKeyFromCoord(coord);
-            var size = Math.pow(2, this._map.getZoom());
+            var zoom = this._map.getZoom();
+            var collision = this.pick(layerPixel, radius, zoom);
+            var size = Math.pow(2, zoom);
             if (collision) {
                 // mimic mouseover / mouseout events
                 if (this.highlighted) {
                     if (this.highlighted.value !== collision) {
                         // new collision
                         // execute mouseout for old
-                        if (this.options.handlers.mouseout) {
-                            this.options.handlers.mouseout(target, this.highlighted.value);
-                        }
+                        this.fire('mouseout', {
+                            elem: target,
+                            value: this.highlighted.value
+                        });
                         // execute mouseover for new
-                        if (this.options.handlers.mouseover) {
-                            this.options.handlers.mouseover(target, collision);
-                        }
+                        this.fire('mouseover', {
+                            elem: target,
+                            value: collision
+                        });
                     }
                 } else {
                     // no previous collision, execute mouseover
-                    if (this.options.handlers.mouseover) {
-                        this.options.handlers.mouseover(target, collision);
-                    }
+                    this.fire('mouseover', {
+                        elem: target,
+                        value: collision
+                    });
                 }
+                // use collision point to find tile
+                var coord = this.getTileCoordFromLayerPoint(collision);
+                var hash = this.cacheKeyFromCoord(coord);
                 // flag as highlighted
                 this.highlighted = {
                     tiles: this._cache[hash].tiles,
@@ -227,24 +231,27 @@
             }
             // mouse out
             if (this.highlighted) {
-                if (this.options.handlers.mouseout) {
-                    this.options.handlers.mouseout(target, this.highlighted.value);
-                }
+                this.fire('mouseout', {
+                    elem: target,
+                    value: this.highlighted.value
+                });
             }
             // clear highlighted flag
             this.highlighted = null;
         },
 
         onClick: function(e) {
-            var canvas = e.originalEvent.target;
-             var target = $(canvas);
+            var target = e.originalEvent.target;
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
-            var coord = this.getTileCoordFromLayerPoint(layerPixel);
-            var hash = this.cacheKeyFromCoord(coord);
             var radius = this.getCollisionRadius();
-            var size = Math.pow(2, this._map.getZoom());
-            var collision = this.pick(layerPixel, radius);
+            var zoom = this._map.getZoom();
+            var size = Math.pow(2, zoom);
+            var collision = this.pick(layerPixel, radius, zoom);
             if (collision) {
+                // use collision point to find tile
+                var coord = this.getTileCoordFromLayerPoint(collision);
+                var hash = this.cacheKeyFromCoord(coord);
+                // flag as selected
                 this.selected = {
                     tiles: this._cache[hash].tiles,
                     value: collision,
@@ -253,9 +260,10 @@
                         (size * TILE_SIZE) - collision.y
                     ]
                 };
-                if (this.options.handlers.click) {
-                    this.options.handlers.click(target, collision);
-                }
+                this.fire('click', {
+                    elem: target,
+                    value: collision
+                });
             } else {
                 this.selected = null;
             }
@@ -291,7 +299,9 @@
             // no need to actually unbuffer the data
         },
 
-        onCacheLoad: function(tile, cached, coords) {
+        onCacheLoad: function(event) {
+            var cached = event.entry;
+            var coords = event.coords;
             if (cached.data && cached.data.length > 0) {
                 // convert x / y to tile pixels
                 var data = cached.data;
@@ -306,8 +316,8 @@
                 var count = 0;
                 var numDatum = Math.min(data.length, MAX_POINTS_PER_TILE);
                 var points = [];
-                var i;
                 var collisions = {};
+                var i;
                 // calc pixel locations
                 for (i=0; i<numDatum; i++) {
                     var hit = data[i];
@@ -340,15 +350,19 @@
                         count++;
                     }
                 }
-                // store points in the cache
-                cached.points = points;
-                // buffer the data
-                this.addTileToBuffer(coords, positions, count);
+                if (count > 0) {
+                    // store points in the cache
+                    cached.points = points;
+                    // buffer the data
+                    this.addTileToBuffer(coords, positions, count);
+                }
             }
         },
 
-        onCacheUnload: function(tile, cached, coords) {
-            if (cached.data && cached.data.length > 0) {
+        onCacheUnload: function(event) {
+            var cached = event.entry;
+            var coords = event.coords;
+            if (cached.points) { //cached.data && cached.data.length > 0) {
                 this.removeTileFromBuffer(coords);
                 var radius = this.getCollisionRadius();
                 var self = this;
@@ -375,6 +389,7 @@
             var ext = this._ext;
             var shader = this._shader;
             var cache = this._cache;
+            var zoom = this._map.getZoom();
             // enable blending
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
@@ -388,19 +403,26 @@
             ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 1);
             // for each allocated chunk
             _.forIn(this._usedChunks, function(chunk, hash) {
-                // bind the chunk's buffer
-                chunk.vertexBuffer.bind();
                 // for each tile referring to the data
                 var cached = cache[hash];
-                _.keys(cached.tiles).forEach(function(hash) {
-                    var coords = self.coordFromCacheKey(hash);
-                    // upload translation matrix
-                    shader.setUniform('uModelMatrix', self.getModelMatrix(coords));
-                    // draw the istances
-                    ext.drawArraysInstancedANGLE(gl[buffer.mode], 0, buffer.count, chunk.count);
-                });
-                // unbind
-                chunk.vertexBuffer.unbind();
+                if (cached) {
+                    // bind the chunk's buffer
+                    chunk.vertexBuffer.bind();
+                    // render for each tile
+                    _.keys(cached.tiles).forEach(function(hash) {
+                        var coords = self.coordFromCacheKey(hash);
+                        if (coords.z !== zoom) {
+                            // NOTE: we have to check here if the tiles are stale or not
+                            return;
+                        }
+                        // upload translation matrix
+                        shader.setUniform('uModelMatrix', self.getModelMatrix(coords));
+                        // draw the istances
+                        ext.drawArraysInstancedANGLE(gl[buffer.mode], 0, buffer.count, chunk.count);
+                    });
+                    // unbind
+                    chunk.vertexBuffer.unbind();
+                }
             });
             // disable instancing
             ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 0);
@@ -413,6 +435,7 @@
             var self = this;
             var gl = this._gl;
             var shader = this._shader;
+            var zoom = this._map.getZoom();
             // bind the buffer
             buffer.bind();
             // disable blending
@@ -421,6 +444,10 @@
             shader.setUniform('uUseUniform', 1);
             shader.setUniform('uScale', radius);
             _.forIn(tiles, function(tile) {
+                if (tile.coords.z !== zoom) {
+                    // NOTE: we have to check here if the tiles are stale or not
+                    return;
+                }
                 // upload translation matrix
                 shader.setUniform('uModelMatrix', self.getModelMatrix(tile.coords));
                 shader.setUniform('uOffset', point);

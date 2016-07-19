@@ -5,21 +5,18 @@
     var Live = require('../core/Live');
     var Elastic = require('../param/Elastic');
     var Tiling = require('../param/Tiling');
-    var TopHits = require('../agg/TopHits');
 
-    var Micro = Live.extend({
+    var Count = Live.extend({
 
         includes: [
             // params
             Elastic,
-            Tiling,
-            // aggs
-            TopHits
+            Tiling
         ],
 
-        type: 'micro',
+        type: 'count',
 
-        // extreme not relevant for micro
+        // extreme not relevant for count tile
         extractExtrema: function() {
             return {
                 min: Infinity,
@@ -28,6 +25,6 @@
         }
     });
 
-    module.exports = Micro;
+    module.exports = Count;
 
 }());

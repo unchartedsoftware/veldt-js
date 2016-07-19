@@ -46,11 +46,17 @@
 
     function linearTransform(val, min, max) {
         var range = max - min;
+        if (range === 0) {
+            return 1;
+        }
         return (val - min) / range;
     }
 
     function inverseLinearTransform(nval, min, max) {
         var range = max - min;
+        if (range === 0) {
+            return 1;
+        }
         return min + nval * range;
     }
 
@@ -78,6 +84,7 @@
     var setTransformFunc = function(type) {
         var func = type.toLowerCase();
         this._transformFunc = Transform[func];
+        this._transformType = type;
         this._inverseFunc = Inverse[func];
     };
 
@@ -88,6 +95,15 @@
 
     var getValueRange = function() {
         return this._range;
+    };
+
+    var getTransformEnum = function() {
+        if (this._transformType === 'linear') {
+            return 1;
+        } else if (this._transformType === 'sigmoid') {
+            return 2;
+        }
+        return 0;
     };
 
     var interpolateToRange = function(nval) {
@@ -105,7 +121,11 @@
         var max = this._extrema.max;
         var clamped = Math.max(Math.min(val, max), min);
         // normalize the value
-        return this._transformFunc(clamped, min, max);
+        if (min !== max) {
+            return this._transformFunc(clamped, min, max);
+        }
+        // if min === max, always return 1
+        return 1;
     };
 
     var untransformValue = function(nval) {
@@ -114,7 +134,11 @@
         // clamp the value between the extreme (shouldn't be necessary)
         var clamped = Math.max(Math.min(nval, 1), 0);
         // unnormalize the value
-        return this._inverseFunc(clamped, min, max);
+        if (min !== max) {
+            return this._inverseFunc(clamped, min, max);
+        }
+        // if min === max, always return 1
+        return 1;
     };
 
     module.exports = {
@@ -122,6 +146,7 @@
         setTransformFunc: setTransformFunc,
         setValueRange: setValueRange,
         getValueRange: getValueRange,
+        getTransformEnum: getTransformEnum,
         transformValue: transformValue,
         untransformValue: untransformValue,
         interpolateToRange: interpolateToRange

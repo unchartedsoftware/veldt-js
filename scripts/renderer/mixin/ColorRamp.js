@@ -2,6 +2,8 @@
 
     'use strict';
 
+    var NUM_GRADIENT_STEPS = 100;
+
     function rgb2lab(rgb) {
         var r = rgb[0] > 0.04045 ? Math.pow((rgb[0] + 0.055) / 1.055, 2.4) : rgb[0] / 12.92;
         var g = rgb[1] > 0.04045 ? Math.pow((rgb[1] + 0.055) / 1.055, 2.4) : rgb[1] / 12.92;
@@ -46,15 +48,13 @@
             (c1[0] - c2[0]) * (c1[0] - c2[0]) +
             (c1[1] - c2[1]) * (c1[1] - c2[1]) +
             (c1[2] - c2[2]) * (c1[2] - c2[2]) +
-            (c1[3] - c2[3]) * (c1[3] - c2[3])
-        );
+            (c1[3] - c2[3]) * (c1[3] - c2[3]));
     }
-
-    var GRADIENT_STEPS = 200;
 
     // Interpolate between a set of colors using even perceptual distance and interpolation in CIE L*a*b* space
     var buildPerceptualLookupTable = function(baseColors) {
-        var outputGradient = [];
+        var buffer = new ArrayBuffer(NUM_GRADIENT_STEPS * 4 * 4);
+        var outputGradient = new Float32Array(buffer);
         // Calculate perceptual spread in L*a*b* space
         var labs = _.map(baseColors, function(color) {
             return rgb2lab([color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 255]);
@@ -74,8 +74,8 @@
         var progress;
         var stepProgress;
         var rgb;
-        for (var i = 0; i < GRADIENT_STEPS; i++) {
-            progress = i / (GRADIENT_STEPS - 1);
+        for (var i = 0; i < NUM_GRADIENT_STEPS; i++) {
+            progress = i / (NUM_GRADIENT_STEPS - 1);
             if (progress > distanceTraversed + distances[key + 1] && key + 1 < labs.length - 1) {
                 key += 1;
                 distanceTraversed += distances[key];
@@ -87,12 +87,10 @@
                 labs[key][2] + (labs[key + 1][2] - labs[key][2]) * stepProgress,
                 labs[key][3] + (labs[key + 1][3] - labs[key][3]) * stepProgress
             ]);
-            outputGradient.push([
-                Math.round(rgb[0] * 255),
-                Math.round(rgb[1] * 255),
-                Math.round(rgb[2] * 255),
-                Math.round(rgb[3] * 255)
-            ]);
+            outputGradient[i * 4] = rgb[0];
+            outputGradient[i * 4 + 1] = rgb[1];
+            outputGradient[i * 4 + 2] = rgb[2];
+            outputGradient[i * 4 + 3] = rgb[3];
         }
         return outputGradient;
     };
@@ -145,11 +143,11 @@
 
     var TEMPERATURE = buildPerceptualLookupTable([
         [0x00, 0x16, 0x40, 0x50],
-        [0x00, 0x39, 0x66, 0x7f], //blue
-        [0x31, 0x3d, 0x66, 0xff], //purple
-        [0xe1, 0x2b, 0x02, 0xff], //red
-        [0xff, 0xd2, 0x02, 0xff], //yellow
-        [0xff, 0xff, 0xff, 0xff] //white
+        [0x00, 0x39, 0x66, 0x7f],
+        [0x31, 0x3d, 0x66, 0xff],
+        [0xe1, 0x2b, 0x02, 0xff],
+        [0xff, 0xd2, 0x02, 0xff],
+        [0xff, 0xff, 0xff, 0xff]
     ]);
 
     var GREYSCALE = buildPerceptualLookupTable([
@@ -168,15 +166,37 @@
         [ 0x32, 0xa5, 0xf9, 0xff ]
     ]);
 
+    var FIRE = buildPerceptualLookupTable([
+        [0x96, 0x00, 0x00, 0x96],
+        [0xff, 0xff, 0x32, 0xff]
+    ]);
+
     var buildLookupFunction = function(RAMP) {
         return function(scaledValue, inColor) {
-            var color = RAMP[Math.floor(scaledValue * (RAMP.length - 1))];
-            inColor[0] = color[0];
-            inColor[1] = color[1];
-            inColor[2] = color[2];
-            inColor[3] = color[3];
+            var index = Math.floor(scaledValue * (NUM_GRADIENT_STEPS - 1));
+            inColor[0] = RAMP[index * 4];
+            inColor[1] = RAMP[index * 4 + 1];
+            inColor[2] = RAMP[index * 4 + 2];
+            inColor[3] = RAMP[index * 4 + 3];
             return inColor;
         };
+    };
+
+    var concat = function(a, b) {
+        var combined = new Float32Array(a.length + b.length);
+        combined.set(a, 0);
+        combined.set(b, a.length);
+        return combined;
+    };
+
+    var ColorTables = {
+        cool: COOL,
+        hot: HOT,
+        verdant: VERDANT,
+        spectral: SPECTRAL,
+        temperature: TEMPERATURE,
+        grey: GREYSCALE,
+        polar: concat(POLAR_HOT, POLAR_COLD)
     };
 
     var ColorRamp = {
@@ -186,13 +206,15 @@
         spectral: buildLookupFunction(SPECTRAL),
         temperature: buildLookupFunction(TEMPERATURE),
         grey: buildLookupFunction(GREYSCALE),
-        polar: buildLookupFunction(POLAR_HOT.concat(POLAR_COLD))
+        fire: buildLookupFunction(FIRE),
+        polar: buildLookupFunction(concat(POLAR_HOT, POLAR_COLD))
     };
 
     var setColorRamp = function(type) {
         var func = ColorRamp[type.toLowerCase()];
         if (func) {
             this._colorRamp = func;
+            this._colorRampType = type;
         }
         return this;
     };
@@ -201,14 +223,21 @@
         return this._colorRamp;
     };
 
+    var getColorRampTable = function() {
+        return ColorTables[this._colorRampType];
+    };
+
     var initialize = function() {
         this._colorRamp = ColorRamp.verdant;
+        this._colorRampType = 'verdant';
     };
 
     module.exports = {
         initialize: initialize,
         setColorRamp: setColorRamp,
-        getColorRamp: getColorRamp
+        getColorRamp: getColorRamp,
+        getColorRampTable: getColorRampTable,
+        NUM_GRADIENT_STEPS: NUM_GRADIENT_STEPS
     };
 
 }());

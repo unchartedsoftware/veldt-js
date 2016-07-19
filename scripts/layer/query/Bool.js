@@ -20,7 +20,7 @@
 
     function checkQueries(meta, queries) {
         if (_.isArray(queries)) {
-            queries.forEach( function(query) {
+            queries.forEach(function(query) {
                 checkQuery(meta,query);
             });
             return queries;
@@ -48,6 +48,7 @@
 
     check = {
         bool: checkBool,
+        exists: require('./Exists'),
         prefix: require('./Prefix'),
         query_string: require('./QueryString'),
         range: require('./Range'),

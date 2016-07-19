@@ -6,61 +6,46 @@
 
     var NO_OP = function() {};
 
-    var maps = {};
-
-    var resetMouseCursorStyle = function() {
-        // we only want this bound ONCE per map
-        var map = this;
-        $(map).css('cursor', '');
-    };
-
     var Overlay = Base.extend({
 
         options: {
-            zIndex: 1,
-            handlers: {}
+            zIndex: 1
         },
 
         onAdd: function(map) {
-            this.on('tileload', this.onTileLoad, this);
             this.on('tileunload', this.onTileUnload, this);
+            this.on('cacheload', this.onCacheLoad, this);
+            this.on('cachehit', this.onCacheHit, this);
+            this.on('cacheunload', this.onCacheUnload, this);
+            this.on('extremachange', this.onExtremaChange, this);
             this._tiles = {};
             this._initContainer();
-            // add event handlers (after container init)
+            // add event handlers
             map.on('click', this.onClick, this);
-            if (!maps[map.id]) {
-                // whenever a mouse event occurs, before any overlay layer
-                // processes the event, we clear the style of the mouse cursor
-                map.on('mousemove', resetMouseCursorStyle, map);
-                maps[map.id] = 0;
-            }
-            maps[map.id]++;
             map.on('mousemove', this.onMouseMove, this);
             this._resetView();
             this._update();
         },
 
         onRemove: function(map) {
-            this.off('tileload', this.onTileLoad, this);
-            this.off('tileunload', this.onTileUnload, this);
-            // remove event handlers (before removing container)
-            map.off('click', this.onClick, this);
-            maps[map.id]--;
-            if (maps[map.id] === 0) {
-                map.off('mousemove', resetMouseCursorStyle, map);
-            }
-            map.off('mousemove', this.onMouseMove, this);
+            // remove layer
             this._removeAllTiles();
             L.DomUtil.remove(this._container);
             map._removeZoomLimit(this);
             this._tileZoom = null;
+            // remove handlers
+            this.off('tileunload', this.onTileUnload, this);
+            this.off('cacheload', this.onCacheLoad, this);
+            this.off('cachehit', this.onCacheHit, this);
+            this.off('cacheunload', this.onCacheUnload, this);
+            this.off('extremachange', this.onExtremaChange, this);
+            map.off('click', this.onClick, this);
+            map.off('mousemove', this.onMouseMove, this);
         },
 
         // No-op these functions
-        createTile: NO_OP,
         _updateOpacity: NO_OP,
         _initTile: NO_OP,
-        _tileReady: NO_OP,
         _updateLevels: NO_OP,
         _removeTilesAtZoom: NO_OP,
         _setZoomTransforms: NO_OP,
@@ -233,19 +218,44 @@
             });
         },
 
-        _addTile: function (coords) {
-            var key = this._tileCoordsToKey(coords);
-            // save tile in cache
-            var tile = this._tiles[key] = {
+        createTile: function(coords, done) {
+            var tile = {
                 coords: coords,
                 current: true
             };
+            this._requestTile(coords, tile, function() {
+                done(null, tile);
+            });
+            return tile;
+        },
+
+        _addTile: function (coords) {
+
+            var tile = this.createTile(coords, L.bind(this._tileReady, this, coords));
+            var key = this._tileCoordsToKey(coords);
+            this._tiles[key] = tile;
+
             // @event tileloadstart: TileEvent
             // Fired when a tile is requested and starts loading.
             this.fire('tileloadstart', {
                 coords: coords
             });
+        },
 
+        _tileReady: function(coords, err, tile) {
+            if (!this._map) {
+                return;
+            }
+            if (err) {
+                // @event tileerror: TileErrorEvent
+                // Fired when there is an error loading a tile.
+                this.fire('tileerror', {
+                    error: err,
+                    tile: tile,
+                    coords: coords
+                });
+            }
+            // tile loaded
             tile.loaded = +new Date();
             tile.active = true;
             this._pruneTiles();
@@ -262,7 +272,6 @@
                 // @event load: Event
                 // Fired when the grid layer loaded all visible tiles.
                 this.fire('load');
-
                 if (L.Browser.ielt9 || !this._map._fadeAnimated) {
                     L.Util.requestAnimFrame(this._pruneTiles, this);
                 } else {
@@ -273,15 +282,23 @@
             }
         },
 
+        onCacheHit: function() {
+            // override
+        },
+
+        onCacheLoad: function() {
+            // override
+        },
+
+        onExtremaChange: function() {
+            // override
+        },
+
+        onCacheUnload: function() {
+            // override
+        },
+
         onMouseMove: function() {
-            // override
-        },
-
-        onMouseOver: function() {
-            // override
-        },
-
-        onMouseOut: function() {
             // override
         },
 

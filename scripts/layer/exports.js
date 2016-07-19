@@ -24,6 +24,7 @@
     var Preview = require('./type/Preview');
     var Macro = require('./type/Macro');
     var Micro = require('./type/Micro');
+    var Count = require('./type/Count');
 
     module.exports = {
         Debug: Debug,
@@ -38,7 +39,8 @@
         TopicFrequency: TopicFrequency,
         Preview: Preview,
         Macro: Macro,
-        Micro: Micro
+        Micro: Micro,
+        Count: Count
     };
 
 }());

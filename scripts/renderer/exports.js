@@ -11,6 +11,7 @@
 
     // html renderers
     var HTML = {
+        Empty: require('./type/html/Empty'),
         Heatmap: require('./type/html/Heatmap'),
         Ring: require('./type/html/Ring'),
         WordCloud: require('./type/html/WordCloud'),
@@ -25,6 +26,8 @@
 
     // pending layer renderers
     var Pending = {
+        DelayedBlink: require('./type/pending/DelayedBlink'),
+        DelayedSpin: require('./type/pending/DelayedSpin'),
         Blink: require('./type/pending/Blink'),
         Spin: require('./type/pending/Spin'),
         BlinkSpin: require('./type/pending/BlinkSpin')

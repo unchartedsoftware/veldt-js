@@ -6,8 +6,8 @@
 }
 
 .blinking {
-    background-color: rgba( 150, 150, 150, 0.2 );
-    border: 1px solid rgba( 0, 0, 0, 0.1 );
+    background-color: rgba(150, 150, 150, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.1);
 
     -webkit-animation-name: blinker;
     -webkit-animation-duration: 1.2s;
@@ -26,19 +26,19 @@
 }
 
 @-moz-keyframes blinker {
-    0% { opacity: 1.0; }
-    50% { opacity: 0.2; }
-    100% { opacity: 1.0; }
+    0% { opacity: 0.2; }
+    50% { opacity: 1.0; }
+    100% { opacity: 0.2; }
 }
 
 @-webkit-keyframes blinker {
-    0% { opacity: 1.0; }
-    50% { opacity: 0.2; }
-    100% { opacity: 1.0; }
+    0% { opacity: 0.2; }
+    50% { opacity: 1.0; }
+    100% { opacity: 0.2; }
 }
 
 @keyframes blinker {
-    0% { opacity: 1.0; }
-    50% { opacity: 0.2; }
-    100% { opacity: 1.0; }
+    0% { opacity: 0.2; }
+    50% { opacity: 1.0; }
+    100% { opacity: 0.2; }
 }

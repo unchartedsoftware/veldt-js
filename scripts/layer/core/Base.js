@@ -37,6 +37,12 @@
             return (this._brightness !== undefined) ? this._brightness : 1;
         },
 
+        isTargetLayer: function(elem) {
+            return this._container &&
+                this._container === elem ||
+                $.contains(this._container, elem);
+        },
+
        _getLayerPointFromLonLat: function(lonlatPoint) {
             var pixel = this._map.project(lonlatPoint);
             var zoom = this._map.getZoom();
@@ -76,6 +82,34 @@
                 index: bx + (by * resolution),
                 size: pixelSize
             };
+        },
+
+        _addTile: function (coords, container) {
+            var tilePos = this._getTilePos(coords);
+            var key = this._tileCoordsToKey(coords);
+            // Override so that we don't pass in wrapped coords here
+            var tile = this.createTile(coords, L.bind(this._tileReady, this, coords));
+            this._initTile(tile);
+            // if createTile is defined with a second argument ("done" callback),
+            // we know that tile is async and will be ready later; otherwise
+            if (this.createTile.length < 2) {
+                // mark tile as ready, but delay one frame for opacity animation to happen
+                L.Util.requestAnimFrame(L.bind(this._tileReady, this, coords, null, tile));
+            }
+            L.DomUtil.setPosition(tile, tilePos);
+            // save tile in cache
+            this._tiles[key] = {
+                el: tile,
+                coords: coords,
+                current: true
+            };
+            container.appendChild(tile);
+            // @event tileloadstart: TileEvent
+            // Fired when a tile is requested and starts loading.
+            this.fire('tileloadstart', {
+                tile: tile,
+                coords: coords
+            });
         }
     });
 
