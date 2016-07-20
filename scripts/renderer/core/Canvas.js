@@ -9,26 +9,14 @@
         onAdd: function(map) {
             DOM.prototype.onAdd.call(this, map);
             // handlers
-            var self = this;
             map.on('click', this.onClick, this);
-            $(this._container).on('mousemove', function(e) {
-                $(map._container).css('cursor', '');
-                self.onMouseMove(e);
-            });
-            $(this._container).on('mouseover', function(e) {
-                self.onMouseOver(e);
-            });
-            $(this._container).on('mouseout', function(e) {
-                self.onMouseOut(e);
-            });
+            map.on('mousemove', this.onMouseMove, this);
         },
 
         onRemove: function(map) {
             // handlers
             map.off('click', this.onClick, this);
-            $(this._container).off('mousemove');
-            $(this._container).off('mouseover');
-            $(this._container).off('mouseout');
+            map.off('mousemove', this.onMouseMove, this);
             DOM.prototype.onRemove.call(this, map);
         },
 
@@ -52,14 +40,6 @@
         },
 
         onMouseMove: function() {
-            // override
-        },
-
-        onMouseOver: function() {
-            // override
-        },
-
-        onMouseOut: function() {
             // override
         },
 

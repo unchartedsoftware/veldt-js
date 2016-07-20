@@ -88,6 +88,14 @@
             this.highlight = null;
         },
 
+        setHighlight: function (word) {
+            this.clearSelection();
+            // Highlight selected word
+            $(this._container).addClass('highlight');
+            $('.word-histogram-entry[data-word="' + word + '"]').addClass('highlight');
+            this.highlight = word;
+        },
+
         onMouseOver: function(e) {
             var target = $(e.originalEvent.target);
             $('.word-histogram-entry').removeClass('hover');
@@ -139,9 +147,7 @@
             }
             var word = target.attr('data-word');
             if (word) {
-                $(this._container).addClass('highlight');
-                $('.word-histogram-entry[data-word="' + word + '"]').addClass('highlight');
-                this.highlight = word;
+                this.setHighlight(word);
                 var $parent = target.parents('.leaflet-html-tile');
                 // fire event
                 this.fire('click', {

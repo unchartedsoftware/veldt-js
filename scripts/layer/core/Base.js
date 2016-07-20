@@ -37,7 +37,12 @@
             return (this._brightness !== undefined) ? this._brightness : 1;
         },
 
-        getLayerPointFromLonLat: function(lonlatPoint, zoom) {
+        isTargetLayer: function(elem) {
+            return this._container && this._container === elem || $.contains(this._container, elem);
+        },
+
+
+        _getLayerPointFromLonLat: function(lonlatPoint, zoom) {
             var pixel = this._map.project(lonlatPoint, zoom ? zoom : this._map.getZoom());
             var pow = Math.pow(2, zoom);
             var tileSize = this.options.tileSize;

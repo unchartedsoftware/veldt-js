@@ -18,13 +18,6 @@
         return enc;
     }
 
-    function decode(enc) {
-        return (enc[0] * 16777216.0) +
-            (enc[1] * 65536.0) +
-            (enc[2] * 256.0) +
-            enc[3];
-    }
-
     var Heatmap = WebGL.extend({
 
         includes: [
@@ -155,7 +148,8 @@
                     // draw the tile
                     buffer.draw();
                 });
-                // no need to unbind texture
+                // unbind texture
+                cached.texture.pop(0);
             });
             // unbind buffer
             buffer.unbind();

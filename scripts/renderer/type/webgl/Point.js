@@ -184,7 +184,7 @@
         },
 
         onMouseMove: function(e) {
-            var canvas = e.originalEvent.target;
+            var target = e.originalEvent.target;
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
             var radius = this.getCollisionRadius();
             var zoom = this._map.getZoom();
@@ -197,19 +197,19 @@
                         // new collision
                         // execute mouseout for old
                         this.fire('mouseout', {
-                            elem: canvas,
+                            elem: target,
                             value: this.highlighted.value
                         });
                         // execute mouseover for new
                         this.fire('mouseover', {
-                            elem: canvas,
+                            elem: target,
                             value: collision
                         });
                     }
                 } else {
                     // no previous collision, execute mouseover
                     this.fire('mouseover', {
-                        elem: canvas,
+                        elem: target,
                         value: collision
                     });
                 }
@@ -232,7 +232,7 @@
             // mouse out
             if (this.highlighted) {
                 this.fire('mouseout', {
-                    elem: canvas,
+                    elem: target,
                     value: this.highlighted.value
                 });
             }
@@ -241,7 +241,7 @@
         },
 
         onClick: function(e) {
-            var canvas = e.originalEvent.target;
+            var target = e.originalEvent.target;
             var layerPixel = this.getLayerPointFromEvent(e.originalEvent);
             var radius = this.getCollisionRadius();
             var zoom = this._map.getZoom();
@@ -261,7 +261,7 @@
                     ]
                 };
                 this.fire('click', {
-                    elem: canvas,
+                    elem: target,
                     value: collision
                 });
             } else {
@@ -316,8 +316,8 @@
                 var count = 0;
                 var numDatum = Math.min(data.length, MAX_POINTS_PER_TILE);
                 var points = [];
-                var i;
                 var collisions = {};
+                var i;
                 // calc pixel locations
                 for (i=0; i<numDatum; i++) {
                     var hit = data[i];
@@ -403,23 +403,26 @@
             ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 1);
             // for each allocated chunk
             _.forIn(this._usedChunks, function(chunk, hash) {
-                // bind the chunk's buffer
-                chunk.vertexBuffer.bind();
                 // for each tile referring to the data
                 var cached = cache[hash];
-                _.keys(cached.tiles).forEach(function(hash) {
-                    var coords = self.coordFromCacheKey(hash);
-                    if (coords.z !== zoom) {
-                        // NOTE: we have to check here if the tiles are stale or not
-                        return;
-                    }
-                    // upload translation matrix
-                    shader.setUniform('uModelMatrix', self.getModelMatrix(coords));
-                    // draw the istances
-                    ext.drawArraysInstancedANGLE(gl[buffer.mode], 0, buffer.count, chunk.count);
-                });
-                // unbind
-                chunk.vertexBuffer.unbind();
+                if (cached) {
+                    // bind the chunk's buffer
+                    chunk.vertexBuffer.bind();
+                    // render for each tile
+                    _.keys(cached.tiles).forEach(function(hash) {
+                        var coords = self.coordFromCacheKey(hash);
+                        if (coords.z !== zoom) {
+                            // NOTE: we have to check here if the tiles are stale or not
+                            return;
+                        }
+                        // upload translation matrix
+                        shader.setUniform('uModelMatrix', self.getModelMatrix(coords));
+                        // draw the istances
+                        ext.drawArraysInstancedANGLE(gl[buffer.mode], 0, buffer.count, chunk.count);
+                    });
+                    // unbind
+                    chunk.vertexBuffer.unbind();
+                }
             });
             // disable instancing
             ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 0);

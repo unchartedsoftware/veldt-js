@@ -15,23 +15,94 @@
         ],
 
         options: {
-            color: [255, 0, 255, 255],
+            selectedColor: [255, 100, 255, 255],
+            highlightedColor: [200, 0, 255, 255],
             downSampleFactor: 8
         },
 
-        highlighted: false,
+        highlighted: null,
+
+        selected: null,
 
         initialize: function() {
             ColorRamp.initialize.apply(this, arguments);
             ValueTransform.initialize.apply(this, arguments);
         },
 
-        onMouseMove: function(e) {
-            var target = e.originalEvent.target;
+        clearHighlight: function () {
             if (this.highlighted) {
-                // clear existing highlights
+                this.highlighted = null;
                 this.clearTiles();
             }
+        },
+
+        clearSelection: function () {
+            if (this.selected) {
+                this.selected = null;
+                this.clearTiles();
+            }
+        },
+
+        setSelection: function(value) {
+            this.clearSelection();
+            this.selected = value;
+        },
+
+        setHighlight: function(value) {
+            this.clearHighlight();
+            this.highlighted = value;
+        },
+
+        onClick: function (e) {
+            var target = e.originalEvent.target;
+            var bin = this._getBinData(e);
+            if (bin) {
+                // execute callback
+                this.fire('click', {
+                    elem: target,
+                    value: bin
+                });
+                // flag as selected
+                this.setSelection(bin);
+                this._highlightTrails();
+                return;
+            }
+            // clear selected flag
+            this.clearSelection();
+            this._highlightTrails();
+        },
+
+        onMouseMove: function(e) {
+            var target = e.originalEvent.target;
+            var bin = this._getBinData(e);
+            if (bin) {
+                // execute callback
+                if (!this.highlighted) {
+                   this.fire('mouseover', {
+                        elem: target,
+                        value: bin
+                    });
+                }
+                // flag as highlighted
+                this.setHighlight(bin);
+                this._highlightTrails();
+                // set cursor
+                $(this._map._container).css('cursor', 'pointer');
+                // exit early
+                return;
+            }
+            // mouse out
+            if (this.highlighted) {
+                this.fire('mouseout', {
+                    elem: target,
+                    value: this.highlighted
+                });
+            }
+            this.clearHighlight();
+            this._highlightTrails();
+        },
+
+        _getBinData: function(e) {
             // get layer coord
             var layerPoint = this.getLayerPointFromEvent(e.originalEvent);
             // get tile coord
@@ -51,19 +122,7 @@
                     var ids = Object.keys(cached.pixels[x][y]);
                     // take first entry
                     var id = ids[0];
-                    // for each cache entry
-                    var self = this;
-                    _.forIn(this._cache, function(cached) {
-                        if (cached.data) {
-                            // for each tile relying on that data
-                            _.forIn(cached.tiles, function(tile) {
-                                var trail = cached.trails[id];
-                                if (trail) {
-                                    self._highlightTrail(tile, trail);
-                                }
-                            });
-                        }
-                    });
+                    // create collision object
                     var collision = {
                         value: id,
                         x: coord.x,
@@ -74,32 +133,46 @@
                         type: 'top-trails',
                         layer: this
                     };
-                    // execute callback
-                    if (!this.highlighted) {
-                        this.fire('mouseover', {
-                            elem: target,
-                            value: collision
-                        });
-                    }
-                    // flag as highlighted
-                    this.highlighted = collision;
-                    // set cursor
-                    $(this._map._container).css('cursor', 'pointer');
-                    return;
+                    return collision;
                 }
             }
-            // mouse out
-            if (this.highlighted) {
-                this.fire('mouseout', {
-                    elem: target,
-                    value: this.highlighted
-                });
-            }
-            // clear highlighted flag
-            this.highlighted = null;
+            return null;
         },
 
-        _highlightTrail: function(canvas, pixels) {
+        _highlightTrailsForData: function(cached) {
+            var self = this;
+            var selected = this.selected;
+            var highlighted = this.highlighted;
+            if (cached.data) {
+                var trail;
+                if (selected) {
+                    trail = cached.trails[selected.value];
+                    if (trail) {
+                        // for each tile relying on that data
+                        _.forIn(cached.tiles, function(tile) {
+                            self._renderTrail(tile, trail, self.options.selectedColor);
+                        });
+                    }
+                }
+                if (highlighted) {
+                    trail = cached.trails[highlighted.value];
+                    if (trail) {
+                        _.forIn(cached.tiles, function(tile) {
+                            self._renderTrail(tile, trail, self.options.highlightedColor);
+                        });
+                    }
+                }
+            }
+        },
+
+        _highlightTrails: function() {
+            var self = this;
+            _.forIn(this._cache, function(cached) {
+                self._highlightTrailsForData(cached);
+            });
+        },
+
+        _renderTrail: function(canvas, pixels, color) {
             var resolution = this.getResolution();
             var highlight = document.createElement('canvas');
             highlight.height = resolution;
@@ -113,10 +186,10 @@
                 x = pixel[0];
                 y = pixel[1];
                 j = x + (resolution * y);
-                data[j * 4] = this.options.color[0];
-                data[j * 4 + 1] = this.options.color[1];
-                data[j * 4 + 2] = this.options.color[2];
-                data[j * 4 + 3] = this.options.color[3];
+                data[j * 4] = color[0];
+                data[j * 4 + 1] = color[1];
+                data[j * 4 + 2] = color[2];
+                data[j * 4 + 3] = color[3];
             }
             highlightCtx.putImageData(imageData, 0, 0);
             // draw to tile
@@ -165,6 +238,8 @@
                     trails[id].push([ x, y ]);
                 }
             }
+            // make sure to highlight selected trails in the tile
+            this._highlightTrailsForData(cached);
         }
 
     });

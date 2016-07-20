@@ -6,14 +6,6 @@
 
     var NO_OP = function() {};
 
-    var maps = {};
-
-    var resetMouseCursorStyle = function() {
-        // we only want this bound ONCE per map
-        var map = this;
-        $(map._container).css('cursor', '');
-    };
-
     var Overlay = Base.extend({
 
         options: {
@@ -30,13 +22,6 @@
             this._initContainer();
             // add event handlers
             map.on('click', this.onClick, this);
-            if (!maps[map.id]) {
-                // whenever a mouse event occurs, before any overlay layer
-                // processes the event, we clear the style of the mouse cursor
-                map.on('mousemove', resetMouseCursorStyle, map);
-                maps[map.id] = 0;
-            }
-            maps[map.id]++;
             map.on('mousemove', this.onMouseMove, this);
             this._resetView();
             this._update();
@@ -55,10 +40,6 @@
             this.off('cacheunload', this.onCacheUnload, this);
             this.off('extremachange', this.onExtremaChange, this);
             map.off('click', this.onClick, this);
-            maps[map.id]--;
-            if (maps[map.id] === 0) {
-                map.off('mousemove', resetMouseCursorStyle, map);
-            }
             map.off('mousemove', this.onMouseMove, this);
         },
 
