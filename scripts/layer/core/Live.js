@@ -186,11 +186,12 @@
             // respect the TMS setting in the options
             if (this.options && this.options.tms) {
                 coords = {
-                    x: event.coords.x,
-                    y: Math.pow(2, event.coords.z) - 1 - event.coords.y,
-                    z: event.coords.z
+                    x: coords.x,
+                    y: Math.pow(2, coords.z) - 1 - coords.y,
+                    z: coords.z
                 };
             }
+            var ncoords = this.getNormalizedCoords(coords);
 
             // cache key from coords
             var key = this.cacheKeyFromCoord(coords);

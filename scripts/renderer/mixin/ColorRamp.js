@@ -51,12 +51,13 @@
             (c1[3] - c2[3]) * (c1[3] - c2[3]));
     }
 
-    var GRADIENT_STEPS = 200;
-
     var buildFlatLookupTable = function(color) {
         var output = [];
-        for (var i = 0; i < GRADIENT_STEPS; i++) {
-            output.push(color);
+        for (var i = 0; i < NUM_GRADIENT_STEPS; i++) {
+            output.push(color[0]);
+            output.push(color[1]);
+            output.push(color[2]);
+            output.push(color[3]);
         }
         return output;
     };
@@ -208,7 +209,8 @@
         spectral: SPECTRAL,
         temperature: TEMPERATURE,
         grey: GREYSCALE,
-        polar: concat(POLAR_HOT, POLAR_COLD)
+        polar: concat(POLAR_HOT, POLAR_COLD),
+        flat: FLAT
     };
 
     var ColorRamp = {
@@ -219,7 +221,7 @@
         temperature: buildLookupFunction(TEMPERATURE),
         grey: buildLookupFunction(GREYSCALE),
         fire: buildLookupFunction(FIRE),
-        polar: buildLookupFunction(concat(POLAR_HOT, POLAR_COLD))
+        polar: buildLookupFunction(concat(POLAR_HOT, POLAR_COLD)),
         flat: buildLookupFunction(FLAT)
     };
 
