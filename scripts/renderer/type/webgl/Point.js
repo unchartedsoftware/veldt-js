@@ -115,6 +115,7 @@
             highlightedOutlineColor: [0.0, 0.0, 0.0, 1.0],
             highlightedFillColor: [0.3, 0.25, 0.5, 0.5],
             highlightedRadius: POINT_RADIUS + POINT_RADIUS_INC,
+            blending: true,
             jitter: true,
             jitterDistance: 10
         },
@@ -390,9 +391,11 @@
             var shader = this._shader;
             var cache = this._cache;
             var zoom = this._map.getZoom();
-            // enable blending
-            gl.enable(gl.BLEND);
-            gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+            if (this.options.blending) {
+                // enable blending
+                gl.enable(gl.BLEND);
+                gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+            }
             // set fill color
             shader.setUniform('uColor', color);
             shader.setUniform('uUseUniform', 0);
