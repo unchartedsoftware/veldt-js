@@ -28,7 +28,7 @@
 
     var WATCHED_PROJECT = 'graph-app';
     var GO_PATH = process.env.GOPATH;
-    var COPY_PATH = GO_PATH + '/src/stash.uncharted.software/scm/' + WATCHED_PROJECT + '/build/public/';
+    var COPY_PATH = GO_PATH + '/src/stash.uncharted.software/scm/xdata/' + WATCHED_PROJECT + '/build/public/';
 
     gulp.task('copy-build', [ 'build' ], function() {
         return gulp.src([
