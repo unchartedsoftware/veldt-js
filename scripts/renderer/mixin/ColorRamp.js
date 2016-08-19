@@ -234,8 +234,8 @@
         return this;
     };
 
-    var getColorRamp = function() {
-        return this._colorRamp;
+    var getColorRamp = function(type) {
+        return this._colorRamp || ColorRamp[type.toLowerCase()];
     };
 
     var getColorRampTable = function() {
