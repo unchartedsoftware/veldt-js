@@ -26,17 +26,6 @@
         build: 'build'
     };
 
-    var WATCHED_PROJECT = 'prism-app-template';
-    var GO_PATH = process.env.GOPATH;
-    var COPY_PATH = GO_PATH + '/src/github.com/unchartedsoftware/' + WATCHED_PROJECT + '/build/public/';
-
-    gulp.task('copy-build', [ 'build' ], function() {
-        return gulp.src([
-            paths.build + '/' + name + '.js',
-            paths.build + '/' + name + '.css'
-        ]).pipe(gulp.dest(COPY_PATH));
-    });
-
     function handleError(err) {
         console.error(err);
         this.emit('end');
@@ -98,13 +87,7 @@
             done);
     });
 
-    gulp.task('watch', [ 'copy-build' ], function(done) {
-        gulp.watch(paths.scripts, [ 'copy-build' ]);
-        gulp.watch(paths.styles, [ 'copy-build' ]);
-        done();
-    });
-
-    gulp.task('default', [ 'watch' ], function() {
+    gulp.task('default', [ 'build' ], function() {
     });
 
 }());
