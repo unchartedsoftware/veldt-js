@@ -73,33 +73,6 @@
 
         renderTile: function() {
             // override
-        },
-
-        // Override of base tile pruning.  Our version doesn't retain parent
-        // or child tiles, which alleviates conflicts between Leaflet's caching
-        // strategy and our own.
-        _pruneTiles: function () {
-            var self = this;
-
-            if (!self._map) {
-                return;
-            }
-
-            var zoom = self._map.getZoom();
-            if (zoom > self.options.maxZoom || zoom < self.options.minZoom) {
-                self._removeAllTiles();
-                return;
-            }
-
-            _.forEach(self._tiles, function(tile) {
-                tile.retain = tile.current;
-            });
-
-            _.forEach(self._tiles, function(tile, key) {
-                if (!tile.retain) {
-                    self._removeTile(key);
-                }
-            });
         }
     });
 

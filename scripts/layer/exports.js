@@ -28,6 +28,7 @@
     var Macro = require('./type/Macro');
     var Micro = require('./type/Micro');
     var Count = require('./type/Count');
+    var Community = require('./type/Community');
 
     module.exports = {
         Debug: Debug,
@@ -44,7 +45,8 @@
         Preview: Preview,
         Macro: Macro,
         Micro: Micro,
-        Count: Count
+        Count: Count,
+        Community: Community
     };
 
 }());

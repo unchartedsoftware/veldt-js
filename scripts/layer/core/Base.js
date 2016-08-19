@@ -8,6 +8,10 @@
 
     var Base = L.GridLayer.extend({
 
+        options: {
+            tms: false
+        },
+
         getOpacity: function() {
             return this.options.opacity;
         },
@@ -41,9 +45,9 @@
             return this._container && this._container === elem || $.contains(this._container, elem);
         },
 
-
         _getLayerPointFromLonLat: function(lonlatPoint, zoom) {
-            var pixel = this._map.project(lonlatPoint, zoom ? zoom : this._map.getZoom());
+            zoom = (zoom !== undefined) ? zoom : this._map.getZoom();
+            var pixel = this._map.project(lonlatPoint, zoom);
             var pow = Math.pow(2, zoom);
             var tileSize = this.options.tileSize;
             return {
@@ -54,7 +58,7 @@
 
         getLayerPointFromEvent: function(e) {
             var lonlat = this._map.mouseEventToLatLng(e);
-            return this._getLayerPointFromLonLat(lonlat, this._map.getZoom());
+            return this._getLayerPointFromLonLat(lonlat);
         },
 
         getTileCoordFromLayerPoint: function(layerPoint) {

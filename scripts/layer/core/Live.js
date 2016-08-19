@@ -145,19 +145,17 @@
         onTileUnload: function(event) {
             var coords = event.coords;
             // respect the TMS setting in the options
-            if (this.options && this.options.tms) {
+            if (this.options.tms) {
                 coords = {
                     x: event.coords.x,
                     y: Math.pow(2, event.coords.z) - 1 - event.coords.y,
                     z: event.coords.z
                 };
             }
-
             // cache key from coords
             var key = this.cacheKeyFromCoord(coords);
             // cache key from normalized coords
             var nkey = this.cacheKeyFromCoord(coords, true);
-
             // get cache entry
             var cached = this._cache[nkey];
             // could the be case where the cache is cleared before tiles are
@@ -165,7 +163,7 @@
             if (!cached) {
                 return;
             }
-                       // remove the tile from the cache
+            // remove the tile from the cache
             delete cached.tiles[key];
             // don't remove cache entry unless to tiles use it anymore
             if (_.keys(cached.tiles).length === 0) {
@@ -184,7 +182,7 @@
         _requestTile: function(coords, tile, callback) {
             var self = this;
             // respect the TMS setting in the options
-            if (this.options && this.options.tms) {
+            if (this.options.tms) {
                 coords = {
                     x: coords.x,
                     y: Math.pow(2, coords.z) - 1 - coords.y,
@@ -192,7 +190,6 @@
                 };
             }
             var ncoords = this.getNormalizedCoords(coords);
-
             // cache key from coords
             var key = this.cacheKeyFromCoord(coords);
             // cache key from normalized coords
@@ -236,18 +233,18 @@
                     cached.isPending = false;
                     // transform and store tile data in cache
                     cached.data = self.options.transform(data);
+                    // execute pending callbacks
+                    cached.callbacks.forEach(function(callback) {
+                        callback();
+                    });
+                    cached.callbacks = [];
+                    // data is loaded into cache
+                    self.fire('cacheload', {
+                        tile: tile,
+                        coords: coords,
+                        entry: cached
+                    });
                     if (cached.data) {
-                        // execute pending callbacks
-                        cached.callbacks.forEach(function(callback) {
-                            callback();
-                        });
-                        cached.callbacks = [];
-                        // data is loaded into cache
-                        self.fire('cacheload', {
-                            tile: tile,
-                            coords: coords,
-                            entry: cached
-                        });
                         // update the extrema
                         if (self.updateExtrema(cached.data)) {
                             // if extrema changed, fire event
