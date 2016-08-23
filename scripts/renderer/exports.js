@@ -2,6 +2,12 @@
 
     'use strict';
 
+    var Core = {
+        HTML: require('./core/HTML'),
+        WebGL: require('./core/WebGL'),
+        Canvas: require('./core/Canvas')
+    };
+
     // canvas renderers
     var Canvas = {
         Heatmap: require('./type/canvas/Heatmap'),
@@ -11,11 +17,12 @@
 
     // html renderers
     var HTML = {
-        Empty: require('./type/html/Empty'),
         Heatmap: require('./type/html/Heatmap'),
         Ring: require('./type/html/Ring'),
         WordCloud: require('./type/html/WordCloud'),
-        WordHistogram: require('./type/html/WordHistogram')
+        WordHistogram: require('./type/html/WordHistogram'),
+        Community: require('./type/html/Community'),
+        CommunityLabel: require('./type/html/CommunityLabel')
     };
 
     // webgl renderers
@@ -39,6 +46,7 @@
     };
 
     module.exports = {
+        Core: Core,
         HTML: HTML,
         Canvas: Canvas,
         WebGL: WebGL,

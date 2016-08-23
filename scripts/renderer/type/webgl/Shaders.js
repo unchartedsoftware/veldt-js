@@ -97,7 +97,7 @@
      * Color ramp
      */
     var colorRamp = stringify([
-        '#define RAMP_VALUES ' + ColorRamp.NUM_GRADIENT_STEPS + '',
+        '#define RAMP_VALUES ' + ColorRamp.NUM_GRADIENT_STEPS,
         'uniform vec4 uRamp[RAMP_VALUES];',
         'vec4 colorRamp(float value) {',
             'float maxIndex = float(RAMP_VALUES - 1);',

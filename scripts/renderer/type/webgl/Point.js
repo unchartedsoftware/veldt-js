@@ -376,6 +376,7 @@
 
         getModelMatrix: function(coords) {
             var size = Math.pow(2, this._map.getZoom());
+            // create model matrix
             var xWrap = Math.floor(coords.x / size);
             var yWrap = Math.floor(coords.y / size);
             return this.getTranslationMatrix(

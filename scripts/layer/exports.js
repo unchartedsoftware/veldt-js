@@ -14,6 +14,9 @@
     // composite layer
     var Composite = require('./core/Composite');
 
+    // live layer - base type for extension
+    var Live = require('./core/Live');
+
     // live tile layers
     var Heatmap = require('./type/Heatmap');
     var TopTrails = require('./type/TopTrails');
@@ -25,12 +28,14 @@
     var Macro = require('./type/Macro');
     var Micro = require('./type/Micro');
     var Count = require('./type/Count');
+    var Community = require('./type/Community');
 
     module.exports = {
         Debug: Debug,
         Pending: Pending,
         Image: Image,
         Composite: Composite,
+        Live: Live,
         Heatmap: Heatmap,
         TopCount: TopCount,
         TopTrails: TopTrails,
@@ -40,7 +45,8 @@
         Preview: Preview,
         Macro: Macro,
         Micro: Micro,
-        Count: Count
+        Count: Count,
+        Community: Community
     };
 
 }());

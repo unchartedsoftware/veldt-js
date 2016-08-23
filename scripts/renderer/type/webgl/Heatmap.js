@@ -139,11 +139,10 @@
                     if (coords.z !== zoom) {
                         return;
                     }
+                    var x = TILE_SIZE * coords.x;
+                    var y = (self.options.tms) ? (TILE_SIZE * (coords.y + 1)) : dim - (TILE_SIZE * coords.y);
                     // create model matrix
-                    var model = self.getTranslationMatrix(
-                        TILE_SIZE * coords.x,
-                        dim - (TILE_SIZE * coords.y),
-                        0);
+                    var model = self.getTranslationMatrix(x, y, 0);
                     shader.setUniform('uModelMatrix', model);
                     // draw the tile
                     buffer.draw();
