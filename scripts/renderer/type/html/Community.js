@@ -32,8 +32,11 @@
             var divs = $();
             _.forEach(jsonObj.communities, function(community) {
                 if (community.numNodes > 1) {
-                    var div = that._createRingDiv(community.radius, community.coords,
-                                                  coord.z, 'community-ring');
+                    var div = that._createRingDiv(
+                        community.radius,
+                        community.coords,
+                        coord.z,
+                        'community-ring');
                     div.data('name', community.metadata);
                     div.data('count', community.numNodes);
                     divs = divs.add(div);
@@ -72,7 +75,9 @@
             var radius = Math.max(4, communityRadius * Math.pow(2, zoomLevel));
             var offset = radius / 2;
             var binCoord = this._getBinCoordFromCartesian(
-                communityCoords[0], communityCoords[1], zoomLevel);
+                communityCoords[0],
+                communityCoords[1], 
+                zoomLevel);
             var left = binCoord.x;
             var top = binCoord.y;
 
