@@ -8,6 +8,10 @@
 
     var Base = L.GridLayer.extend({
 
+        options: {
+            tms: false
+        },
+
         getOpacity: function() {
             return this.options.opacity;
         },
@@ -38,14 +42,12 @@
         },
 
         isTargetLayer: function(elem) {
-            return this._container &&
-                this._container === elem ||
-                $.contains(this._container, elem);
+            return this._container && this._container === elem || $.contains(this._container, elem);
         },
 
-       _getLayerPointFromLonLat: function(lonlatPoint) {
-            var pixel = this._map.project(lonlatPoint);
-            var zoom = this._map.getZoom();
+        _getLayerPointFromLonLat: function(lonlatPoint, zoom) {
+            zoom = (zoom !== undefined) ? zoom : this._map.getZoom();
+            var pixel = this._map.project(lonlatPoint, zoom);
             var pow = Math.pow(2, zoom);
             var tileSize = this.options.tileSize;
             return {
@@ -72,7 +74,8 @@
             var tileSize = this.options.tileSize;
             var resolution = res || this.getResolution() || tileSize;
             var tx = mod(layerPoint.x, tileSize);
-            var ty = mod(layerPoint.y, tileSize);
+            var y = this.options.tms ? resolution - layerPoint.y : layerPoint.y;
+            var ty = mod(y, tileSize);
             var pixelSize = tileSize / resolution;
             var bx = Math.floor(tx / pixelSize);
             var by = Math.floor(ty / pixelSize);

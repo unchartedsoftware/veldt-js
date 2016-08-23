@@ -144,6 +144,14 @@
 
         onTileUnload: function(event) {
             var coords = event.coords;
+            // respect the TMS setting in the options
+            if (this.options.tms) {
+                coords = {
+                    x: event.coords.x,
+                    y: Math.pow(2, event.coords.z) - 1 - event.coords.y,
+                    z: event.coords.z
+                };
+            }
             // cache key from coords
             var key = this.cacheKeyFromCoord(coords);
             // cache key from normalized coords
@@ -173,6 +181,14 @@
 
         _requestTile: function(coords, tile, callback) {
             var self = this;
+            // respect the TMS setting in the options
+            if (this.options.tms) {
+                coords = {
+                    x: coords.x,
+                    y: Math.pow(2, coords.z) - 1 - coords.y,
+                    z: coords.z
+                };
+            }
             var ncoords = this.getNormalizedCoords(coords);
             // cache key from coords
             var key = this.cacheKeyFromCoord(coords);
@@ -217,18 +233,18 @@
                     cached.isPending = false;
                     // transform and store tile data in cache
                     cached.data = self.options.transform(data);
+                    // execute pending callbacks
+                    cached.callbacks.forEach(function(callback) {
+                        callback();
+                    });
+                    cached.callbacks = [];
+                    // data is loaded into cache
+                    self.fire('cacheload', {
+                        tile: tile,
+                        coords: coords,
+                        entry: cached
+                    });
                     if (cached.data) {
-                        // execute pending callbacks
-                        cached.callbacks.forEach(function(callback) {
-                            callback();
-                        });
-                        cached.callbacks = [];
-                        // data is loaded into cache
-                        self.fire('cacheload', {
-                            tile: tile,
-                            coords: coords,
-                            entry: cached
-                        });
                         // update the extrema
                         if (self.updateExtrema(cached.data)) {
                             // if extrema changed, fire event

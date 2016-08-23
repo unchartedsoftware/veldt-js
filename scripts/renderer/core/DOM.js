@@ -74,7 +74,6 @@
         renderTile: function() {
             // override
         }
-
     });
 
     module.exports = DOM;
