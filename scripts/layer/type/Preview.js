@@ -2,12 +2,12 @@
 
     'use strict';
 
-    var Live = require('../core/Live');
-    var Elastic = require('../param/Elastic');
-    var Binning = require('../param/Binning');
-    var TopHits = require('../agg/TopHits');
+    let Live = require('../core/Live');
+    let Elastic = require('../param/Elastic');
+    let Binning = require('../param/Binning');
+    let TopHits = require('../agg/TopHits');
 
-    var Preview = Live.extend({
+    let Preview = Live.extend({
 
         includes: [
             // params

@@ -2,15 +2,15 @@
 
     'use strict';
 
-    var moment = require('moment');
+    let moment = require('moment');
 
-    var DEFAULT_TILE_SIZE = 256;
-    var DEFAULT_X_FIELD = 'pixel.x';
-    var DEFAULT_Y_FIELD = 'pixel.y';
-    var DEFAULT_PIXEL_MIN = 0;
-    var DEFAULT_PIXEL_MAX = Math.pow(2, 32);
+    let DEFAULT_TILE_SIZE = 256;
+    let DEFAULT_X_FIELD = 'pixel.x';
+    let DEFAULT_Y_FIELD = 'pixel.y';
+    let DEFAULT_PIXEL_MIN = 0;
+    let DEFAULT_PIXEL_MAX = Math.pow(2, 32);
 
-    var checkField = function(meta, field) {
+    let checkField = function(meta, field) {
         if (meta) {
             if (meta.extrema) {
                 return true;
@@ -23,7 +23,7 @@
         return false;
     };
 
-    var setXField = function(field) {
+    let setXField = function(field) {
         if (field !== this._params.binning.x) {
             if (field === DEFAULT_X_FIELD) {
                 // reset if default
@@ -32,7 +32,7 @@
                 this._params.binning.right = DEFAULT_PIXEL_MAX;
                 this.clearExtrema();
             } else {
-                var meta = this._meta[field];
+                let meta = this._meta[field];
                 if (checkField(meta, field)) {
                     this._params.binning.x = field;
                     this._params.binning.left = meta.extrema.min;
@@ -44,11 +44,11 @@
         return this;
     };
 
-    var getXField = function() {
+    let getXField = function() {
         return this._params.binning.x;
     };
 
-    var setYField = function(field) {
+    let setYField = function(field) {
         if (field !== this._params.binning.y) {
             if (field === DEFAULT_Y_FIELD) {
                 // reset if default
@@ -57,7 +57,7 @@
                 this._params.binning.top = DEFAULT_PIXEL_MIN;
                 this.clearExtrema();
             } else {
-                var meta = this._meta[field];
+                let meta = this._meta[field];
                 if (checkField(meta, field)) {
                     this._params.binning.y = field;
                     this._params.binning.bottom = meta.extrema.min;
@@ -69,18 +69,18 @@
         return this;
     };
 
-    var getYField = function() {
+    let getYField = function() {
         return this._params.binning.y;
     };
 
-    var getLayerPointFromDataPoint = function(x, y, zoom) {
-        var binning = this._params.binning;
-        var tileSize = this.options.tileSize || DEFAULT_TILE_SIZE;
-        var pow = Math.pow(2, zoom);
-        var extent = tileSize * pow;
-        var meta = this.getMeta();
+    let getLayerPointFromDataPoint = function(x, y, zoom) {
+        let binning = this._params.binning;
+        let tileSize = this.options.tileSize || DEFAULT_TILE_SIZE;
+        let pow = Math.pow(2, zoom);
+        let extent = tileSize * pow;
+        let meta = this.getMeta();
 
-        var left, right, bottom, top;
+        let left, right, bottom, top;
         if (meta[binning.x].type === 'date') {
             left = moment(binning.left).valueOf();
             right = moment(binning.right).valueOf();
@@ -98,9 +98,9 @@
             top = binning.top;
         }
 
-        var xRange = Math.abs(right - left);
-        var yRange = Math.abs(bottom - top);
-        var nx, ny;
+        let xRange = Math.abs(right - left);
+        let yRange = Math.abs(bottom - top);
+        let nx, ny;
         if (left > right) {
             nx = 1 - ((x - right) / xRange);
         } else {
@@ -117,16 +117,16 @@
         };
     };
 
-    var getDataPointFromLayerPoint = function(x, y, zoom) {
-        var binning = this._params.binning;
-        var tileSize = this.options.tileSize || DEFAULT_TILE_SIZE;
-        var pow = Math.pow(2, zoom);
-        var extent = tileSize * pow;
-        var nx = x / extent;
-        var ny = y / extent;
-        var xRange = Math.abs(binning.right - binning.left);
-        var yRange = Math.abs(binning.bottom - binning.top);
-        var px, py;
+    let getDataPointFromLayerPoint = function(x, y, zoom) {
+        let binning = this._params.binning;
+        let tileSize = this.options.tileSize || DEFAULT_TILE_SIZE;
+        let pow = Math.pow(2, zoom);
+        let extent = tileSize * pow;
+        let nx = x / extent;
+        let ny = y / extent;
+        let xRange = Math.abs(binning.right - binning.left);
+        let yRange = Math.abs(binning.bottom - binning.top);
+        let px, py;
         if (binning.left > binning.right) {
             px = binning.right + (1 - nx) * xRange;
         } else {

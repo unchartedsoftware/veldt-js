@@ -2,21 +2,21 @@
 
     'use strict';
 
-    var Core = {
+    let Core = {
         HTML: require('./core/HTML'),
         WebGL: require('./core/WebGL'),
         Canvas: require('./core/Canvas')
     };
 
     // canvas renderers
-    var Canvas = {
+    let Canvas = {
         Heatmap: require('./type/canvas/Heatmap'),
         TopTrails: require('./type/canvas/TopTrails'),
         Preview: require('./type/canvas/Preview')
     };
 
     // html renderers
-    var HTML = {
+    let HTML = {
         Empty: require('./type/html/Empty'),
         Heatmap: require('./type/html/Heatmap'),
         Ring: require('./type/html/Ring'),
@@ -27,13 +27,13 @@
     };
 
     // webgl renderers
-    var WebGL = {
+    let WebGL = {
         Heatmap: require('./type/webgl/Heatmap'),
         Point: require('./type/webgl/Point')
     };
 
     // pending layer renderers
-    var Pending = {
+    let Pending = {
         DelayedBlink: require('./type/pending/DelayedBlink'),
         DelayedSpin: require('./type/pending/DelayedSpin'),
         Blink: require('./type/pending/Blink'),
@@ -42,7 +42,7 @@
     };
 
     // pending layer renderers
-    var Debug = {
+    let Debug = {
         Coord: require('./type/debug/Coord')
     };
 

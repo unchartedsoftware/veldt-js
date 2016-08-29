@@ -2,9 +2,9 @@
 
     'use strict';
 
-    var DOM = require('./DOM');
+    let DOM = require('./DOM');
 
-    var Canvas = DOM.extend({
+    let Canvas = DOM.extend({
 
         onAdd: function(map) {
             DOM.prototype.onAdd.call(this, map);
@@ -21,20 +21,20 @@
         },
 
         createTile: function(coords, done) {
-            var tile = L.DomUtil.create('canvas', 'leaflet-tile');
+            let tile = L.DomUtil.create('canvas', 'leaflet-tile');
             tile.style['pointer-events'] = 'all';
             tile.width = this.options.tileSize;
             tile.height = this.options.tileSize;
-            this._requestTile(coords, tile, function() {
+            this._requestTile(coords, tile, () => {
                 done(null, tile);
             });
             return tile;
         },
 
         clearTiles: function() {
-            var tileSize = this.options.tileSize;
-            _.forIn(this._tiles, function(tile) {
-                var ctx = tile.el.getContext('2d');
+            let tileSize = this.options.tileSize;
+            _.forIn(this._tiles, tile => {
+                let ctx = tile.el.getContext('2d');
                 ctx.clearRect(0, 0, tileSize, tileSize);
             });
         },

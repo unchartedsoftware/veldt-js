@@ -2,9 +2,9 @@
 
     'use strict';
 
-    var HTML = require('../../core/HTML');
+    let HTML = require('../../core/HTML');
 
-    var Empty = HTML.extend({});
+    let Empty = HTML.extend({});
 
     module.exports = Empty;
 

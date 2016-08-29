@@ -2,16 +2,16 @@
 
     'use strict';
 
-    var NUM_GRADIENT_STEPS = 100;
+    let NUM_GRADIENT_STEPS = 100;
 
     function rgb2lab(rgb) {
-        var r = rgb[0] > 0.04045 ? Math.pow((rgb[0] + 0.055) / 1.055, 2.4) : rgb[0] / 12.92;
-        var g = rgb[1] > 0.04045 ? Math.pow((rgb[1] + 0.055) / 1.055, 2.4) : rgb[1] / 12.92;
-        var b = rgb[2] > 0.04045 ? Math.pow((rgb[2] + 0.055) / 1.055, 2.4) : rgb[2] / 12.92;
+        let r = rgb[0] > 0.04045 ? Math.pow((rgb[0] + 0.055) / 1.055, 2.4) : rgb[0] / 12.92;
+        let g = rgb[1] > 0.04045 ? Math.pow((rgb[1] + 0.055) / 1.055, 2.4) : rgb[1] / 12.92;
+        let b = rgb[2] > 0.04045 ? Math.pow((rgb[2] + 0.055) / 1.055, 2.4) : rgb[2] / 12.92;
         //Observer. = 2°, Illuminant = D65
-        var x = r * 0.4124564 + g * 0.3575761 + b * 0.1804375;
-        var y = r * 0.2126729 + g * 0.7151522 + b * 0.0721750;
-        var z = r * 0.0193339 + g * 0.1191920 + b * 0.9503041;
+        let x = r * 0.4124564 + g * 0.3575761 + b * 0.1804375;
+        let y = r * 0.2126729 + g * 0.7151522 + b * 0.0721750;
+        let z = r * 0.0193339 + g * 0.1191920 + b * 0.9503041;
         x = x / 0.95047; // Observer= 2°, Illuminant= D65
         y = y / 1.00000;
         z = z / 1.08883;
@@ -25,18 +25,18 @@
     }
 
     function lab2rgb(lab) {
-        var y = (lab[0] + 16) / 116;
-        var x = y + lab[1] / 500;
-        var z = y - lab[2] / 200;
+        let y = (lab[0] + 16) / 116;
+        let x = y + lab[1] / 500;
+        let z = y - lab[2] / 200;
         x = x > 0.206893034 ? x * x * x : (x - 4 / 29) / 7.787037;
         y = y > 0.206893034 ? y * y * y : (y - 4 / 29) / 7.787037;
         z = z > 0.206893034 ? z * z * z : (z - 4 / 29) / 7.787037;
         x = x * 0.95047; // Observer= 2°, Illuminant= D65
         y = y * 1.00000;
         z = z * 1.08883;
-        var r = x * 3.2404542 + y * -1.5371385 + z * -0.4985314;
-        var g = x * -0.9692660 + y * 1.8760108 + z * 0.0415560;
-        var b = x * 0.0556434 + y * -0.2040259 + z * 1.0572252;
+        let r = x * 3.2404542 + y * -1.5371385 + z * -0.4985314;
+        let g = x * -0.9692660 + y * 1.8760108 + z * 0.0415560;
+        let b = x * 0.0556434 + y * -0.2040259 + z * 1.0572252;
         r = r > 0.00304 ? 1.055 * Math.pow(r, 1 / 2.4) - 0.055 : 12.92 * r;
         g = g > 0.00304 ? 1.055 * Math.pow(g, 1 / 2.4) - 0.055 : 12.92 * g;
         b = b > 0.00304 ? 1.055 * Math.pow(b, 1 / 2.4) - 0.055 : 12.92 * b;
@@ -51,9 +51,9 @@
             (c1[3] - c2[3]) * (c1[3] - c2[3]));
     }
 
-    var buildFlatLookupTable = function(color) {
-        var output = [];
-        for (var i = 0; i < NUM_GRADIENT_STEPS; i++) {
+    let buildFlatLookupTable = function(color) {
+        let output = [];
+        for (let i = 0; i < NUM_GRADIENT_STEPS; i++) {
             output.push(color[0]);
             output.push(color[1]);
             output.push(color[2]);
@@ -63,29 +63,29 @@
     };
 
     // Interpolate between a set of colors using even perceptual distance and interpolation in CIE L*a*b* space
-    var buildPerceptualLookupTable = function(baseColors) {
-        var buffer = new ArrayBuffer(NUM_GRADIENT_STEPS * 4 * 4);
-        var outputGradient = new Float32Array(buffer);
+    let buildPerceptualLookupTable = function(baseColors) {
+        let buffer = new ArrayBuffer(NUM_GRADIENT_STEPS * 4 * 4);
+        let outputGradient = new Float32Array(buffer);
         // Calculate perceptual spread in L*a*b* space
-        var labs = _.map(baseColors, function(color) {
+        let labs = _.map(baseColors, color => {
             return rgb2lab([color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 255]);
         });
-        var distances = _.map(labs, function(color, index, colors) {
+        let distances = _.map(labs, (color, index, colors) => {
             return index > 0 ? distance(color, colors[index - 1]) : 0;
         });
         // Calculate cumulative distances in [0,1]
-        var totalDistance = _.reduce(distances, function(a, b) {
+        let totalDistance = _.reduce(distances, (a, b) => {
             return a + b;
         }, 0);
-        distances = _.map(distances, function(d) {
+        distances = _.map(distances, d => {
             return d / totalDistance;
         });
-        var distanceTraversed = 0;
-        var key = 0;
-        var progress;
-        var stepProgress;
-        var rgb;
-        for (var i = 0; i < NUM_GRADIENT_STEPS; i++) {
+        let distanceTraversed = 0;
+        let key = 0;
+        let progress;
+        let stepProgress;
+        let rgb;
+        for (let i = 0; i < NUM_GRADIENT_STEPS; i++) {
             progress = i / (NUM_GRADIENT_STEPS - 1);
             if (progress > distanceTraversed + distances[key + 1] && key + 1 < labs.length - 1) {
                 key += 1;
@@ -106,7 +106,7 @@
         return outputGradient;
     };
 
-    var COOL = buildPerceptualLookupTable([
+    let COOL = buildPerceptualLookupTable([
         [0x04, 0x20, 0x40, 0x50],
         [0x08, 0x40, 0x81, 0x7f],
         [0x08, 0x68, 0xac, 0xff],
@@ -119,7 +119,7 @@
         [0xf7, 0xfc, 0xf0, 0xff]
     ]);
 
-    var HOT = buildPerceptualLookupTable([
+    let HOT = buildPerceptualLookupTable([
         [0x40, 0x00, 0x13, 0x50],
         [0x80, 0x00, 0x26, 0x7f],
         [0xbd, 0x00, 0x26, 0xff],
@@ -131,7 +131,7 @@
         [0xff, 0xed, 0xa0, 0xff]
     ]);
 
-    var VERDANT = buildPerceptualLookupTable([
+    let VERDANT = buildPerceptualLookupTable([
         [0x00, 0x40, 0x26, 0x50],
         [0x00, 0x5a, 0x32, 0x7f],
         [0x23, 0x84, 0x43, 0xff],
@@ -143,7 +143,7 @@
         [0xff, 0xff, 0xe5, 0xff]
     ]);
 
-    var SPECTRAL = buildPerceptualLookupTable([
+    let SPECTRAL = buildPerceptualLookupTable([
         [0x26, 0x1a, 0x40, 0x50],
         [0x44, 0x2f, 0x72, 0x7f],
         [0xe1, 0x2b, 0x02, 0xff],
@@ -152,7 +152,7 @@
         [0xff, 0xff, 0xff, 0xff]
     ]);
 
-    var TEMPERATURE = buildPerceptualLookupTable([
+    let TEMPERATURE = buildPerceptualLookupTable([
         [0x00, 0x16, 0x40, 0x50],
         [0x00, 0x39, 0x66, 0x7f],
         [0x31, 0x3d, 0x66, 0xff],
@@ -161,32 +161,32 @@
         [0xff, 0xff, 0xff, 0xff]
     ]);
 
-    var GREYSCALE = buildPerceptualLookupTable([
+    let GREYSCALE = buildPerceptualLookupTable([
         [0x00, 0x00, 0x00, 0x7f],
         [0x40, 0x40, 0x40, 0xff],
         [0xff, 0xff, 0xff, 0xff]
     ]);
 
-    var POLAR_HOT = buildPerceptualLookupTable([
+    let POLAR_HOT = buildPerceptualLookupTable([
         [ 0xff, 0x44, 0x00, 0xff ],
         [ 0xbd, 0xbd, 0xbd, 0xb0 ]
     ]);
 
-    var POLAR_COLD = buildPerceptualLookupTable([
+    let POLAR_COLD = buildPerceptualLookupTable([
         [ 0xbd, 0xbd, 0xbd, 0xb0 ],
         [ 0x32, 0xa5, 0xf9, 0xff ]
     ]);
 
-    var FIRE = buildPerceptualLookupTable([
+    let FIRE = buildPerceptualLookupTable([
         [0x96, 0x00, 0x00, 0x96],
         [0xff, 0xff, 0x32, 0xff]
     ]);
 
-    var FLAT = buildFlatLookupTable([0xff, 0xff, 0xff, 0xff]);
+    let FLAT = buildFlatLookupTable([0xff, 0xff, 0xff, 0xff]);
 
-    var buildLookupFunction = function(RAMP) {
+    let buildLookupFunction = function(RAMP) {
         return function(scaledValue, inColor) {
-            var index = Math.floor(scaledValue * (NUM_GRADIENT_STEPS - 1));
+            let index = Math.floor(scaledValue * (NUM_GRADIENT_STEPS - 1));
             inColor[0] = RAMP[index * 4];
             inColor[1] = RAMP[index * 4 + 1];
             inColor[2] = RAMP[index * 4 + 2];
@@ -195,14 +195,14 @@
         };
     };
 
-    var concat = function(a, b) {
-        var combined = new Float32Array(a.length + b.length);
+    let concat = function(a, b) {
+        let combined = new Float32Array(a.length + b.length);
         combined.set(a, 0);
         combined.set(b, a.length);
         return combined;
     };
 
-    var ColorTables = {
+    let ColorTables = {
         cool: COOL,
         hot: HOT,
         verdant: VERDANT,
@@ -213,7 +213,7 @@
         flat: FLAT
     };
 
-    var ColorRamp = {
+    let ColorRamp = {
         cool: buildLookupFunction(COOL),
         hot: buildLookupFunction(HOT),
         verdant: buildLookupFunction(VERDANT),
@@ -225,8 +225,8 @@
         flat: buildLookupFunction(FLAT)
     };
 
-    var setColorRamp = function(type) {
-        var func = ColorRamp[type.toLowerCase()];
+    let setColorRamp = function(type) {
+        let func = ColorRamp[type.toLowerCase()];
         if (func) {
             this._colorRamp = func;
             this._colorRampType = type;
@@ -234,15 +234,15 @@
         return this;
     };
 
-    var getColorRamp = function(type) {
+    let getColorRamp = function(type) {
         return this._colorRamp || ColorRamp[type.toLowerCase()];
     };
 
-    var getColorRampTable = function() {
+    let getColorRampTable = function() {
         return ColorTables[this._colorRampType];
     };
 
-    var initialize = function() {
+    let initialize = function() {
         this._colorRamp = ColorRamp.verdant;
         this._colorRampType = 'verdant';
     };

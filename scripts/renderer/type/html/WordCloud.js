@@ -2,25 +2,25 @@
 
     'use strict';
 
-    var HTML = require('../../core/HTML');
-    var ValueTransform = require('../../mixin/ValueTransform');
-    var sentiment = require('../../sentiment/Sentiment');
-    var sentimentFunc = sentiment.getClassFunc(-1, 1);
+    let HTML = require('../../core/HTML');
+    let ValueTransform = require('../../mixin/ValueTransform');
+    let sentiment = require('../../sentiment/Sentiment');
+    let sentimentFunc = sentiment.getClassFunc(-1, 1);
 
-    var VERTICAL_OFFSET = 24;
-    var HORIZONTAL_OFFSET = 10;
-    var NUM_ATTEMPTS = 1;
+    let VERTICAL_OFFSET = 24;
+    let HORIZONTAL_OFFSET = 10;
+    let NUM_ATTEMPTS = 1;
 
     /**
      * Given an initial position, return a new position, incrementally spiralled
      * outwards.
      */
-    var spiralPosition = function(pos) {
-        var pi2 = 2 * Math.PI;
-        var circ = pi2 * pos.radius;
-        var inc = (pos.arcLength > circ / 10) ? circ / 10 : pos.arcLength;
-        var da = inc / pos.radius;
-        var nt = (pos.t + da);
+    let spiralPosition = function(pos) {
+        let pi2 = 2 * Math.PI;
+        let circ = pi2 * pos.radius;
+        let inc = (pos.arcLength > circ / 10) ? circ / 10 : pos.arcLength;
+        let da = inc / pos.radius;
+        let nt = (pos.t + da);
         if (nt > pi2) {
             nt = nt % pi2;
             pos.radius = pos.radius + pos.radiusInc;
@@ -34,7 +34,7 @@
     /**
      *  Returns true if bounding box a intersects bounding box b
      */
-    var intersectTest = function(a, b) {
+    let intersectTest = function(a, b) {
         return (Math.abs(a.x - b.x) * 2 < (a.width + b.width)) &&
             (Math.abs(a.y - b.y) * 2 < (a.height + b.height));
     };
@@ -42,7 +42,7 @@
     /**
      *  Returns true if bounding box a is not fully contained inside bounding box b
      */
-    var overlapTest = function(a, b) {
+    let overlapTest = function(a, b) {
         return (a.x + a.width / 2 > b.x + b.width / 2 ||
             a.x - a.width / 2 < b.x - b.width / 2 ||
             a.y + a.height / 2 > b.y + b.height / 2 ||
@@ -53,14 +53,14 @@
      * Check if a word intersects another word, or is not fully contained in the
      * tile bounding box
      */
-    var intersectWord = function(position, word, cloud, bb) {
-        var box = {
+    let intersectWord = function(position, word, cloud, bb) {
+        let box = {
             x: position.x,
             y: position.y,
             height: word.height,
             width: word.width
         };
-        var i;
+        let i;
         for (i = 0; i < cloud.length; i++) {
             if (intersectTest(box, cloud[i])) {
                 return true;
@@ -77,7 +77,7 @@
         return false;
     };
 
-    var WordCloud = HTML.extend({
+    let WordCloud = HTML.extend({
 
         includes: [
             // mixins
@@ -99,7 +99,7 @@
             this.highlight = null;
         },
 
-        setHighlight: function (word) {
+        setHighlight: function(word) {
             this.clearSelection();
             // Highlight selected word
             $(this._container).addClass('highlight');
@@ -108,12 +108,12 @@
         },
 
         onMouseOver: function(e) {
-            var target = $(e.originalEvent.target);
+            let target = $(e.originalEvent.target);
             $('.word-cloud-label').removeClass('hover');
-            var word = target.attr('data-word');
+            let word = target.attr('data-word');
             if (word) {
                 $('.word-cloud-label[data-word="' + word + '"]').addClass('hover');
-                var $parent = target.parents('.leaflet-html-tile');
+                let $parent = target.parents('.leaflet-html-tile');
                 this.fire('mouseover', {
                     elem: e.originalEvent.target,
                     value: word,
@@ -127,11 +127,11 @@
         },
 
         onMouseOut: function(e) {
-            var target = $(e.originalEvent.target);
+            let target = $(e.originalEvent.target);
             $('.word-cloud-label').removeClass('hover');
-            var word = target.attr('data-word');
+            let word = target.attr('data-word');
             if (word) {
-                var $parent = target.parents('.leaflet-html-tile');
+                let $parent = target.parents('.leaflet-html-tile');
                 this.fire('mouseout', {
                     elem: e.originalEvent.target,
                     value: word,
@@ -149,15 +149,15 @@
             $('.word-cloud-label').removeClass('highlight');
             $(this._container).removeClass('highlight');
             // get target
-            var target = $(e.originalEvent.target);
+            let target = $(e.originalEvent.target);
             if (!this.isTargetLayer(e.originalEvent.target)) {
                 // this layer is not the target
                 return;
             }
-            var word = target.attr('data-word');
+            let word = target.attr('data-word');
             if (word) {
                 this.setHighlight(word);
-                var $parent = target.parents('.leaflet-html-tile');
+                let $parent = target.parents('.leaflet-html-tile');
                 this.fire('click', {
                     elem: e.originalEvent.target,
                     value: word,
@@ -174,16 +174,15 @@
 
         _measureWords: function(wordCounts) {
             // sort words by frequency
-            wordCounts = wordCounts.sort(function(a, b) {
+            wordCounts = wordCounts.sort((a, b) => {
                 return b.count - a.count;
             }).slice(0, this.options.maxNumWords);
             // build measurement html
-            var html = '<div style="height:256px; width:256px;">';
-            var minFontSize = this.options.minFontSize;
-            var maxFontSize = this.options.maxFontSize;
-            var self = this;
-            wordCounts.forEach(function(word) {
-                word.percent = self.transformValue(word.count);
+            let html = '<div style="height:256px; width:256px;">';
+            let minFontSize = this.options.minFontSize;
+            let maxFontSize = this.options.maxFontSize;
+            wordCounts.forEach(word => {
+                word.percent = this.transformValue(word.count);
                 word.fontSize = minFontSize + word.percent * (maxFontSize - minFontSize);
                 html += '<div class="word-cloud-label" style="' +
                     'visibility:hidden;' +
@@ -191,9 +190,9 @@
             });
             html += '</div>';
             // append measurements
-            var $temp = $(html);
+            let $temp = $(html);
             $('body').append($temp);
-            $temp.children().each(function(index) {
+            $temp.children().each(index => {
                 wordCounts[index].width = this.offsetWidth;
                 wordCounts[index].height = this.offsetHeight;
             });
@@ -202,20 +201,20 @@
         },
 
         _createWordCloud: function(wordCounts) {
-            var tileSize = this.options.tileSize;
-            var boundingBox = {
+            let tileSize = this.options.tileSize;
+            let boundingBox = {
                 width: tileSize - HORIZONTAL_OFFSET * 2,
                 height: tileSize - VERTICAL_OFFSET * 2,
                 x: 0,
                 y: 0
             };
-            var cloud = [];
+            let cloud = [];
             // sort words by frequency
             wordCounts = this._measureWords(wordCounts);
             // assemble word cloud
-            wordCounts.forEach(function(wordCount) {
+            wordCounts.forEach(wordCount => {
                 // starting spiral position
-                var pos = {
+                let pos = {
                     radius: 1,
                     radiusInc: 5,
                     arcLength: 10,
@@ -249,7 +248,7 @@
         },
 
         extractExtrema: function(data) {
-            var sums = _.map(data, function(count) {
+            let sums = _.map(data, function(count) {
                 if (_.isNumber(count)) {
                     return count;
                 }
@@ -265,16 +264,16 @@
             if (!data || _.isEmpty(data)) {
                 return;
             }
-            var highlight = this.highlight;
-            var wordCounts = _.map(data, function(count, key) {
+            let highlight = this.highlight;
+            let wordCounts = _.map(data, function(count, key) {
                 if (_.isNumber(count)) {
                     return {
                         count: count,
                         text: key
                     };
                 }
-                var total = sentiment.getTotal(count);
-                var avg = sentiment.getAvg(count);
+                let total = sentiment.getTotal(count);
+                let avg = sentiment.getAvg(count);
                 return {
                     count: total,
                     text: key,
@@ -287,20 +286,20 @@
                 return;
             }
             // genereate the cloud
-            var cloud = this._createWordCloud(wordCounts);
+            let cloud = this._createWordCloud(wordCounts);
             // build html elements
-            var halfSize = this.options.tileSize / 2;
-            var html = '';
+            let halfSize = this.options.tileSize / 2;
+            let html = '';
             cloud.forEach(function(word) {
                 // create classes
-                var classNames = [
+                let classNames = [
                     'word-cloud-label',
                     'word-cloud-label-' + word.percent,
                     word.text === highlight ? 'highlight' : '',
                     word.sentiment ? word.sentiment : ''
                 ].join(' ');
                 // create styles
-                var styles = [
+                let styles = [
                     'font-size:' + word.fontSize + 'px',
                     'left:' + (halfSize + word.x - (word.width / 2)) + 'px',
                     'top:' + (halfSize + word.y - (word.height / 2)) + 'px',

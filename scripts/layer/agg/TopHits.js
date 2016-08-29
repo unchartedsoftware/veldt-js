@@ -6,7 +6,7 @@
 
     'use strict';
 
-    var checkField = function(meta, field) {
+    let checkField = function(meta, field) {
         if (meta) {
             if (!meta.extrema) {
                 throw 'Range `field` ' + field + ' is not ordinal in meta data.';
@@ -16,7 +16,7 @@
         }
     };
 
-    var setTopHits = function(size, include, sort, order) {
+    let setTopHits = function(size, include, sort, order) {
         if (sort) {
             checkField(this._meta[sort], sort);
         }
@@ -30,12 +30,12 @@
         return this;
     };
 
-    var getTopHits = function() {
+    let getTopHits = function() {
         return this._params.top_hits;
     };
 
     // bind point for external controls
-    var setSortField = function(sort) {
+    let setSortField = function(sort) {
         if (!sort) {
             throw 'TopHits `sort` argument is missing';
         }
@@ -48,7 +48,7 @@
     };
 
     // bind point for external controls
-    var getSortField = function() {
+    let getSortField = function() {
         return this._params.top_hits.sort;
     };
 

@@ -2,9 +2,9 @@
 
     'use strict';
 
-    var Base = require('../../layer/core/Base');
+    let Base = require('../../layer/core/Base');
 
-    var DOM = Base.extend({
+    let DOM = Base.extend({
 
         onAdd: function(map) {
             L.GridLayer.prototype.onAdd.call(this, map);
@@ -27,9 +27,9 @@
         },
 
         onCacheHit: function(event) {
-            var cached = event.entry;
-            var tile = event.tile;
-            var coords = event.coords;
+            let cached = event.entry;
+            let tile = event.tile;
+            let coords = event.coords;
             // data exists, render only this tile
             if (cached.data) {
                 this.renderTile(tile, cached.data, coords);
@@ -41,23 +41,21 @@
             // the case of a map with wraparound, we may have
             // multiple tiles dependent on the response, so iterate
             // over each tile and draw it.
-            var cached = event.entry;
-            var coords = event.coords;
-            var self = this;
+            let cached = event.entry;
+            let coords = event.coords;
             if (cached.data) {
-                _.forIn(cached.tiles, function(tile) {
-                    self.renderTile(tile, cached.data, coords);
+                _.forIn(cached.tiles, tile => {
+                    this.renderTile(tile, cached.data, coords);
                 });
             }
         },
 
         onExtremaChange: function() {
-            var self = this;
             // redraw all tiles
-            _.forIn(this._cache, function(cached) {
-                _.forIn(cached.tiles, function(tile, key) {
+            _.forIn(this._cache, cached => {
+                _.forIn(cached.tiles, (tile, key) => {
                     if (cached.data) {
-                        self.renderTile(tile, cached.data, self.coordFromCacheKey(key));
+                        this.renderTile(tile, cached.data, this.coordFromCacheKey(key));
                     }
                 });
             });

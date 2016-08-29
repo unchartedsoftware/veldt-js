@@ -2,11 +2,11 @@
 
     'use strict';
 
-    var Canvas = require('../../core/Canvas');
-    var ColorRamp = require('../../mixin/ColorRamp');
-    var ValueTransform = require('../../mixin/ValueTransform');
+    let Canvas = require('../../core/Canvas');
+    let ColorRamp = require('../../mixin/ColorRamp');
+    let ValueTransform = require('../../mixin/ValueTransform');
 
-    var TopTrails = Canvas.extend({
+    let TopTrails = Canvas.extend({
 
         includes: [
             // mixins
@@ -29,14 +29,14 @@
             ValueTransform.initialize.apply(this, arguments);
         },
 
-        clearHighlight: function () {
+        clearHighlight: function() {
             if (this.highlighted) {
                 this.highlighted = null;
                 this.clearTiles();
             }
         },
 
-        clearSelection: function () {
+        clearSelection: function() {
             if (this.selected) {
                 this.selected = null;
                 this.clearTiles();
@@ -53,9 +53,9 @@
             this.highlighted = value;
         },
 
-        onClick: function (e) {
-            var target = e.originalEvent.target;
-            var bin = this._getBinData(e);
+        onClick: function(e) {
+            let target = e.originalEvent.target;
+            let bin = this._getBinData(e);
             if (bin) {
                 // execute callback
                 this.fire('click', {
@@ -73,8 +73,8 @@
         },
 
         onMouseMove: function(e) {
-            var target = e.originalEvent.target;
-            var bin = this._getBinData(e);
+            let target = e.originalEvent.target;
+            let bin = this._getBinData(e);
             if (bin) {
                 // execute callback
                 if (!this.highlighted) {
@@ -104,26 +104,26 @@
 
         _getBinData: function(e) {
             // get layer coord
-            var layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+            let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
             // get tile coord
-            var coord = this.getTileCoordFromLayerPoint(layerPoint);
+            let coord = this.getTileCoordFromLayerPoint(layerPoint);
             // get cache key
-            var nkey = this.cacheKeyFromCoord(coord, true);
+            let nkey = this.cacheKeyFromCoord(coord, true);
             // get cache entry
-            var cached = this._cache[nkey];
+            let cached = this._cache[nkey];
             if (cached && cached.pixels) {
                 // get bin coordinate
-                var bin = this.getBinCoordFromLayerPoint(layerPoint);
+                let bin = this.getBinCoordFromLayerPoint(layerPoint);
                 // downsample the bin res
-                var x = Math.floor(bin.x / this.options.downSampleFactor);
-                var y = Math.floor(bin.y / this.options.downSampleFactor);
+                let x = Math.floor(bin.x / this.options.downSampleFactor);
+                let y = Math.floor(bin.y / this.options.downSampleFactor);
                 // if hits a pixel
                 if (cached.pixels[x] && cached.pixels[x][y]) {
-                    var ids = Object.keys(cached.pixels[x][y]);
+                    let ids = Object.keys(cached.pixels[x][y]);
                     // take first entry
-                    var id = ids[0];
+                    let id = ids[0];
                     // create collision object
-                    var collision = {
+                    let collision = {
                         value: id,
                         x: coord.x,
                         y: coord.z,
@@ -140,25 +140,24 @@
         },
 
         _highlightTrailsForData: function(cached) {
-            var self = this;
-            var selected = this.selected;
-            var highlighted = this.highlighted;
+            let selected = this.selected;
+            let highlighted = this.highlighted;
             if (cached.data) {
-                var trail;
+                let trail;
                 if (selected) {
                     trail = cached.trails[selected.value];
                     if (trail) {
                         // for each tile relying on that data
-                        _.forIn(cached.tiles, function(tile) {
-                            self._renderTrail(tile, trail, self.options.selectedColor);
+                        _.forIn(cached.tiles, tile => {
+                            this._renderTrail(tile, trail, this.options.selectedColor);
                         });
                     }
                 }
                 if (highlighted) {
                     trail = cached.trails[highlighted.value];
                     if (trail) {
-                        _.forIn(cached.tiles, function(tile) {
-                            self._renderTrail(tile, trail, self.options.highlightedColor);
+                        _.forIn(cached.tiles, tile => {
+                            this._renderTrail(tile, trail, this.options.highlightedColor);
                         });
                     }
                 }
@@ -166,21 +165,20 @@
         },
 
         _highlightTrails: function() {
-            var self = this;
-            _.forIn(this._cache, function(cached) {
-                self._highlightTrailsForData(cached);
+            _.forIn(this._cache, cached => {
+                this._highlightTrailsForData(cached);
             });
         },
 
         _renderTrail: function(canvas, pixels, color) {
-            var resolution = this.getResolution();
-            var highlight = document.createElement('canvas');
+            let resolution = this.getResolution();
+            let highlight = document.createElement('canvas');
             highlight.height = resolution;
             highlight.width = resolution;
-            var highlightCtx = highlight.getContext('2d');
-            var imageData = highlightCtx.getImageData(0, 0, resolution, resolution);
-            var data = imageData.data;
-            var pixel, x, y, i, j;
+            let highlightCtx = highlight.getContext('2d');
+            let imageData = highlightCtx.getImageData(0, 0, resolution, resolution);
+            let data = imageData.data;
+            let pixel, x, y, i, j;
             for (i=0; i<pixels.length; i++) {
                 pixel = pixels[i];
                 x = pixel[0];
@@ -193,7 +191,7 @@
             }
             highlightCtx.putImageData(imageData, 0, 0);
             // draw to tile
-            var ctx = canvas.getContext('2d');
+            let ctx = canvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(
                 highlight,
@@ -208,18 +206,18 @@
                 return;
             }
             // modify cache entry
-            var nkey = this.cacheKeyFromCoord(coord, true);
-            var cached = this._cache[nkey];
+            let nkey = this.cacheKeyFromCoord(coord, true);
+            let cached = this._cache[nkey];
             if (cached.trails) {
                 // trails already added, exit early
                 return;
             }
-            var trails = cached.trails = {};
-            var pixels = cached.pixels = {};
-            var ids  = Object.keys(data);
-            var bins, bin;
-            var id, i, j;
-            var rx, ry, x, y;
+            let trails = cached.trails = {};
+            let pixels = cached.pixels = {};
+            let ids  = Object.keys(data);
+            let bins, bin;
+            let id, i, j;
+            let rx, ry, x, y;
             for (i=0; i<ids.length; i++) {
                 id = ids[i];
                 bins = data[id];

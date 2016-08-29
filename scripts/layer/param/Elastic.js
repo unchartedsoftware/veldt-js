@@ -2,11 +2,11 @@
 
     'use strict';
 
-    var getTypes = function() {
+    let getTypes = function() {
         return this._params.elastic ? this._params.elastic.type : undefined;
     };
 
-    var setTypes = function(types) {
+    let setTypes = function(types) {
         if (!types) {
             throw 'QueryString `types` are not provided.';
         }

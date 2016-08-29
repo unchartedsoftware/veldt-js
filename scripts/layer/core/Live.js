@@ -2,23 +2,23 @@
 
     'use strict';
 
-    var boolQueryCheck = require('../query/Bool');
+    let boolQueryCheck = require('../query/Bool');
 
     function mod(n, m) {
         return ((n % m) + m) % m;
     }
 
-    var Live = L.Class.extend({
+    let Live = L.Class.extend({
 
         options: {
-            transform: function(val) { return val; }
+            transform: val => { return val; }
         },
 
         initialize: function(meta, options) {
             options = options || {};
             // set renderer
             if (options.rendererClass) {
-                var renderer;
+                let renderer;
                 // recursively extend and initialize
                 if (options.rendererClass.prototype) {
                     renderer = new options.rendererClass();
@@ -56,8 +56,8 @@
         },
 
         updateExtrema: function(data) {
-            var extrema = this.extractExtrema(data);
-            var changed = false;
+            let extrema = this.extractExtrema(data);
+            let changed = false;
             if (extrema.min < this._extrema.min) {
                 changed = true;
                 this._extrema.min = extrema.min;
@@ -116,7 +116,7 @@
         },
 
         getNormalizedCoords: function(coords) {
-            var pow = Math.pow(2, coords.z);
+            let pow = Math.pow(2, coords.z);
             return {
                 x: mod(coords.x, pow),
                 y: mod(coords.y, pow),
@@ -134,7 +134,7 @@
         },
 
         coordFromCacheKey: function(key) {
-            var arr = key.split(':');
+            let arr = key.split(':');
             return {
                 x: parseInt(arr[1], 10),
                 y: parseInt(arr[2], 10),
@@ -143,7 +143,7 @@
         },
 
         onTileUnload: function(event) {
-            var coords = event.coords;
+            let coords = event.coords;
             // respect the TMS setting in the options
             if (this.options.tms) {
                 coords = {
@@ -153,11 +153,11 @@
                 };
             }
             // cache key from coords
-            var key = this.cacheKeyFromCoord(coords);
+            let key = this.cacheKeyFromCoord(coords);
             // cache key from normalized coords
-            var nkey = this.cacheKeyFromCoord(coords, true);
+            let nkey = this.cacheKeyFromCoord(coords, true);
             // get cache entry
-            var cached = this._cache[nkey];
+            let cached = this._cache[nkey];
             // could the be case where the cache is cleared before tiles are
             // unloaded
             if (!cached) {
@@ -168,7 +168,7 @@
             // don't remove cache entry unless to tiles use it anymore
             if (_.keys(cached.tiles).length === 0) {
                 // get the tile being deleted
-                var tile = cached.tiles[key];
+                let tile = cached.tiles[key];
                 // no more tiles use this cached data, so delete it
                 this.fire('cacheunload', {
                     tile: tile,
@@ -180,7 +180,6 @@
         },
 
         _requestTile: function(coords, tile, callback) {
-            var self = this;
             // respect the TMS setting in the options
             if (this.options.tms) {
                 coords = {
@@ -189,13 +188,13 @@
                     z: coords.z
                 };
             }
-            var ncoords = this.getNormalizedCoords(coords);
+            let ncoords = this.getNormalizedCoords(coords);
             // cache key from coords
-            var key = this.cacheKeyFromCoord(coords);
+            let key = this.cacheKeyFromCoord(coords);
             // cache key from normalized coords
-            var nkey = this.cacheKeyFromCoord(coords, true);
+            let nkey = this.cacheKeyFromCoord(coords, true);
             // check cache
-            var cached = this._cache[nkey];
+            let cached = this._cache[nkey];
             if (cached) {
                 // add tile under normalize coords
                 cached.tiles[key] = tile;
@@ -223,8 +222,8 @@
                 // add tile to the cache entry
                 this._cache[nkey].tiles[key] = tile;
                 // request the tile
-                this.requestTile(ncoords, function(data) {
-                    var cached = self._cache[nkey];
+                this.requestTile(ncoords, data => {
+                    let cached = this._cache[nkey];
                     if (!cached) {
                         // tile is no longer being tracked, ignore
                         return;
@@ -232,23 +231,23 @@
                     // flag as no longer pending
                     cached.isPending = false;
                     // transform and store tile data in cache
-                    cached.data = self.options.transform(data);
+                    cached.data = this.options.transform(data);
                     // execute pending callbacks
-                    cached.callbacks.forEach(function(callback) {
+                    cached.callbacks.forEach(callback => {
                         callback();
                     });
                     cached.callbacks = [];
                     // data is loaded into cache
-                    self.fire('cacheload', {
+                    this.fire('cacheload', {
                         tile: tile,
                         coords: coords,
                         entry: cached
                     });
                     if (cached.data) {
                         // update the extrema
-                        if (self.updateExtrema(cached.data)) {
+                        if (this.updateExtrema(cached.data)) {
                             // if extrema changed, fire event
-                            self.fire('extremachange', {
+                            this.fire('extremachange', {
                                 tile: tile,
                                 coords: coords,
                                 entry: cached

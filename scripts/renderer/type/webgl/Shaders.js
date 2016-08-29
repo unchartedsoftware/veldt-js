@@ -2,12 +2,12 @@
 
     'use strict';
 
-    var ColorRamp = require('../../mixin/ColorRamp');
+    let ColorRamp = require('../../mixin/ColorRamp');
 
     /**
      * precision
      */
-    var precision =
+    let precision =
         `
         precision highp float;
         precision highp int;
@@ -16,7 +16,7 @@
     /**
      * decode
      */
-    var decode =
+    let decode =
         `
         float decode(vec4 v) {
             return (v.x * 255.0 * 16777216.0) +
@@ -31,7 +31,7 @@
      */
 
     // log10
-    var log10Transform =
+    let log10Transform =
         `
         float log10(float val) {
             return log(val) / log(10.0);
@@ -50,7 +50,7 @@
         `;
 
     // sigmoid
-    var sigmoidTransform =
+    let sigmoidTransform =
         `
         float sigmoidTransform(float val, float minVal, float maxVal) {
             minVal = abs(minVal);
@@ -63,7 +63,7 @@
         `;
 
     // linear
-    var linearTransform =
+    let linearTransform =
         `
         float linearTransform(float val, float minVal, float maxVal) {
             float range = maxVal - minVal;
@@ -72,7 +72,7 @@
         }
         `;
 
-    var transform =
+    let transform =
         log10Transform +
         sigmoidTransform +
         linearTransform +
@@ -98,7 +98,7 @@
     /**
      * Color ramp
      */
-    var colorRamp =
+    let colorRamp =
         `
         #define RAMP_VALUES ${ColorRamp.NUM_GRADIENT_STEPS}
         uniform vec4 uRamp[RAMP_VALUES];
@@ -119,7 +119,7 @@
     /**
      * Value Range
      */
-    var valueRange =
+    let valueRange =
         `
         uniform float uRangeMin;
         uniform float uRangeMax;
@@ -137,7 +137,7 @@
     /**
      * heatmap shader
      */
-    var heatmap = {
+    let heatmap = {
         vert:
             precision +
             `
@@ -176,9 +176,9 @@
     };
 
     /**
-     * point shader
+     * instanced point shader
      */
-    var point = {
+    let instancedPoint = {
         vert:
             precision +
             `
@@ -186,11 +186,38 @@
             attribute vec2 aOffset;
             uniform ivec2 uViewOffset;
             uniform float uScale;
+            uniform mat4 uModelMatrix;
             uniform mat4 uProjectionMatrix;
             void main() {
                 ivec2 iOffset = ivec2(aOffset.x, aOffset.y);
                 vec2 mPosition = uScale * aPosition + vec2(iOffset - uViewOffset);
-                gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
+                gl_Position = uProjectionMatrix * uModelMatrix * vec4(mPosition, 0.0, 1.0);
+            }
+            `,
+        frag:
+            precision +
+            `
+            uniform float uOpacity;
+            uniform vec4 uColor;
+            void main() {
+                gl_FragColor = vec4(uColor.rgb, uColor.a * uOpacity);
+            }
+            `
+    };
+
+    let point = {
+        vert:
+            precision +
+            `
+            attribute vec2 aPosition;
+            uniform ivec2 uOffset;
+            uniform ivec2 uViewOffset;
+            uniform float uScale;
+            uniform mat4 uModelMatrix;
+            uniform mat4 uProjectionMatrix;
+            void main() {
+                vec2 mPosition = uScale * aPosition + vec2(uOffset - uViewOffset);
+                gl_Position = uProjectionMatrix * uModelMatrix * vec4(mPosition, 0.0, 1.0);
             }
             `,
         frag:
@@ -210,6 +237,11 @@
          * heatmap shader
          */
         heatmap: heatmap,
+
+        /**
+         * instanced point shader
+         */
+        instancedPoint: instancedPoint,
 
         /**
          * point shader
