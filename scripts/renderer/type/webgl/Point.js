@@ -39,8 +39,7 @@
         // start at angle = 0
         var x = radius;
         var y = 0;
-        var buffer = new ArrayBuffer(numSegments * 2 * COMPONENT_BYTE_SIZE);
-        var positions = new Float32Array(buffer);
+        var positions = new Float32Array(numSegments * 2);
         for(var i = 0; i < numSegments; i++) {
             positions[i*2] = x;
             positions[i*2+1] = y;
@@ -55,7 +54,8 @@
             type: 'FLOAT'
         };
         var options = {
-            mode: 'LINE_LOOP'
+            mode: 'LINE_LOOP',
+            count: positions.length / 2
         };
         return new esper.VertexBuffer(positions, pointers, options);
     }
@@ -70,8 +70,7 @@
         // start at angle = 0
         var x = radius;
         var y = 0;
-        var buffer = new ArrayBuffer((numSegments + 2) * 2 * COMPONENT_BYTE_SIZE);
-        var positions = new Float32Array(buffer);
+        var positions = new Float32Array((numSegments + 2) * 2);
         positions[0] = 0;
         positions[1] = 0;
         positions[positions.length-2] = radius;
@@ -91,7 +90,8 @@
             type: 'FLOAT'
         };
         var options = {
-            mode: 'TRIANGLE_FAN'
+            mode: 'TRIANGLE_FAN',
+            count: positions.length / 2
         };
         return new esper.VertexBuffer(positions, pointers, options);
     }
@@ -161,6 +161,7 @@
         initChunks: function() {
             // ensure we use the correct context
             esper.WebGLContext.bind(this._container);
+            // allocate available chunks
             this._availableChunks = new Array(MAX_TILES);
             for (var i=0; i<MAX_TILES; i++) {
                 var byteOffset = i * MAX_TILE_BYTE_SIZE;
@@ -385,6 +386,25 @@
                 0);
         },
 
+        getProjectionMatrix: function() {
+            var size = this._map.getSize();
+            return this.getOrthoMatrix(
+                0,
+                size.x,
+                0,
+                size.y,
+                -1, 1);
+        },
+
+        getViewOffset: function() {
+            var bounds = this._map.getPixelBounds();
+            var dim = Math.pow(2, this._map.getZoom()) * TILE_SIZE;
+            return [
+                bounds.min.x,
+                dim - bounds.max.y
+            ];
+        },
+
         drawInstanced: function(buffer, color, radius) {
             var self = this;
             var gl = this._gl;
@@ -399,8 +419,9 @@
             }
             // set fill color
             shader.setUniform('uColor', color);
-            shader.setUniform('uUseUniform', 0);
+            //shader.setUniform('uUseUniform', 0);
             shader.setUniform('uScale', radius);
+            shader.setUniform('uViewOffset', this.getViewOffset());
             // binds the buffer to instance
             buffer.bind();
             // enable instancing
@@ -420,7 +441,7 @@
                             return;
                         }
                         // upload translation matrix
-                        shader.setUniform('uModelMatrix', self.getModelMatrix(coords));
+                        // shader.setUniform('uModelMatrix', self.getModelMatrix(coords));
                         // draw the istances
                         ext.drawArraysInstancedANGLE(gl[buffer.mode], 0, buffer.count, chunk.count);
                     });
@@ -468,7 +489,7 @@
             var viewport = this._viewport;
             var shader = this._shader;
             viewport.push();
-            shader.push();
+            shader.use();
             // set uniforms
             shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
             shader.setUniform('uOpacity', this.getOpacity());
@@ -489,44 +510,43 @@
 
             // draw individual points
 
-            if (this.highlighted) {
-                // draw individual fill
-                this.drawIndividual(
-                    this._circleFillBuffer,
-                    this.options.highlightedFillColor,
-                    this.options.highlightedRadius,
-                    this.highlighted.tiles,
-                    this.highlighted.point);
-                // draw individual outline
-                gl.lineWidth(this.options.pointOutline);
-                this.drawIndividual(
-                    this._circleOutlineBuffer,
-                    this.options.highlightedOutlineColor,
-                    this.options.highlightedRadius,
-                    this.highlighted.tiles,
-                    this.highlighted.point);
-            }
-
-            if (this.selected) {
-                // draw individual fill
-                this.drawIndividual(
-                    this._circleFillBuffer,
-                    this.options.selectedFillColor,
-                    this.options.selectedRadius,
-                    this.selected.tiles,
-                    this.selected.point);
-                // draw individual outline
-                gl.lineWidth(this.options.pointOutline);
-                this.drawIndividual(
-                    this._circleOutlineBuffer,
-                    this.options.selectedOutlineColor,
-                    this.options.selectedRadius,
-                    this.selected.tiles,
-                    this.selected.point);
-            }
+            // if (this.highlighted) {
+            //     // draw individual fill
+            //     this.drawIndividual(
+            //         this._circleFillBuffer,
+            //         this.options.highlightedFillColor,
+            //         this.options.highlightedRadius,
+            //         this.highlighted.tiles,
+            //         this.highlighted.point);
+            //     // draw individual outline
+            //     gl.lineWidth(this.options.pointOutline);
+            //     this.drawIndividual(
+            //         this._circleOutlineBuffer,
+            //         this.options.highlightedOutlineColor,
+            //         this.options.highlightedRadius,
+            //         this.highlighted.tiles,
+            //         this.highlighted.point);
+            // }
+            //
+            // if (this.selected) {
+            //     // draw individual fill
+            //     this.drawIndividual(
+            //         this._circleFillBuffer,
+            //         this.options.selectedFillColor,
+            //         this.options.selectedRadius,
+            //         this.selected.tiles,
+            //         this.selected.point);
+            //     // draw individual outline
+            //     gl.lineWidth(this.options.pointOutline);
+            //     this.drawIndividual(
+            //         this._circleOutlineBuffer,
+            //         this.options.selectedOutlineColor,
+            //         this.options.selectedRadius,
+            //         this.selected.tiles,
+            //         this.selected.point);
+            // }
 
             // teardown
-            shader.pop();
             viewport.pop();
         }
 

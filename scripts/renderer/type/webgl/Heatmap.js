@@ -58,6 +58,9 @@
                     type: 'FLOAT',
                     byteOffset: 2 * 6 * 4
                 }
+            },
+            {
+                count: 6,
             });
         },
 
@@ -86,8 +89,7 @@
         bufferTileTexture: function(cached) {
             var data = new Float64Array(cached.data);
             var resolution = Math.sqrt(data.length);
-            var buffer = new ArrayBuffer(data.length * 4);
-            var bins = new Uint8Array(buffer);
+            var bins = new Uint8Array(data.length * 4);
             var enc = [0, 0, 0, 0];
             var bin, i;
             var sum = 0;
@@ -117,6 +119,17 @@
             }
         },
 
+        getProjectionMatrix: function() {
+            var bounds = this._map.getPixelBounds();
+            var dim = Math.pow(2, this._map.getZoom()) * TILE_SIZE;
+            return this.getOrthoMatrix(
+                bounds.min.x,
+                bounds.max.x,
+                (dim - bounds.max.y),
+                (dim - bounds.min.y),
+                -1, 1);
+        },
+
         renderTiles: function() {
             var self = this;
             var buffer = this._quadBuffer;
@@ -131,7 +144,7 @@
                     return;
                 }
                 // bind tile texture to texture unit 0
-                cached.texture.push(0);
+                cached.texture.bind(0);
                 _.forIn(cached.tiles, function(tile, key) {
                     // find the tiles position from its key
                     var coords = self.coordFromCacheKey(key);
@@ -148,7 +161,7 @@
                     buffer.draw();
                 });
                 // unbind texture
-                cached.texture.pop(0);
+                cached.texture.unbind();
             });
             // unbind buffer
             buffer.unbind();
@@ -157,7 +170,7 @@
         renderFrame: function() {
             // setup
             this._viewport.push();
-            this._shader.push();
+            this._shader.use();
             // set uniforms
             this._shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
             this._shader.setUniform('uOpacity', this.getOpacity());
@@ -171,7 +184,6 @@
             // draw
             this.renderTiles();
             // teardown
-            this._shader.pop();
             this._viewport.pop();
         }
 

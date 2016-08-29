@@ -5,8 +5,6 @@
     var esper = require('esper');
     var Overlay = require('./Overlay');
 
-    var TILE_SIZE = 256;
-
     var WebGL = Overlay.extend({
 
         onAdd: function(map) {
@@ -72,6 +70,9 @@
                 // execute callback
                 var size = self._map.getSize();
                 var devicePixelRatio = window.devicePixelRatio;
+                // ensure we are using the correct context before initializing
+                //  the viewport object
+                esper.WebGLContext.bind(self._container);
                 // set viewport size
                 self._viewport = new esper.Viewport({
                     width: size.x * devicePixelRatio,
@@ -127,17 +128,6 @@
             mat[14] = -((far + near) / (far - near));
             mat[15] = 1;
             return mat;
-        },
-
-        getProjectionMatrix: function() {
-            var bounds = this._map.getPixelBounds();
-            var dim = Math.pow(2, this._map.getZoom()) * TILE_SIZE;
-            return this.getOrthoMatrix(
-                bounds.min.x,
-                bounds.max.x,
-                (dim - bounds.max.y),
-                (dim - bounds.min.y),
-                -1, 1);
         },
 
         _positionContainer: function() {
