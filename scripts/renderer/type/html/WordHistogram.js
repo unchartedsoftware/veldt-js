@@ -92,7 +92,7 @@
             this.clearSelection();
             // Highlight selected word
             $(this._container).addClass('highlight');
-            $('.word-histogram-entry[data-word="' + word + '"]').addClass('highlight');
+            $(`.word-histogram-entry[data-word="${word}"]`).addClass('highlight');
             this.highlight = word;
         },
 
@@ -101,7 +101,7 @@
             $('.word-histogram-entry').removeClass('hover');
             let word = target.attr('data-word');
             if (word) {
-                $('.word-histogram-entry[data-word="' + word + '"]').addClass('hover');
+                $(`.word-histogram-entry[data-word="${word}"]`).addClass('hover');
                 let $parent = target.parents('.leaflet-html-tile');
                 // fire event
                 this.fire('mouseover', {
@@ -203,16 +203,22 @@
                 let height = minFontSize + percent * (maxFontSize - minFontSize);
                 totalHeight += height;
                 // create container 'entry' for chart and hashtag
-                let $entry = $('<div class="word-histogram-entry ' + highlightClass + '" ' +
-                    'data-sentiment="' + avg + '"' +
-                    'data-word="' + topic + '"' +
-                    'style="' +
-                    'height:' + height + 'px;"></div>');
+                let $entry = $(
+                    `
+                    <div class="word-histogram-entry ${highlightClass}"
+                        data-sentiment="${avg}"
+                        data-word="${topic}"
+                        style="height:${height}px;">
+                    </div>
+                    `);
                 // create chart
-                let $chart = $('<div class="word-histogram-left"' +
-                    'data-sentiment="' + avg + '"' +
-                    'data-word="' + topic + '"' +
-                    '></div>');
+                let $chart = $(
+                    `
+                    <div class="word-histogram-left"
+                        data-sentiment="${avg}"
+                        data-word="${topic}">
+                    </div>
+                    `);
                 let barWidth = 'calc(' + (100 / frequencies.length) + '%)';
                 // create bars
                 frequencies.forEach(frequency => {
@@ -226,10 +232,10 @@
                     // Get the style class of the bar
                     let percentLabel = Math.round(relativePercent / 10) * 10;
                     let barClasses = [
-                        'word-histogram-bar',
-                        'word-histogram-bar-' + percentLabel,
-                        sentimentClass + '-fill'
-                    ].join(' ');
+                            'word-histogram-bar',
+                            `word-histogram-bar-${percentLabel}`,
+                            `${sentimentClass}-fill`
+                        ].join(' ');
                     let barHeight;
                     let barTop;
                     // ensure there is at least a single pixel of color
@@ -237,34 +243,41 @@
                         barHeight = '3px';
                         barTop = 'calc(100% - 3px)';
                     } else {
-                        barHeight = relativePercent + '%';
-                        barTop = (100 - relativePercent) + '%';
+                        barHeight = `${relativePercent}%`;
+                        barTop = `(100 - relativePercent)%`;
                     }
                     // create bar
-                    $chart.append('<div class="' + barClasses + '"' +
-                        'data-word="' + topic + '"' +
-                        'style="' +
-                        'visibility:' + visibility + ';' +
-                        'width:' + barWidth + ';' +
-                        'height:' + barHeight + ';' +
-                        'top:' + barTop + ';"></div>');
+                    $chart.append(
+                        `
+                        <div class="${barClasses}"
+                            data-word="${topic}"
+                            style="
+                            visibility: ${visibility};
+                            width: ${barWidth};
+                            height: ${barHeight};
+                            top: ${barTop};">
+                        </div>
+                        `);
                 });
                 $entry.append($chart);
                 let topicClasses = [
                     'word-histogram-label',
-                    'word-histogram-label-' + percentLabel,
+                    `word-histogram-label-${percentLabel}`,
                     sentimentClass
                 ].join(' ');
                 // create tag label
-                let $topic = $('<div class="word-histogram-right">' +
-                    '<div class="' + topicClasses + '"' +
-                    'data-sentiment="' + avg + '"' +
-                    'data-word="' + topic + '"' +
-                    'style="' +
-                    'font-size:' + height + 'px;' +
-                    'line-height:' + height + 'px;' +
-                    'height:' + height + 'px">' + topic + '</div>' +
-                    '</div>');
+                let $topic = $(
+                    `
+                    <div class="word-histogram-right">
+                        <div class="${topicClasses}"
+                            data-sentiment="${avg}"
+                            data-word="${topic}"
+                        style="
+                            font-size: ${height}px;
+                            line-height: ${height}px;
+                            height: ${height}px;">${topic}</div>
+                    </div>
+                    `);
                 $entry.append($topic);
                 $html.append($entry);
             });

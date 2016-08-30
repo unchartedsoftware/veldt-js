@@ -103,7 +103,7 @@
             this.clearSelection();
             // Highlight selected word
             $(this._container).addClass('highlight');
-            $('.word-cloud-label[data-word="' + word + '"]').addClass('highlight');
+            $(`.word-cloud-label[data-word="${word}"]`).addClass('highlight');
             this.highlight = word;
         },
 
@@ -112,7 +112,7 @@
             $('.word-cloud-label').removeClass('hover');
             let word = target.attr('data-word');
             if (word) {
-                $('.word-cloud-label[data-word="' + word + '"]').addClass('hover');
+                $(`.word-cloud-label[data-word="${word}"]`).addClass('hover');
                 let $parent = target.parents('.leaflet-html-tile');
                 this.fire('mouseover', {
                     elem: e.originalEvent.target,
@@ -178,25 +178,27 @@
                 return b.count - a.count;
             }).slice(0, this.options.maxNumWords);
             // build measurement html
-            let html = '<div style="height:256px; width:256px;">';
+            let $html = $('<div style="height:256px; width:256px;"></div>');
             let minFontSize = this.options.minFontSize;
             let maxFontSize = this.options.maxFontSize;
             wordCounts.forEach(word => {
                 word.percent = this.transformValue(word.count);
                 word.fontSize = minFontSize + word.percent * (maxFontSize - minFontSize);
-                html += '<div class="word-cloud-label" style="' +
-                    'visibility:hidden;' +
-                    'font-size:' + word.fontSize + 'px;">' + word.text + '</div>';
+                $html.append(
+                    `
+                    <div class="word-cloud-label" style="
+                        visibility:hidden;
+                        font-size: ${word.fontSize}px;">${word.text}
+                    </div>;
+                    `);
             });
-            html += '</div>';
             // append measurements
-            let $temp = $(html);
-            $('body').append($temp);
-            $temp.children().each(index => {
+            $('body').append($html);
+            $html.children().each(index => {
                 wordCounts[index].width = this.offsetWidth;
                 wordCounts[index].height = this.offsetHeight;
             });
-            $temp.remove();
+            $html.remove();
             return wordCounts;
         },
 
@@ -293,26 +295,27 @@
             cloud.forEach(function(word) {
                 // create classes
                 let classNames = [
-                    'word-cloud-label',
-                    'word-cloud-label-' + word.percent,
-                    word.text === highlight ? 'highlight' : '',
-                    word.sentiment ? word.sentiment : ''
-                ].join(' ');
+                        'word-cloud-label',
+                        `word-cloud-label-${word.percent}`,
+                        word.text === highlight ? 'highlight' : '',
+                        word.sentiment ? word.sentiment : ''
+                    ].join(' ');
                 // create styles
                 let styles = [
-                    'font-size:' + word.fontSize + 'px',
-                    'left:' + (halfSize + word.x - (word.width / 2)) + 'px',
-                    'top:' + (halfSize + word.y - (word.height / 2)) + 'px',
-                    'width:' + word.width + 'px',
-                    'height:' + word.height + 'px',
-                ].join(';');
+                        `font-size: ${word.fontSize}px`,
+                        `left: ${halfSize + word.x - (word.width / 2)}px`,
+                        `top: ${halfSize + word.y - (word.height / 2)}px`,
+                        `width: ${word.width}px`,
+                        `height: ${word.height}px`,
+                    ].join(';');
                 // create html for entry
-                html += '<div class="' + classNames + '"' +
-                    'style="' + styles + '"' +
-                    'data-sentiment="' + word.avg + '"' +
-                    'data-word="' + word.text + '">' +
-                    word.text +
-                    '</div>';
+                html +=
+                    `
+                    <div class="${classNames}"
+                        style="${styles}"
+                        data-sentiment="${word.avg}"
+                        data-word="${word.text}">${word.text}</div>
+                    `;
             });
             container.innerHTML = html;
         }
