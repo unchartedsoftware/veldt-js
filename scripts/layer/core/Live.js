@@ -14,8 +14,7 @@
             transform: val => { return val; }
         },
 
-        initialize: function(meta, options) {
-            options = options || {};
+        initialize: function(meta, options = {}) {
             // set renderer
             if (options.rendererClass) {
                 let renderer;
