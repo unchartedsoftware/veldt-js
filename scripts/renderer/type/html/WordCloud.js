@@ -114,12 +114,19 @@
             if (word) {
                 $(`.word-cloud-label[data-word="${word}"]`).addClass('hover');
                 let $parent = target.parents('.leaflet-html-tile');
+                let coord = {
+                    x: parseInt($parent.attr('data-x'), 10),
+                    y: parseInt($parent.attr('data-y'), 10),
+                    z: this._map.getZoom()
+                };
+                let tileData = this._cache[this._cacheKeyFromCoord(coord)].data;
                 this.fire('mouseover', {
                     elem: e.originalEvent.target,
                     value: word,
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom(),
+                    data: tileData ? tileData[word] : null,
+                    x: coord.x,
+                    y: coord.y,
+                    z: coord.z,
                     type: 'word-cloud',
                     layer: this
                 });

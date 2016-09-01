@@ -225,12 +225,15 @@
         flat: buildLookupFunction(FLAT)
     };
 
-    let setColorRamp = function(type) {
+    let setColorRamp = function(type, baseColors) {
         let func = ColorRamp[type.toLowerCase()];
         if (func) {
             this._colorRamp = func;
-            this._colorRampType = type;
+        } else if (baseColors) {
+            ColorRamp[type.toLowerCase()] = buildLookupFunction(buildPerceptualLookupTable(baseColors));
+            this._colorRamp = ColorRamp[type.toLowerCase()];
         }
+            this._colorRampType = type.toLowerCase();
         return this;
     };
 

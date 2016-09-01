@@ -53,6 +53,7 @@
         query_string: require('./QueryString'),
         range: require('./Range'),
         terms: require('./Terms'),
+        match: require('./Match'),
     };
 
     module.exports = checkBool;
