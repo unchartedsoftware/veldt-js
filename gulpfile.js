@@ -12,6 +12,7 @@
     var jshint = require('gulp-jshint');
     var csso = require('gulp-csso');
     var concat = require('gulp-concat');
+    var babel = require('babelify');
 
     var name = 'prism';
     var paths = {
@@ -60,9 +61,11 @@
 
     function build(root, output, minify) {
         var b = browserify(root, {
-            debug: !minify,
-            standalone: name
-        });
+                debug: !minify,
+                standalone: name
+            }).transform(babel, {
+                presets: [ 'es2015' ]
+            });
         return (minify) ? bundleMin(b, output) : bundle(b, output);
     }
 
@@ -74,10 +77,6 @@
         return gulp.src(paths.scripts)
             .pipe(jshint('.jshintrc'))
             .pipe(jshint.reporter('jshint-stylish'));
-    });
-
-    gulp.task('build-min-scripts', function() {
-        return build(paths.root, name + '.min.js', true);
     });
 
     gulp.task('build-scripts', function() {
@@ -94,7 +93,7 @@
     gulp.task('build', function(done) {
         runSequence(
             [ 'clean', 'lint' ],
-            [ 'build-scripts', 'build-min-scripts', 'build-styles' ],
+            [ 'build-scripts', 'build-styles' ],
             done);
     });
 
