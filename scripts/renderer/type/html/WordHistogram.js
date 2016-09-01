@@ -102,24 +102,26 @@
             let word = target.attr('data-word');
             if (word) {
                 $(`.word-histogram-entry[data-word="${word}"]`).addClass('hover');
-                let $parent = target.parents('.leaflet-html-tile');
-                let coord = {
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom()
-                };
-                let tileData = this._cache[this._cacheKeyFromCoord(coord)].data;
-                // fire event
-                this.fire('mouseover', {
-                    elem: e.originalEvent.target,
-                    value: word,
-                    data: tileData ? tileData[word] : null,
-                    x: coord.x,
-                    y: coord.y,
-                    z: coord.z,
-                    type: 'word-histogram',
-                    layer: this
-                });
+                // get layer coord
+                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                // get tile coord
+                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                // get cache key
+                let nkey = this.cacheKeyFromCoord(coord, true);
+                // get cache entry
+                let cached = this._cache[nkey];
+                if (cached && cached.data) {
+                    this.fire('mouseover', {
+                        elem: e.originalEvent.target,
+                        value: word,
+                        x: coord.x,
+                        y: coord.y,
+                        z: coord.z,
+                        data: cached.data,
+                        type: 'word-histogram',
+                        layer: this
+                    });
+                }
             }
         },
 
@@ -128,17 +130,26 @@
             $('.word-histogram-entry').removeClass('hover');
             let word = target.attr('data-word');
             if (word) {
-                let $parent = target.parents('.leaflet-html-tile');
-                // fire event
-                this.fire('mouseout', {
-                    elem: e.originalEvent.target,
-                    value: word,
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom(),
-                    type: 'word-histogram',
-                    layer: this
-                });
+                // get layer coord
+                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                // get tile coord
+                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                // get cache key
+                let nkey = this.cacheKeyFromCoord(coord, true);
+                // get cache entry
+                let cached = this._cache[nkey];
+                if (cached && cached.data) {
+                    this.fire('mouseout', {
+                        elem: e.originalEvent.target,
+                        value: word,
+                        x: coord.x,
+                        y: coord.y,
+                        z: coord.z,
+                        data: cached.data,
+                        type: 'word-histogram',
+                        layer: this
+                    });
+                }
             }
         },
 
@@ -155,17 +166,26 @@
             let word = target.attr('data-word');
             if (word) {
                 this.setHighlight(word);
-                let $parent = target.parents('.leaflet-html-tile');
-                // fire event
-                this.fire('click', {
-                    elem: e.originalEvent.target,
-                    value: word,
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom(),
-                    type: 'word-histogram',
-                    layer: this
-                });
+                // get layer coord
+                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                // get tile coord
+                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                // get cache key
+                let nkey = this.cacheKeyFromCoord(coord, true);
+                // get cache entry
+                let cached = this._cache[nkey];
+                if (cached && cached.data) {
+                    this.fire('mouseover', {
+                        elem: e.originalEvent.target,
+                        value: word,
+                        x: coord.x,
+                        y: coord.y,
+                        z: coord.z,
+                        data: cached.data,
+                        type: 'word-histogram',
+                        layer: this
+                    });
+                }
             } else {
                 this.clearSelection();
             }

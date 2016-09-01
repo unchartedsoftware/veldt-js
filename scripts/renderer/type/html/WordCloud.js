@@ -112,24 +112,28 @@
             $('.word-cloud-label').removeClass('hover');
             let word = target.attr('data-word');
             if (word) {
+                // highlight all instances of the word
                 $(`.word-cloud-label[data-word="${word}"]`).addClass('hover');
-                let $parent = target.parents('.leaflet-html-tile');
-                let coord = {
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom()
-                };
-                let tileData = this._cache[this._cacheKeyFromCoord(coord)].data;
-                this.fire('mouseover', {
-                    elem: e.originalEvent.target,
-                    value: word,
-                    data: tileData ? tileData[word] : null,
-                    x: coord.x,
-                    y: coord.y,
-                    z: coord.z,
-                    type: 'word-cloud',
-                    layer: this
-                });
+                // get layer coord
+                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                // get tile coord
+                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                // get cache key
+                let nkey = this.cacheKeyFromCoord(coord, true);
+                // get cache entry
+                let cached = this._cache[nkey];
+                if (cached && cached.data) {
+                    this.fire('mouseout', {
+                        elem: e.originalEvent.target,
+                        value: word,
+                        x: coord.x,
+                        y: coord.y,
+                        z: coord.z,
+                        data: cached.data,
+                        type: 'word-cloud',
+                        layer: this
+                    });
+                }
             }
         },
 
@@ -138,16 +142,26 @@
             $('.word-cloud-label').removeClass('hover');
             let word = target.attr('data-word');
             if (word) {
-                let $parent = target.parents('.leaflet-html-tile');
-                this.fire('mouseout', {
-                    elem: e.originalEvent.target,
-                    value: word,
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom(),
-                    type: 'word-cloud',
-                    layer: this
-                });
+                // get layer coord
+                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                // get tile coord
+                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                // get cache key
+                let nkey = this.cacheKeyFromCoord(coord, true);
+                // get cache entry
+                let cached = this._cache[nkey];
+                if (cached && cached.data) {
+                    this.fire('mouseover', {
+                        elem: e.originalEvent.target,
+                        value: word,
+                        x: coord.x,
+                        y: coord.y,
+                        z: coord.z,
+                        data: cached.data,
+                        type: 'word-cloud',
+                        layer: this
+                    });
+                }
             }
         },
 
@@ -164,16 +178,26 @@
             let word = target.attr('data-word');
             if (word) {
                 this.setHighlight(word);
-                let $parent = target.parents('.leaflet-html-tile');
-                this.fire('click', {
-                    elem: e.originalEvent.target,
-                    value: word,
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom(),
-                    type: 'word-cloud',
-                    layer: this
-                });
+                // get layer coord
+                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                // get tile coord
+                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                // get cache key
+                let nkey = this.cacheKeyFromCoord(coord, true);
+                // get cache entry
+                let cached = this._cache[nkey];
+                if (cached && cached.data) {
+                    this.fire('click', {
+                        elem: e.originalEvent.target,
+                        value: word,
+                        x: coord.x,
+                        y: coord.y,
+                        z: coord.z,
+                        data: cached.data,
+                        type: 'word-cloud',
+                        layer: this
+                    });
+                }
             } else {
                 this.clearSelection();
             }
@@ -195,15 +219,14 @@
                     `
                     <div class="word-cloud-label" style="
                         visibility:hidden;
-                        font-size: ${word.fontSize}px;">${word.text}
-                    </div>;
+                        font-size: ${word.fontSize}px;">${word.text}</div>;
                     `);
             });
             // append measurements
             $('body').append($html);
-            $html.children().each(index => {
-                wordCounts[index].width = this.offsetWidth;
-                wordCounts[index].height = this.offsetHeight;
+            $html.children().each((index, elem) => {
+                wordCounts[index].width = elem.offsetWidth;
+                wordCounts[index].height = elem.offsetHeight;
             });
             $html.remove();
             return wordCounts;
@@ -310,8 +333,8 @@
                 // create styles
                 let styles = [
                         `font-size: ${word.fontSize}px`,
-                        `left: ${halfSize + word.x - (word.width / 2)}px`,
-                        `top: ${halfSize + word.y - (word.height / 2)}px`,
+                        `left: ${(halfSize + word.x) - (word.width / 2)}px`,
+                        `top: ${(halfSize + word.y) - (word.height / 2)}px`,
                         `width: ${word.width}px`,
                         `height: ${word.height}px`,
                     ].join(';');
