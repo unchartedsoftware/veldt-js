@@ -94,7 +94,7 @@
 
         createTile: function(coord) {
             // create a <div> element for drawing
-            let tile = L.DomUtil.create('div', 'leaflet-tile');
+            let tile = L.DomUtil.create('div', 'leaflet-tile leaflet-tile-pending');
             // get hash
             this._updateTile(coord, tile);
             // pass tile to callback
