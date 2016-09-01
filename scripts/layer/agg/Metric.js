@@ -2,14 +2,14 @@
 
     'use strict';
 
-    var METRICS = {
+    let METRICS = {
         'min': true,
         'max': true,
         'sum': true,
         'avg': true
     };
 
-    var checkField = function(meta, field) {
+    let checkField = function(meta, field) {
         if (meta) {
             if (!meta.extrema) {
                 throw 'Metrix `field` ' + field + ' is not ordinal in meta data';
@@ -19,7 +19,7 @@
         }
     };
 
-    var setMetric = function(field, type) {
+    let setMetric = function(field, type) {
         if (!field) {
             throw 'Metric `field` is missing from argument';
         }
@@ -38,7 +38,7 @@
         return this;
     };
 
-    var getMetric = function() {
+    let getMetric = function() {
         return this._params.metric;
     };
 

@@ -2,9 +2,9 @@
 
     'use strict';
 
-    var Live = require('../core/Live');
+    let Live = require('../core/Live');
 
-    var Community = Live.extend({
+    let Community = Live.extend({
 
         type: 'community',
 

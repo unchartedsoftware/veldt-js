@@ -2,9 +2,9 @@
 
     'use strict';
 
-    var Canvas = require('../../core/Canvas');
+    let Canvas = require('../../core/Canvas');
 
-    var Preview = Canvas.extend({
+    let Preview = Canvas.extend({
 
         options: {
             lineWidth: 1,
@@ -14,7 +14,7 @@
         highlighted: false,
 
         _drawHighlight: function(canvas, x, y, size) {
-            var ctx = canvas.getContext('2d');
+            let ctx = canvas.getContext('2d');
             ctx.beginPath();
             ctx.fillStyle = this.options.fillColor;
             ctx.rect(
@@ -28,31 +28,30 @@
         },
 
         onMouseMove: function(e) {
-            var target = e.originalEvent.target;
+            let target = e.originalEvent.target;
             if (this.highlighted) {
                 // clear existing highlight
                 this.clearTiles();
             }
             // get layer coord
-            var layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+            let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
             // get tile coord
-            var coord = this.getTileCoordFromLayerPoint(layerPoint);
+            let coord = this.getTileCoordFromLayerPoint(layerPoint);
             // get cache key
-            var nkey = this.cacheKeyFromCoord(coord, true);
+            let nkey = this.cacheKeyFromCoord(coord, true);
             // get cache entry
-            var cached = this._cache[nkey];
+            let cached = this._cache[nkey];
             if (cached && cached.data) {
                 // get bin coordinate
-                var bin = this.getBinCoordFromLayerPoint(layerPoint);
+                let bin = this.getBinCoordFromLayerPoint(layerPoint);
                 // get bin data entry
-                var data = cached.data[bin.index];
+                let data = cached.data[bin.index];
                 if (data) {
                     // for each tile relying on that data
-                    var self = this;
-                    _.forIn(cached.tiles, function(tile) {
-                        self._drawHighlight(tile, bin.x, bin.y, bin.size);
+                    _.forIn(cached.tiles, tile => {
+                        this._drawHighlight(tile, bin.x, bin.y, bin.size);
                     });
-                    var collision = {
+                    let collision = {
                         value: data,
                         x: coord.x,
                         y: coord.z,

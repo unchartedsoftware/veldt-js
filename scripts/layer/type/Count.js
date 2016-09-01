@@ -2,11 +2,11 @@
 
     'use strict';
 
-    var Live = require('../core/Live');
-    var Elastic = require('../param/Elastic');
-    var Tiling = require('../param/Tiling');
+    let Live = require('../core/Live');
+    let Elastic = require('../param/Elastic');
+    let Tiling = require('../param/Tiling');
 
-    var Count = Live.extend({
+    let Count = Live.extend({
 
         includes: [
             // params

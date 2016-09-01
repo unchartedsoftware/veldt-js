@@ -2,7 +2,7 @@
 
     'use strict';
 
-    var checkField = function(meta, field) {
+    let checkField = function(meta, field) {
         if (meta) {
             if (!meta.extrema) {
                 throw 'Range `field` ' + field + ' is not ordinal in meta data.';

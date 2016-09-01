@@ -4,6 +4,7 @@
 
     // cartesian projection in (0,0), (256, 256) coordinate space
     L.Projection.Graph = {
+
         project: function(latlng) {
             return new L.Point(latlng.lng, latlng.lat);
         },

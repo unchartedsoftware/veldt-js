@@ -2,13 +2,13 @@
 
     'use strict';
 
-    var Live = require('../core/Live');
-    var Elastic = require('../param/Elastic');
-    var Tiling = require('../param/Tiling');
-    var TermsFilter = require('../agg/TermsFilter');
-    var Histogram = require('../agg/Histogram');
+    let Live = require('../core/Live');
+    let Elastic = require('../param/Elastic');
+    let Tiling = require('../param/Tiling');
+    let TermsFilter = require('../agg/TermsFilter');
+    let Histogram = require('../agg/Histogram');
 
-    var TopicCount = Live.extend({
+    let TopicCount = Live.extend({
 
         includes: [
             // params

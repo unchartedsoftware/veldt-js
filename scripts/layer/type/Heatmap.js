@@ -2,12 +2,12 @@
 
     'use strict';
 
-    var Live = require('../core/Live');
-    var Elastic = require('../param/Elastic');
-    var Binning = require('../param/Binning');
-    var Metric = require('../agg/Metric');
+    let Live = require('../core/Live');
+    let Elastic = require('../param/Elastic');
+    let Binning = require('../param/Binning');
+    let Metric = require('../agg/Metric');
 
-    var Heatmap = Live.extend({
+    let Heatmap = Live.extend({
 
         includes: [
             // params
@@ -20,7 +20,7 @@
         type: 'heatmap',
 
         extractExtrema: function(data) {
-            var bins = new Float64Array(data);
+            let bins = new Float64Array(data);
             return {
                 min: _.min(bins),
                 max: _.max(bins)

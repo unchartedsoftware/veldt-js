@@ -2,17 +2,17 @@
 
     'use strict';
 
-    var RETRY_INTERVAL = 5000;
+    let RETRY_INTERVAL = 5000;
 
     function getHost() {
-        var loc = window.location;
-        var new_uri;
+        let loc = window.location;
+        let new_uri;
         if (loc.protocol === 'https:') {
             new_uri = 'wss:';
         } else {
             new_uri = 'ws:';
         }
-        return new_uri + '//' + loc.host + loc.pathname;
+        return `${new_uri}//${loc.host}${loc.pathname}`;
     }
 
     function establishConnection(requestor, callback) {
@@ -25,9 +25,9 @@
         };
         // on message
         requestor.socket.onmessage = function(event) {
-            var res = JSON.parse(event.data);
-            var hash = requestor.getHash(res);
-            var request = requestor.requests[hash];
+            let res = JSON.parse(event.data);
+            let hash = requestor.getHash(res);
+            let request = requestor.requests[hash];
             delete requestor.requests[hash];
             if (res.success) {
                 request.resolve(requestor.getURL(res), res);
@@ -39,7 +39,7 @@
         requestor.socket.onclose = function() {
             // log close only if connection was ever open
             if (requestor.isOpen) {
-                console.warn('Websocket connection closed, attempting to re-connect in ' + RETRY_INTERVAL);
+                console.warn('Websocket connection closed, attempting to re-connect in', RETRY_INTERVAL);
             }
             requestor.socket = null;
             requestor.isOpen = false;
@@ -62,43 +62,41 @@
         };
     }
 
-    function Requestor(url, callback) {
-        this.url = url;
-        this.requests = {};
-        this.pending = [];
-        this.isOpen = false;
-        establishConnection(this, callback);
-    }
-
-    Requestor.prototype.getHash = function(/*req*/) {
-        // override
-    };
-
-    Requestor.prototype.getURL = function(/*res*/) {
-        // override
-    };
-
-    Requestor.prototype.get = function(req) {
-        if (!this.isOpen) {
-            // if no connection, add request to pending queue
-            this.pending.push(req);
-            return;
+    class Requestor {
+        constructor(url, callback) {
+            this.url = url;
+            this.requests = {};
+            this.pending = [];
+            this.isOpen = false;
+            establishConnection(this, callback);
         }
-        var hash = this.getHash(req);
-        var request = this.requests[hash];
-        if (request) {
+        getHash() {
+            // override
+        }
+        getURL() {
+            // override
+        }
+        get(req) {
+            if (!this.isOpen) {
+                // if no connection, add request to pending queue
+                this.pending.push(req);
+                return;
+            }
+            let hash = this.getHash(req);
+            let request = this.requests[hash];
+            if (request) {
+                return request.promise();
+            }
+            request = this.requests[hash] = $.Deferred();
+            this.socket.send(JSON.stringify(req));
             return request.promise();
         }
-        request = this.requests[hash] = $.Deferred();
-        this.socket.send(JSON.stringify(req));
-        return request.promise();
-    };
-
-    Requestor.prototype.close = function() {
-        this.socket.onclose = null;
-        this.socket.close();
-        this.socket = null;
-    };
+        close() {
+            this.socket.onclose = null;
+            this.socket.close();
+            this.socket = null;
+        }
+    }
 
     module.exports = Requestor;
 

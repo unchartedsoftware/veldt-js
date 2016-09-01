@@ -2,7 +2,7 @@
 
     'use strict';
 
-    var checkField = function(meta, field) {
+    let checkField = function(meta, field) {
         if (meta) {
             if (meta.type !== 'string') {
                 throw 'QueryString `field` ' + field + ' is not `string` in meta data.';

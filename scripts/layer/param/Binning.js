@@ -2,11 +2,11 @@
 
     'use strict';
 
-    var DEFAULT_RESOLUTION = 256;
+    let DEFAULT_RESOLUTION = 256;
 
-    var Tiling = require('./Tiling');
+    let Tiling = require('./Tiling');
 
-    var setResolution = function(resolution) {
+    let setResolution = function(resolution) {
         if (resolution !== this._params.binning.resolution) {
             this._params.binning.resolution = resolution;
             this.clearExtrema();
@@ -14,7 +14,7 @@
         return this;
     };
 
-    var getResolution = function() {
+    let getResolution = function() {
         return this._params.binning.resolution || DEFAULT_RESOLUTION;
     };
 

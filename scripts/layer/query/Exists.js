@@ -2,7 +2,7 @@
 
     'use strict';
 
-    var checkField = function(meta, field) {
+    let checkField = function(meta, field) {
         if (!meta) {
             throw 'Terms `field` ' + field + ' is not recognized in meta data.';
         }
