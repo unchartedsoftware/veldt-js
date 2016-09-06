@@ -408,15 +408,15 @@
             }
         },
 
-        getModelMatrix: function(coords) {
+        getWrapAroundOffset: function(coords) {
             let size = Math.pow(2, this._map.getZoom());
             // create model matrix
             let xWrap = Math.floor(coords.x / size);
             let yWrap = Math.floor(coords.y / size);
-            return this.getTranslationMatrix(
+            return [
                 size * TILE_SIZE * xWrap,
-                size * TILE_SIZE * yWrap,
-                0);
+                size * TILE_SIZE * yWrap
+            ];
         },
 
         getProjectionMatrix: function() {
@@ -456,7 +456,8 @@
             shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
             shader.setUniform('uOpacity', this.getOpacity());
             shader.setUniform('uScale', radius);
-            shader.setUniform('uViewOffset', this.getViewOffset());
+            // calc view offset
+            let viewOffset = this.getViewOffset();
             // binds the buffer to instance
             buffer.bind();
             // enable instancing
@@ -475,8 +476,13 @@
                             // NOTE: we have to check here if the tiles are stale or not
                             return;
                         }
-                        // upload translation matrix
-                        shader.setUniform('uModelMatrix', this.getModelMatrix(coords));
+                        // upload view offset
+                        let offset = this.getWrapAroundOffset(coords);
+                        let totalOffset = [
+                            viewOffset[0] - offset[0],
+                            viewOffset[1] - offset[1],
+                        ];
+                        shader.setUniform('uViewOffset', totalOffset);
                         // draw the istances
                         ext.drawArraysInstancedANGLE(gl[buffer.mode], 0, buffer.count, chunk.count);
                     });
@@ -505,14 +511,20 @@
             shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
             shader.setUniform('uOpacity', this.getOpacity());
             shader.setUniform('uScale', radius);
-            shader.setUniform('uViewOffset', this.getViewOffset());
+            // view offset
+            let viewOffset = this.getViewOffset();
             _.forIn(tiles, tile => {
                 if (tile.coords.z !== zoom) {
                     // NOTE: we have to check here if the tiles are stale or not
                     return;
                 }
-                // upload translation matrix
-                shader.setUniform('uModelMatrix', this.getModelMatrix(tile.coords));
+                // upload view offset
+                let offset = this.getWrapAroundOffset(tile.coords);
+                let totalOffset = [
+                    viewOffset[0] - offset[0],
+                    viewOffset[1] - offset[1],
+                ];
+                shader.setUniform('uViewOffset', totalOffset);
                 shader.setUniform('uOffset', point);
                 shader.setUniform('uColor', color);
                 buffer.draw();

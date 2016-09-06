@@ -186,12 +186,11 @@
             attribute vec2 aOffset;
             uniform ivec2 uViewOffset;
             uniform float uScale;
-            uniform mat4 uModelMatrix;
             uniform mat4 uProjectionMatrix;
             void main() {
                 ivec2 iOffset = ivec2(aOffset.x, aOffset.y);
                 vec2 mPosition = uScale * aPosition + vec2(iOffset - uViewOffset);
-                gl_Position = uProjectionMatrix * uModelMatrix * vec4(mPosition, 0.0, 1.0);
+                gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
             }
             `,
         frag:
@@ -213,11 +212,10 @@
             uniform ivec2 uOffset;
             uniform ivec2 uViewOffset;
             uniform float uScale;
-            uniform mat4 uModelMatrix;
             uniform mat4 uProjectionMatrix;
             void main() {
                 vec2 mPosition = uScale * aPosition + vec2(uOffset - uViewOffset);
-                gl_Position = uProjectionMatrix * uModelMatrix * vec4(mPosition, 0.0, 1.0);
+                gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
             }
             `,
         frag:
