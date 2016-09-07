@@ -9,8 +9,8 @@
     let Shaders = require('./Shaders');
 
     let TILE_SIZE = 256;
-    let COMPONENT_BYTE_SIZE = 4;
-    let COMPONENTS_PER_POINT = 2;
+    let COMPONENT_BYTE_SIZE = 2;
+    let COMPONENTS_PER_POINT = 4; // encoding two uint32's across xy/zw
     let MAX_TILES = 128;
     let MAX_POINTS_PER_TILE = 256 * 256;
     let MAX_TILE_BYTE_SIZE = MAX_POINTS_PER_TILE * COMPONENTS_PER_POINT * COMPONENT_BYTE_SIZE;
@@ -23,11 +23,18 @@
     let POSITIONS_INDEX = 0;
     let OFFSETS_INDEX = 1;
 
+    function encodePoint(arraybuffer, index, x, y) {
+        arraybuffer[index] = x >> 16;
+        arraybuffer[index+1] = x & 0x0000FFFF;
+        arraybuffer[index+2] = y >> 16;
+        arraybuffer[index+3] = y & 0x0000FFFF;
+    }
+
     function applyJitter(point, maxDist) {
         let angle = Math.random() * (Math.PI * 2);
         let dist = Math.random() * maxDist;
-        point.x += Math.cos(angle) * dist;
-        point.y += Math.sin(angle) * dist;
+        point.x += Math.Floor(Math.cos(angle) * dist);
+        point.y += Math.Floor(Math.sin(angle) * dist);
     }
 
     function createCircleOutlineBuffer(numSegments) {
@@ -206,8 +213,8 @@
                         this._offsetBuffer.buffer,
                         {
                             1: {
-                                size: 2,
-                                type: 'FLOAT',
+                                size: 4,
+                                type: 'UNSIGNED_SHORT',
                                 byteOffset: byteOffset
                             }
                         }, {
@@ -348,7 +355,7 @@
                 let radius = this.getCollisionRadius();
                 let numBytes = data.length * COMPONENT_BYTE_SIZE * COMPONENTS_PER_POINT;
                 let buffer = new ArrayBuffer(Math.min(numBytes, MAX_TILE_BYTE_SIZE));
-                let positions = new Float32Array(buffer);
+                let positions = new Uint16Array(buffer);
                 let count = 0;
                 let numDatum = Math.min(data.length, MAX_POINTS_PER_TILE);
                 let points = [];
@@ -377,9 +384,14 @@
                         }
                         // store point
                         points.push(point);
-                        // add to underlying buffer
-                        positions[i*2] = point.x;
-                        positions[i*2 + 1] = (size * TILE_SIZE) - point.y;
+
+                        // encode the point into the buffer
+                        encodePoint(
+                            positions,
+                            i*4,
+                            point.x,
+                            (size * TILE_SIZE) - point.y);
+
                         // add point to spatial hash
                         this.addPoint(point, radius, zoom);
                         // increment count
