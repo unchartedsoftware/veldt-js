@@ -9,8 +9,8 @@
     let Shaders = require('./Shaders');
 
     let TILE_SIZE = 256;
-    let COMPONENT_BYTE_SIZE = 4;
-    let COMPONENTS_PER_POINT = 2;
+    let COMPONENT_BYTE_SIZE = 2;
+    let COMPONENTS_PER_POINT = 4; // encoding two uint32's across xy/zw
     let MAX_TILES = 128;
     let MAX_POINTS_PER_TILE = 256 * 256;
     let MAX_TILE_BYTE_SIZE = MAX_POINTS_PER_TILE * COMPONENTS_PER_POINT * COMPONENT_BYTE_SIZE;
@@ -23,11 +23,18 @@
     let POSITIONS_INDEX = 0;
     let OFFSETS_INDEX = 1;
 
+    function encodePoint(arraybuffer, index, x, y) {
+        arraybuffer[index] = x >> 16;
+        arraybuffer[index+1] = x & 0x0000FFFF;
+        arraybuffer[index+2] = y >> 16;
+        arraybuffer[index+3] = y & 0x0000FFFF;
+    }
+
     function applyJitter(point, maxDist) {
         let angle = Math.random() * (Math.PI * 2);
         let dist = Math.random() * maxDist;
-        point.x += Math.cos(angle) * dist;
-        point.y += Math.sin(angle) * dist;
+        point.x += Math.Floor(Math.cos(angle) * dist);
+        point.y += Math.Floor(Math.sin(angle) * dist);
     }
 
     function createCircleOutlineBuffer(numSegments) {
@@ -206,8 +213,8 @@
                         this._offsetBuffer.buffer,
                         {
                             1: {
-                                size: 2,
-                                type: 'FLOAT',
+                                size: 4,
+                                type: 'UNSIGNED_SHORT',
                                 byteOffset: byteOffset
                             }
                         }, {
@@ -348,7 +355,7 @@
                 let radius = this.getCollisionRadius();
                 let numBytes = data.length * COMPONENT_BYTE_SIZE * COMPONENTS_PER_POINT;
                 let buffer = new ArrayBuffer(Math.min(numBytes, MAX_TILE_BYTE_SIZE));
-                let positions = new Float32Array(buffer);
+                let positions = new Uint16Array(buffer);
                 let count = 0;
                 let numDatum = Math.min(data.length, MAX_POINTS_PER_TILE);
                 let points = [];
@@ -377,9 +384,14 @@
                         }
                         // store point
                         points.push(point);
-                        // add to underlying buffer
-                        positions[i*2] = point.x;
-                        positions[i*2 + 1] = (size * TILE_SIZE) - point.y;
+
+                        // encode the point into the buffer
+                        encodePoint(
+                            positions,
+                            i*4,
+                            point.x,
+                            (size * TILE_SIZE) - point.y);
+
                         // add point to spatial hash
                         this.addPoint(point, radius, zoom);
                         // increment count
@@ -408,15 +420,15 @@
             }
         },
 
-        getModelMatrix: function(coords) {
+        getWrapAroundOffset: function(coords) {
             let size = Math.pow(2, this._map.getZoom());
             // create model matrix
             let xWrap = Math.floor(coords.x / size);
             let yWrap = Math.floor(coords.y / size);
-            return this.getTranslationMatrix(
+            return [
                 size * TILE_SIZE * xWrap,
-                size * TILE_SIZE * yWrap,
-                0);
+                size * TILE_SIZE * yWrap
+            ];
         },
 
         getProjectionMatrix: function() {
@@ -456,7 +468,8 @@
             shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
             shader.setUniform('uOpacity', this.getOpacity());
             shader.setUniform('uScale', radius);
-            shader.setUniform('uViewOffset', this.getViewOffset());
+            // calc view offset
+            let viewOffset = this.getViewOffset();
             // binds the buffer to instance
             buffer.bind();
             // enable instancing
@@ -475,8 +488,13 @@
                             // NOTE: we have to check here if the tiles are stale or not
                             return;
                         }
-                        // upload translation matrix
-                        shader.setUniform('uModelMatrix', this.getModelMatrix(coords));
+                        // upload view offset
+                        let offset = this.getWrapAroundOffset(coords);
+                        let totalOffset = [
+                            viewOffset[0] - offset[0],
+                            viewOffset[1] - offset[1],
+                        ];
+                        shader.setUniform('uViewOffset', totalOffset);
                         // draw the istances
                         ext.drawArraysInstancedANGLE(gl[buffer.mode], 0, buffer.count, chunk.count);
                     });
@@ -505,14 +523,20 @@
             shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
             shader.setUniform('uOpacity', this.getOpacity());
             shader.setUniform('uScale', radius);
-            shader.setUniform('uViewOffset', this.getViewOffset());
+            // view offset
+            let viewOffset = this.getViewOffset();
             _.forIn(tiles, tile => {
                 if (tile.coords.z !== zoom) {
                     // NOTE: we have to check here if the tiles are stale or not
                     return;
                 }
-                // upload translation matrix
-                shader.setUniform('uModelMatrix', this.getModelMatrix(tile.coords));
+                // upload view offset
+                let offset = this.getWrapAroundOffset(tile.coords);
+                let totalOffset = [
+                    viewOffset[0] - offset[0],
+                    viewOffset[1] - offset[1],
+                ];
+                shader.setUniform('uViewOffset', totalOffset);
                 shader.setUniform('uOffset', point);
                 shader.setUniform('uColor', color);
                 buffer.draw();

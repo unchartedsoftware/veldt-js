@@ -28,7 +28,27 @@
             L.setOptions(this, options);
         },
 
-        increment: function(coord) {
+        add: function(layer) {
+            layer._incrementHandler = tile => {
+                this._increment(tile.coords);
+            };
+            layer._decrementHandler = tile => {
+                this._decrement(tile.coords);
+            };
+            layer.on('tilestartload', layer._incrementHandler);
+            layer.on('tileload', layer._decrementHandler);
+            layer.on('tileerror', layer._decrementHandler);
+        },
+
+        remove: function(layer) {
+            layer.off('tilestartload', layer._incrementHandler);
+            layer.off('tileload', layer._decrementHandler);
+            layer.off('tileerror', layer._decrementHandler);
+            layer._incrementHandler = null;
+            layer._decrementHandler = null;
+        },
+
+        _increment: function(coord) {
             let hash = this._getTileHash(coord);
             if (this._pendingTiles[hash] === undefined) {
                 this._pendingTiles[hash] = 1;
@@ -41,7 +61,7 @@
             }
         },
 
-        decrement: function(coord) {
+        _decrement: function(coord) {
             let hash = this._getTileHash(coord);
             this._pendingTiles[hash]--;
             if (this._pendingTiles[hash] === 0) {
