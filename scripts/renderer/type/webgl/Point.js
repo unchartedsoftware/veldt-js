@@ -3,7 +3,7 @@
     'use strict';
 
     let esper = require('esper');
-    let Async = require('async');
+    let parallel = require('async/parallel');
     let WebGL = require('../../core/WebGL');
     let SpatialHash = require('../../mixin/SpatialHash');
     let Shaders = require('./Shaders');
@@ -147,7 +147,7 @@
             // clear the chunks
             this.initChunks();
             // load shaders
-            Async.parallel({
+            parallel({
                 instanced: (done) => {
                     let shader = new esper.Shader({
                         vert: Shaders.instancedPoint.vert,
