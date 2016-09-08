@@ -1,6 +1,6 @@
 {
   "name": "prism-client",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "author": "Kevin Birk <kbirk@uncharted.software>",
   "description": "Leaflet layer plugins for prism applications",
   "main": "build/prism.js",
@@ -22,7 +22,7 @@
     "babelify": "7.3.0",
     "browserify": "13.1.0",
     "del": "2.2.2",
-    "esper": "0.11.0",
+    "esper": "0.11.1",
     "gulp": "3.9.1",
     "gulp-concat": "2.6.0",
     "gulp-csso": "2.0.0",

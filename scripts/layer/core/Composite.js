@@ -6,6 +6,8 @@
         return funcName !== 'constructor' &&
             funcName !== 'on' &&
             funcName !== 'off' &&
+            funcName !== 'setQuery' &&
+            funcName !== 'clearQuery' &&
             funcName[0] !== '_';
     }
 
@@ -26,6 +28,7 @@
             this._layers = layers;
             this._functions = functions;
             this._handlers = {};
+            this._query = null;
             // extend this composite class for each function
             _.forIn(functions, (layers, func) => {
                 this._extend(func);
@@ -53,6 +56,22 @@
                         delete this._handlers[evt];
                     }
                 }
+            }
+        },
+
+        setQuery: function(query) {
+            this._layers.forEach(layer => {
+                layer.setQuery(query);
+            });
+            this._query = query;
+        },
+
+        clearQuery: function() {
+            if (this._query) {
+                this._layers.forEach(function(layer) {
+                    layer.clearQuery();
+                });
+                this._query = null;
             }
         },
 
@@ -98,6 +117,10 @@
                     layer.on(evt, func);
                 });
             });
+            if (this._query) {
+                // add query to layer
+                layer.setQuery(this._query);
+            }
         },
 
         removeSubLayer: function(layer) {
@@ -130,6 +153,8 @@
                     layer.off(evt, func);
                 });
             });
+            // clear the query from the layer
+            layer.clearQuery();
         }
     });
 
