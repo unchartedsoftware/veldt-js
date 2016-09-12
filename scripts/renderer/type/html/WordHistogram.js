@@ -27,6 +27,7 @@
     };
 
     let extractFrequency = function(count) {
+        count = count.counts || count;
         if (isSingleValue(count)) {
             return {
                 count: count
@@ -46,24 +47,6 @@
             return frequency.avg;
         });
         return sum / frequencies.length;
-    };
-
-    let extractValues = function(data, key) {
-        let frequencies = _.map(data, extractFrequency);
-        let avg = extractAvg(frequencies);
-        let max = _.maxBy(frequencies, val => {
-            return val.count;
-        }).count;
-        let total = _.sumBy(frequencies, val => {
-            return val.count;
-        });
-        return {
-            topic: key,
-            frequencies: frequencies,
-            max: max,
-            total: total,
-            avg: avg
-        };
     };
 
     let WordHistogram = HTML.extend({
@@ -201,13 +184,36 @@
             };
         },
 
+        getText: function(keyData, key) {
+            return key;
+        },
+
+        extractValues: function(data, key) {
+            let frequencies = _.map(data, extractFrequency);
+            let avg = extractAvg(frequencies);
+            let max = _.maxBy(frequencies, function(val) {
+                return val.count;
+            }).count;
+            let total = _.sumBy(frequencies, function(val) {
+                return val.count;
+            });
+            return {
+                key: key,
+                topic: this.getText(data, key),
+                frequencies: frequencies,
+                max: max,
+                total: total,
+                avg: avg
+            };
+        },
+
         renderTile: function(container, data) {
             if (!data || _.isEmpty(data)) {
                 return;
             }
             let highlight = this.highlight;
             // convert object to array
-            let values = _.map(data, extractValues).sort((a, b) => {
+            let values = _.map(data, this.extractValues).sort((a, b) => {
                 return b.total - a.total;
             });
             // get number of entries
@@ -217,13 +223,14 @@
             let minFontSize = this.options.minFontSize;
             let maxFontSize = this.options.maxFontSize;
             values.slice(0, numEntries).forEach(value => {
+                let key = value.key;
                 let topic = value.topic;
                 let frequencies = value.frequencies;
                 let max = value.max;
                 let total = value.total;
                 let avg = value.avg;
                 let sentimentClass = extractSentimentClass(avg);
-                let highlightClass = (topic === highlight) ? 'highlight' : '';
+                let highlightClass = (key === highlight) ? 'highlight' : '';
                 // scale the height based on level min / max
                 let percent = this.transformValue(total);
                 let percentLabel = Math.round((percent * 100) / 10) * 10;
@@ -234,7 +241,7 @@
                     `
                     <div class="word-histogram-entry ${highlightClass}"
                         data-sentiment="${avg}"
-                        data-word="${topic}"
+                        data-word="${key}"
                         style="height:${height}px;">
                     </div>
                     `);
@@ -243,7 +250,7 @@
                     `
                     <div class="word-histogram-left"
                         data-sentiment="${avg}"
-                        data-word="${topic}">
+                        data-word="${key}">
                     </div>
                     `);
                 let barWidth = 'calc(' + (100 / frequencies.length) + '%)';
@@ -277,7 +284,7 @@
                     $chart.append(
                         `
                         <div class="${barClasses}"
-                            data-word="${topic}"
+                            data-word="${key}"
                             style="
                             visibility: ${visibility};
                             width: ${barWidth};
@@ -298,7 +305,7 @@
                     <div class="word-histogram-right">
                         <div class="${topicClasses}"
                             data-sentiment="${avg}"
-                            data-word="${topic}"
+                            data-word="${key}"
                         style="
                             font-size: ${height}px;
                             line-height: ${height}px;
