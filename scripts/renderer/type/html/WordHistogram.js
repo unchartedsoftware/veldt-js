@@ -158,7 +158,7 @@
                 // get cache entry
                 let cached = this._cache[nkey];
                 if (cached && cached.data) {
-                    this.fire('mouseover', {
+                    this.fire('click', {
                         elem: e.originalEvent.target,
                         value: word,
                         x: coord.x,
