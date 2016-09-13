@@ -262,7 +262,7 @@
                     // get the percent relative to the highest count in the tile
                     let relativePercent = (max !== 0) ? (count / max) * 100 : 0;
                     // make invisible if zero count
-                    let visibility = relativePercent === 0 ? 'hidden' : '';
+                    let visibility = relativePercent === 0 ? 'hidden' : 'visible';
                     // Get the style class of the bar
                     let percentLabel = Math.round(relativePercent / 10) * 10;
                     let barClasses = [
@@ -278,7 +278,7 @@
                         barTop = 'calc(100% - 3px)';
                     } else {
                         barHeight = `${relativePercent}%`;
-                        barTop = `(100 - relativePercent)%`;
+                        barTop = `${100 - relativePercent}%`;
                     }
                     // create bar
                     $chart.append(
