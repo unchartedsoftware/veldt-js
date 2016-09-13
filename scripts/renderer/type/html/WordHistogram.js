@@ -188,7 +188,7 @@
             return key;
         },
 
-        extractValues: function(data, key) {
+        extractValues: (data, key) => {
             let frequencies = _.map(data, extractFrequency);
             let avg = extractAvg(frequencies);
             let max = _.maxBy(frequencies, function(val) {
