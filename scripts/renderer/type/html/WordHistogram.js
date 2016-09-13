@@ -188,7 +188,7 @@
             return key;
         },
 
-        extractValues: (data, key) => {
+        extractValues: function(data, key) {
             let frequencies = _.map(data, extractFrequency);
             let avg = extractAvg(frequencies);
             let max = _.maxBy(frequencies, function(val) {
@@ -213,7 +213,7 @@
             }
             let highlight = this.highlight;
             // convert object to array
-            let values = _.map(data, this.extractValues).sort((a, b) => {
+            let values = _.map(data, this.extractValues.bind(this)).sort((a, b) => {
                 return b.total - a.total;
             });
             // get number of entries
