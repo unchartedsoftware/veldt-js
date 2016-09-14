@@ -83,7 +83,7 @@
 
         _createRingDiv: function(communityRadius, communityCoords, zoomLevel, className) {
             let radius = Math.max(4, communityRadius * Math.pow(2, zoomLevel));
-            let offset = radius / 2;
+            let offset = radius;
             let binCoord = this._getBinCoordFromCartesian(
                 communityCoords[0],
                 communityCoords[1],
@@ -96,8 +96,8 @@
                 <div class="${className}" style="
                     left: ${left - offset}px;
                     top: ${top - offset}px;
-                    width: ${radius}px;
-                    height: ${radius}px;">
+                    width: ${radius * 2}px;
+                    height: ${radius * 2}px;">
                 </div>
                 `);
         }
