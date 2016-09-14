@@ -33,8 +33,8 @@
     function applyJitter(point, maxDist) {
         let angle = Math.random() * (Math.PI * 2);
         let dist = Math.random() * maxDist;
-        point.x += Math.Floor(Math.cos(angle) * dist);
-        point.y += Math.Floor(Math.sin(angle) * dist);
+        point.x += Math.floor(Math.cos(angle) * dist);
+        point.y += Math.floor(Math.sin(angle) * dist);
     }
 
     function createCircleOutlineBuffer(numSegments) {
