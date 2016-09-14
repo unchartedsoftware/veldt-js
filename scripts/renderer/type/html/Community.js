@@ -11,7 +11,8 @@
         // over a community ring
         onMouseOver: function(e) {
             let target = $(e.originalEvent.target);
-            let value = {name: target.data('name'), count: target.data('count')};
+            let data = target.data('communityData');
+            let value = {name: data.metadata, count: data.numNodes};
             if (!value) {
                 value = {};
             }
@@ -28,6 +29,17 @@
         onMouseOut: function(e) {
             this.fire('mouseout', {
                 elem: e.originalEvent.target,
+                type: 'community',
+                layer: this
+            });
+        },
+
+        // forward click event to app level click handler
+        onClick: function(e) {
+            let data = $(e.originalEvent.target).data('communityData');
+            this.fire('click', {
+                elem: e.originalEvent.target,
+                value: data,
                 type: 'community',
                 layer: this
             });
@@ -60,8 +72,7 @@
                         community,
                         coord,
                         'community-ring');
-                    div.data('name', community.metadata);
-                    div.data('count', community.numNodes);
+                    div.data('communityData', community);
                     divs = divs.add(div);
                 }
             });
