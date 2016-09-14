@@ -8,6 +8,7 @@
     let TopTerms = require('../agg/TopTerms');
     let DateHistogram = require('../agg/DateHistogram');
     let Histogram = require('../agg/Histogram');
+    let TopHits = require('../agg/TopHits');
 
     let TopFrequency = Live.extend({
 
@@ -18,7 +19,8 @@
             // aggs
             TopTerms,
             DateHistogram,
-            Histogram
+            Histogram,
+            TopHits
         ],
 
         type: 'top_frequency',
