@@ -36,8 +36,7 @@
                         community.coords,
                         coord.z,
                         'community-ring');
-                    div.data('name', community.metadata);
-                    div.data('count', community.numNodes);
+                    div.data('communityData', community);
                     divs = divs.add(div);
                 }
             });
@@ -48,7 +47,8 @@
         // over a community ring
         onMouseOver: function(e) {
             let target = $(e.originalEvent.target);
-            let value = {name: target.data('name'), count: target.data('count')};
+            let data = target.data('communityData');
+            let value = {name: data.metadata, count: data.numNodes};
             if (!value) {
                 value = {};
             }
@@ -70,9 +70,20 @@
             });
         },
 
+        // forward click event to app level click handler
+        onClick: function(e) {
+            let data = $(e.originalEvent.target).data('communityData');
+            this.fire('click', {
+                elem: e.originalEvent.target,
+                value: data, 
+                type: 'community',
+                layer: this
+            });
+        },
+
         _createRingDiv: function(communityRadius, communityCoords, zoomLevel, className) {
             let radius = Math.max(4, communityRadius * Math.pow(2, zoomLevel));
-            let offset = radius / 2;
+            let offset = radius;
             let binCoord = this._getBinCoordFromCartesian(
                 communityCoords[0],
                 communityCoords[1],
@@ -85,8 +96,8 @@
                 <div class="${className}" style="
                     left: ${left - offset}px;
                     top: ${top - offset}px;
-                    width: ${radius}px;
-                    height: ${radius}px;">
+                    width: ${radius * 2}px;
+                    height: ${radius * 2}px;">
                 </div>
                 `);
         }
