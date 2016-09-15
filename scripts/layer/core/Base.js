@@ -113,6 +113,23 @@
                 tile: tile,
                 coords: coords
             });
+        },
+
+        _isValidTile: function (coords) {
+            var crs = this._map.options.crs;
+
+            if (!crs.infinite) {
+                // don't load tile if it's out of bounds and not wrapped
+                var bounds = this._globalTileRange;
+                if (((!crs.wrapLng || this.options.noWrap) && (coords.x < bounds.min.x || coords.x > bounds.max.x)) ||
+                    ((!crs.wrapLat || this.options.noWrap) && (coords.y < bounds.min.y || coords.y > bounds.max.y))) { return false; }
+            }
+
+            if (!this.options.bounds) { return true; }
+
+            // don't load tile if it doesn't intersect the bounds in options
+            var tileBounds = this._tileCoordsToBounds(coords);
+            return L.latLngBounds(this.options.bounds).overlaps(tileBounds);
         }
     });
 
