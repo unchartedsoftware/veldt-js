@@ -7,6 +7,7 @@
     let Tiling = require('../param/Tiling');
     let TopTerms = require('../agg/TopTerms');
     let Histogram = require('../agg/Histogram');
+    let TopHits = require('../agg/TopHits');
 
     let TopCount = Live.extend({
 
@@ -16,7 +17,8 @@
             Tiling,
             TopTerms,
             // aggs
-            Histogram
+            Histogram,
+            TopHits
         ],
 
         type: 'top_count'

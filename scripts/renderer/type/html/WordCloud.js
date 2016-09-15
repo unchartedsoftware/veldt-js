@@ -123,7 +123,7 @@
                 // get cache entry
                 let cached = this._cache[nkey];
                 if (cached && cached.data) {
-                    this.fire('mouseout', {
+                    this.fire('mouseover', {
                         elem: e.originalEvent.target,
                         value: word,
                         x: coord.x,
@@ -151,7 +151,7 @@
                 // get cache entry
                 let cached = this._cache[nkey];
                 if (cached && cached.data) {
-                    this.fire('mouseover', {
+                    this.fire('mouseout', {
                         elem: e.originalEvent.target,
                         value: word,
                         x: coord.x,
@@ -262,6 +262,7 @@
                     // test for intersection
                     if (!intersectWord(pos, wordCount, cloud, boundingBox)) {
                         cloud.push({
+                            key: wordCount.key,
                             text: wordCount.text,
                             fontSize: wordCount.fontSize,
                             percent: Math.round((wordCount.percent * 100) / 10) * 10, // round to nearest 10
@@ -281,6 +282,7 @@
 
         extractExtrema: function(data) {
             let sums = _.map(data, function(count) {
+                count = count.counts || count;
                 if (_.isNumber(count)) {
                     return count;
                 }
@@ -292,23 +294,31 @@
             };
         },
 
+        getText: function(keyData, key) {
+            return key;
+        },
+
         renderTile: function(container, data) {
             if (!data || _.isEmpty(data)) {
                 return;
             }
             let highlight = this.highlight;
-            let wordCounts = _.map(data, function(count, key) {
+            let wordCounts = _.map(data, (keyData, key) => {
+                let count = keyData.counts || keyData;
+                let text = this.getText(keyData, key);
                 if (_.isNumber(count)) {
                     return {
-                        count: count,
-                        text: key
+                        key: key,
+                        text: text,
+                        count: count
                     };
                 }
                 let total = sentiment.getTotal(count);
                 let avg = sentiment.getAvg(count);
                 return {
+                    key: key,
+                    text: text,
                     count: total,
-                    text: key,
                     avg: avg,
                     sentiment: sentimentFunc(avg)
                 };
@@ -344,7 +354,7 @@
                     <div class="${classNames}"
                         style="${styles}"
                         data-sentiment="${word.avg}"
-                        data-word="${word.text}">${word.text}</div>
+                        data-word="${word.key}">${word.text}</div>
                     `;
             });
             container.innerHTML = html;
