@@ -23,13 +23,16 @@
             let target = $(e.originalEvent.target);
             let value = target.attr('data-value');
             if (value) {
-                let $parent = target.parents('.leaflet-html-tile');
+                // get layer coord
+                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                // get tile coord
+                let coord = this.getTileCoordFromLayerPoint(layerPoint);
                 this.fire('mouseover', {
                     elem: e.originalEvent.target,
                     value: parseInt(value, 10),
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom(),
+                    x: coord.x,
+                    y: coord.y,
+                    z: coord.z,
                     bx: parseInt(target.attr('data-bx'), 10),
                     by: parseInt(target.attr('data-by'), 10),
                     type: 'heatmap',
@@ -42,13 +45,16 @@
             let target = $(e.originalEvent.target);
             let value = target.attr('data-value');
             if (value) {
-                let $parent = target.parents('.leaflet-html-tile');
+                // get layer coord
+                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                // get tile coord
+                let coord = this.getTileCoordFromLayerPoint(layerPoint);
                 this.fire('mouseout', {
                     elem: e.originalEvent.target,
                     value: parseInt(value, 10),
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom(),
+                    x: coord.x,
+                    y: coord.y,
+                    z: coord.z,
                     bx: parseInt(target.attr('data-bx'), 10),
                     by: parseInt(target.attr('data-by'), 10),
                     type: 'heatmap',
@@ -71,13 +77,16 @@
             }
             let value = target.attr('data-value');
             if (value) {
-                let $parent = target.parents('.leaflet-html-tile');
+                // get layer coord
+                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                // get tile coord
+                let coord = this.getTileCoordFromLayerPoint(layerPoint);
                 this.fire('click', {
                     elem: e.originalEvent.target,
                     value: parseInt(value, 10),
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom(),
+                    x: coord.x,
+                    y: coord.y,
+                    z: coord.z,
                     bx: parseInt(target.attr('data-bx'), 10),
                     by: parseInt(target.attr('data-by'), 10),
                     type: 'heatmap',
