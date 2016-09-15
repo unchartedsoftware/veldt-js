@@ -20,11 +20,12 @@
             labelThreshold: 0.8
         },
 
-        // forward community title string to app level mousemove handler when pointer is
-        // over a community ring
         onMouseOver: function(e) {
+            // forward community title string to app level mousemove handler
+            // when pointer is over a community ring
             let target = $(e.originalEvent.target);
-            let value = {name: target.data('name'), count: target.data('count')};
+            let data = target.data('communityData');
+            let value = {name: data.metadata, count: data.numNodes};
             if (!value) {
                 value = {};
             }
@@ -36,9 +37,9 @@
             });
         },
 
-        // forward cleared string to app level mousemove handler when pointer moves off
-        // a community ring
         onMouseOut: function(e) {
+            // forward cleared string to app level mousemove handler when
+            // pointer moves off a community ring
             this.fire('mouseout', {
                 elem: e.originalEvent.target,
                 type: 'community-labels',
@@ -47,14 +48,15 @@
         },
 
         _createLabelDiv: function(community, coord, className) {
-            let radius = Math.max(16, community.radius * Math.pow(2, coord.z));
-            let left = (community.pixel.x % TILE_SIZE) - (this.options.labelMaxLength / 2);
-            let top = (community.pixel.y % TILE_SIZE) + (radius / 2);
             let nval = this.transformValue(community.numNodes);
             let fontSize = this.options.minFontSize + nval * (this.options.maxFontSize - this.options.minFontSize);
+            let dim = Math.pow(2, coord.z);
+            let tileSpan = Math.pow(2, 32) / dim;
+            let left = (community.pixel.x % tileSpan) / tileSpan * TILE_SIZE - (this.options.labelMaxLength / 2);
+            let top = (community.pixel.y % tileSpan) / tileSpan * TILE_SIZE - (fontSize / 2);
             return $(
                 `
-                <div class="${className} ${radius}" style="
+                <div class="${className}" style="
                     left: ${left}px;
                     top: ${top}px;
                     font-size: ${fontSize}px;
@@ -76,11 +78,10 @@
                     return;
                 }
                 let div = this._createLabelDiv(community, coord, 'community-label');
-                div.data('name', community.title);
-                div.data('count', community.numNodes);
+                div.data('communityData', community);
                 divs = divs.add(div);
             });
-            $(container).append(divs);
+            $(container).empty().append(divs);
         }
 
     });

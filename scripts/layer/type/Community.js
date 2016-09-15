@@ -22,22 +22,18 @@
 
         // extreme not relevant for micro
         extractExtrema: function(data) {
-            if (!data) {
-                console.log('fuck you');
+            if (!data || data.length === 0) {
                 return {
                     min: Infinity,
                     max: -Infinity
                 };
             }
-
             return {
                 min: _.minBy(data, community => {
-                    console.log(community);
-                    return Infinity; //community.numNodes ? community.numNodes : Infinity;
+                    return community.numNodes;
                 }).numNodes,
                 max: _.maxBy(data, community => {
-                    console.log(community);
-                    return -Infinity; //community.numNodes ? community.numNodes : -Infinity;
+                    return community.numNodes;
                 }).numNodes
             };
         }

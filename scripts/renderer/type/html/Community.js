@@ -7,9 +7,9 @@
 
     let Community = HTML.extend({
 
-        // forward community metadata string to app level mousemove handler when pointer is
-        // over a community ring
         onMouseOver: function(e) {
+            // forward community metadata string to app level mousemove handler
+            // when pointer is over a community ring
             let target = $(e.originalEvent.target);
             let data = target.data('communityData');
             let value = {name: data.metadata, count: data.numNodes};
@@ -24,9 +24,9 @@
             });
         },
 
-        // forward cleared string to app level mousemove handler when pointer moves off
-        // a community ring
         onMouseOut: function(e) {
+            // forward cleared string to app level mousemove handler when
+            // pointer moves off a community ring
             this.fire('mouseout', {
                 elem: e.originalEvent.target,
                 type: 'community',
@@ -48,8 +48,10 @@
         _createRingDiv: function(community, coord, className) {
             let radius = Math.max(4, community.radius * Math.pow(2, coord.z));
             let diameter = radius * 2;
-            let left = community.pixel.x % TILE_SIZE;
-            let top = community.pixel.y % TILE_SIZE;
+            let dim = Math.pow(2, coord.z);
+            let tileSpan = Math.pow(2, 32) / dim;
+            let left = (community.pixel.x % tileSpan) / tileSpan * TILE_SIZE;
+            let top = (community.pixel.y % tileSpan) / tileSpan * TILE_SIZE;
             return $(
                 `
                 <div class="${className}" style="
@@ -76,7 +78,7 @@
                     divs = divs.add(div);
                 }
             });
-            $(container).append(divs);
+            $(container).empty().append(divs);
         }
 
     });
