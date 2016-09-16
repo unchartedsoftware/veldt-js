@@ -30,11 +30,11 @@
         getHash(req) {
             let coord = req.coord;
             let hash = stringify(pruneEmpty(req.params));
-            return `${req.type}-${req.index}-${req.store}-${coord.z}-${coord.x}-${coord.y}-${hash}`;
+            return `${req.type}-${req.uri}-${req.store}-${coord.z}-${coord.x}-${coord.y}-${hash}`;
         }
         getURL(res) {
             let coord = res.coord;
-            return `tile/${res.type}/${res.index}/${res.store}/${coord.z}/${coord.x}/${coord.y}`;
+            return `tile/${res.type}/${res.uri}/${res.store}/${coord.z}/${coord.x}/${coord.y}`;
         }
     }
 
