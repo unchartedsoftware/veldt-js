@@ -9,10 +9,10 @@
             super(url, callback);
         }
         getHash(req) {
-            return `${req.type}-${req.index}-${req.store}`;
+            return `${req.type}-${req.uri}-${req.store}`;
         }
         getURL(res) {
-            return `meta/${res.type}/${res.endpoint}/${res.index}/${res.store}`;
+            return `meta/${res.type}/${res.endpoint}/${res.uri}/${res.store}`;
         }
     }
 
