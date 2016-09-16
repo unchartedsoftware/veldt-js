@@ -33,7 +33,7 @@
         var coord = req.coord;
         var hash = stringify(pruneEmpty(req.params));
         return req.type + '-' +
-            req.index + '-' +
+            req.uri + '-' +
             req.store + '-' +
             coord.x + '-' +
             coord.y + '-' +
@@ -45,7 +45,7 @@
         var coord = res.coord;
         return 'tile/' +
             res.type + '/' +
-            res.index + '/' +
+            res.uri + '/' +
             res.store + '/' +
             coord.z + '/' +
             coord.x + '/' +
