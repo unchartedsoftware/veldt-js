@@ -3,32 +3,32 @@
     'use strict';
 
     // debug tile layer
-    var Debug = require('./core/Debug');
+    let Debug = require('./core/Debug');
 
     // pending tile layer
-    var Pending = require('./core/Pending');
+    let Pending = require('./core/Pending');
 
     // image layer
-    var Image = require('./core/Image');
+    let Image = require('./core/Image');
 
     // composite layer
-    var Composite = require('./core/Composite');
+    let Composite = require('./core/Composite');
 
     // live layer - base type for extension
-    var Live = require('./core/Live');
+    let Live = require('./core/Live');
 
     // live tile layers
-    var Heatmap = require('./type/Heatmap');
-    var TopTrails = require('./type/TopTrails');
-    var TopCount = require('./type/TopCount');
-    var TopFrequency = require('./type/TopFrequency');
-    var TopicCount = require('./type/TopicCount');
-    var TopicFrequency = require('./type/TopicFrequency');
-    var Preview = require('./type/Preview');
-    var Macro = require('./type/Macro');
-    var Micro = require('./type/Micro');
-    var Count = require('./type/Count');
-    var Community = require('./type/Community');
+    let Heatmap = require('./type/Heatmap');
+    let TopTrails = require('./type/TopTrails');
+    let TopCount = require('./type/TopCount');
+    let TopFrequency = require('./type/TopFrequency');
+    let TopicCount = require('./type/TopicCount');
+    let TopicFrequency = require('./type/TopicFrequency');
+    let Preview = require('./type/Preview');
+    let Macro = require('./type/Macro');
+    let Micro = require('./type/Micro');
+    let Count = require('./type/Count');
+    let Community = require('./type/Community');
 
     module.exports = {
         Debug: Debug,

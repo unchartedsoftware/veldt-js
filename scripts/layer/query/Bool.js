@@ -2,15 +2,15 @@
 
     'use strict';
 
-    var check;
+    let check;
 
     function checkQuery(meta, query) {
-        var keys = _.keys(query);
+        let keys = _.keys(query);
         if (keys.length !== 1) {
             throw 'Bool sub-query must only have a single key, query has multiple keys: `' + JSON.stringify(keys) + '`.';
         }
-        var type = keys[0];
-        var checkFunc = check[type];
+        let type = keys[0];
+        let checkFunc = check[type];
         if (!checkFunc) {
             throw 'Query type `' + type + '` is not recognized.';
         }
@@ -20,7 +20,7 @@
 
     function checkQueries(meta, queries) {
         if (_.isArray(queries)) {
-            queries.forEach(function(query) {
+            queries.forEach(query => {
                 checkQuery(meta,query);
             });
             return queries;
@@ -53,6 +53,7 @@
         query_string: require('./QueryString'),
         range: require('./Range'),
         terms: require('./Terms'),
+        match: require('./Match'),
     };
 
     module.exports = checkBool;

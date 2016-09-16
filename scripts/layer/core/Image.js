@@ -2,7 +2,7 @@
 
     'use strict';
 
-    var Image = L.TileLayer.extend({
+    let Image = L.TileLayer.extend({
 
         getOpacity: function() {
             return this.options.opacity;

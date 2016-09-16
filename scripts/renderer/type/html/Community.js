@@ -2,19 +2,19 @@
 
     'use strict';
 
-    var HTML = require('../../core/HTML');
+    let HTML = require('../../core/HTML');
 
-    var Community = HTML.extend({
+    let Community = HTML.extend({
 
         _getBinCoordFromCartesian: function(px, py, zoom) {
             // Coords are named lon/lat, but are actually in the range [0, 255].
             // The Leaflet map is setup to use a custom projection to reflect this on
             // creation.
-            var layerPt = this._getLayerPointFromLonLat({
+            let layerPt = this._getLayerPointFromLonLat({
                 'lon': px,
                 'lat': py
             }, zoom);
-            var res =  this.getBinCoordFromLayerPoint(layerPt, 256);
+            let res =  this.getBinCoordFromLayerPoint(layerPt, 256);
             return res;
         },
 
@@ -23,22 +23,20 @@
             if (!data) {
                 return;
             }
-            var dataView = new DataView(data);
-            var decoder = new TextDecoder('utf-8');
-            var decodedString = decoder.decode(dataView);
-            var jsonObj = JSON.parse(decodedString);
+            let dataView = new DataView(data);
+            let decoder = new TextDecoder('utf-8');
+            let decodedString = decoder.decode(dataView);
+            let jsonObj = JSON.parse(decodedString);
 
-            var that = this;
-            var divs = $();
-            _.forEach(jsonObj.communities, function(community) {
+            let divs = $();
+            _.forEach(jsonObj.communities, community => {
                 if (community.numNodes > 1) {
-                    var div = that._createRingDiv(
+                    let div = this._createRingDiv(
                         community.radius,
                         community.coords,
                         coord.z,
                         'community-ring');
-                    div.data('name', community.metadata);
-                    div.data('count', community.numNodes);
+                    div.data('communityData', community);
                     divs = divs.add(div);
                 }
             });
@@ -48,8 +46,9 @@
         // forward community metadata string to app level mousemove handler when pointer is
         // over a community ring
         onMouseOver: function(e) {
-            var target = $(e.originalEvent.target);
-            var value = {name: target.data('name'), count: target.data('count')};
+            let target = $(e.originalEvent.target);
+            let data = target.data('communityData');
+            let value = {name: data.metadata, count: data.numNodes};
             if (!value) {
                 value = {};
             }
@@ -71,23 +70,36 @@
             });
         },
 
+        // forward click event to app level click handler
+        onClick: function(e) {
+            let data = $(e.originalEvent.target).data('communityData');
+            this.fire('click', {
+                elem: e.originalEvent.target,
+                value: data, 
+                type: 'community',
+                layer: this
+            });
+        },
+
         _createRingDiv: function(communityRadius, communityCoords, zoomLevel, className) {
-            var radius = Math.max(4, communityRadius * Math.pow(2, zoomLevel));
-            var offset = radius / 2;
-            var binCoord = this._getBinCoordFromCartesian(
+            let radius = Math.max(4, communityRadius * Math.pow(2, zoomLevel));
+            let offset = radius;
+            let binCoord = this._getBinCoordFromCartesian(
                 communityCoords[0],
-                communityCoords[1], 
+                communityCoords[1],
                 zoomLevel);
-            var left = binCoord.x;
-            var top = binCoord.y;
+            let left = binCoord.x;
+            let top = binCoord.y;
 
             return $(
-                '<div class="' + className + '" style="' +
-                'left:' + (left - offset) + 'px;' +
-                'top:' + (top - offset) + 'px;' +
-                'width:' + radius + 'px;' +
-                'height:' + radius + 'px;' +
-                '"></div>');
+                `
+                <div class="${className}" style="
+                    left: ${left - offset}px;
+                    top: ${top - offset}px;
+                    width: ${radius * 2}px;
+                    height: ${radius * 2}px;">
+                </div>
+                `);
         }
     });
 

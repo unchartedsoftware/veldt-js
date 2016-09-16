@@ -6,7 +6,7 @@
         return ((n % m) + m) % m;
     }
 
-    var Base = L.GridLayer.extend({
+    let Base = L.GridLayer.extend({
 
         options: {
             tms: false
@@ -47,9 +47,9 @@
 
         _getLayerPointFromLonLat: function(lonlatPoint, zoom) {
             zoom = (zoom !== undefined) ? zoom : this._map.getZoom();
-            var pixel = this._map.project(lonlatPoint, zoom);
-            var pow = Math.pow(2, zoom);
-            var tileSize = this.options.tileSize;
+            let pixel = this._map.project(lonlatPoint, zoom);
+            let pow = Math.pow(2, zoom);
+            let tileSize = this.options.tileSize;
             return {
                 x: mod(pixel.x, pow * tileSize),
                 y: mod(pixel.y, pow * tileSize)
@@ -57,12 +57,12 @@
         },
 
         getLayerPointFromEvent: function(e) {
-            var lonlat = this._map.mouseEventToLatLng(e);
+            let lonlat = this._map.mouseEventToLatLng(e);
             return this._getLayerPointFromLonLat(lonlat);
         },
 
         getTileCoordFromLayerPoint: function(layerPoint) {
-            var tileSize = this.options.tileSize;
+            let tileSize = this.options.tileSize;
             return {
                 x: Math.floor(layerPoint.x / tileSize),
                 y: Math.floor(layerPoint.y / tileSize),
@@ -71,14 +71,14 @@
         },
 
         getBinCoordFromLayerPoint: function(layerPoint, res) {
-            var tileSize = this.options.tileSize;
-            var resolution = res || this.getResolution() || tileSize;
-            var tx = mod(layerPoint.x, tileSize);
-            var y = this.options.tms ? resolution - layerPoint.y : layerPoint.y;
-            var ty = mod(y, tileSize);
-            var pixelSize = tileSize / resolution;
-            var bx = Math.floor(tx / pixelSize);
-            var by = Math.floor(ty / pixelSize);
+            let tileSize = this.options.tileSize;
+            let resolution = res || this.getResolution() || tileSize;
+            let tx = mod(layerPoint.x, tileSize);
+            let y = this.options.tms ? resolution - layerPoint.y : layerPoint.y;
+            let ty = mod(y, tileSize);
+            let pixelSize = tileSize / resolution;
+            let bx = Math.floor(tx / pixelSize);
+            let by = Math.floor(ty / pixelSize);
             return {
                 x: bx,
                 y: by,
@@ -87,11 +87,11 @@
             };
         },
 
-        _addTile: function (coords, container) {
-            var tilePos = this._getTilePos(coords);
-            var key = this._tileCoordsToKey(coords);
+        _addTile: function(coords, container) {
+            let tilePos = this._getTilePos(coords);
+            let key = this._tileCoordsToKey(coords);
             // Override so that we don't pass in wrapped coords here
-            var tile = this.createTile(coords, L.bind(this._tileReady, this, coords));
+            let tile = this.createTile(coords, L.bind(this._tileReady, this, coords));
             this._initTile(tile);
             // if createTile is defined with a second argument ("done" callback),
             // we know that tile is async and will be ready later; otherwise
@@ -113,6 +113,23 @@
                 tile: tile,
                 coords: coords
             });
+        },
+
+        _isValidTile: function (coords) {
+            var crs = this._map.options.crs;
+
+            if (!crs.infinite) {
+                // don't load tile if it's out of bounds and not wrapped
+                var bounds = this._globalTileRange;
+                if (((!crs.wrapLng || this.options.noWrap) && (coords.x < bounds.min.x || coords.x > bounds.max.x)) ||
+                    ((!crs.wrapLat || this.options.noWrap) && (coords.y < bounds.min.y || coords.y > bounds.max.y))) { return false; }
+            }
+
+            if (!this.options.bounds) { return true; }
+
+            // don't load tile if it doesn't intersect the bounds in options
+            var tileBounds = this._tileCoordsToBounds(coords);
+            return L.latLngBounds(this.options.bounds).overlaps(tileBounds);
         }
     });
 

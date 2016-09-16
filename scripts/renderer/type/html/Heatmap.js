@@ -2,11 +2,11 @@
 
     'use strict';
 
-    var HTML = require('../../core/HTML');
-    var ColorRamp = require('../../mixin/ColorRamp');
-    var ValueTransform = require('../../mixin/ValueTransform');
+    let HTML = require('../../core/HTML');
+    let ColorRamp = require('../../mixin/ColorRamp');
+    let ValueTransform = require('../../mixin/ValueTransform');
 
-    var Heatmap = HTML.extend({
+    let Heatmap = HTML.extend({
 
         includes: [
             // mixins
@@ -20,16 +20,19 @@
         },
 
         onMouseOver: function(e) {
-            var target = $(e.originalEvent.target);
-            var value = target.attr('data-value');
+            let target = $(e.originalEvent.target);
+            let value = target.attr('data-value');
             if (value) {
-                var $parent = target.parents('.leaflet-html-tile');
+                // get layer coord
+                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                // get tile coord
+                let coord = this.getTileCoordFromLayerPoint(layerPoint);
                 this.fire('mouseover', {
                     elem: e.originalEvent.target,
                     value: parseInt(value, 10),
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom(),
+                    x: coord.x,
+                    y: coord.y,
+                    z: coord.z,
                     bx: parseInt(target.attr('data-bx'), 10),
                     by: parseInt(target.attr('data-by'), 10),
                     type: 'heatmap',
@@ -39,16 +42,19 @@
         },
 
         onMouseOut: function(e) {
-            var target = $(e.originalEvent.target);
-            var value = target.attr('data-value');
+            let target = $(e.originalEvent.target);
+            let value = target.attr('data-value');
             if (value) {
-                var $parent = target.parents('.leaflet-html-tile');
+                // get layer coord
+                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                // get tile coord
+                let coord = this.getTileCoordFromLayerPoint(layerPoint);
                 this.fire('mouseout', {
                     elem: e.originalEvent.target,
                     value: parseInt(value, 10),
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom(),
+                    x: coord.x,
+                    y: coord.y,
+                    z: coord.z,
                     bx: parseInt(target.attr('data-bx'), 10),
                     by: parseInt(target.attr('data-by'), 10),
                     type: 'heatmap',
@@ -61,7 +67,7 @@
             // un-select any prev selected pixel
             $('.heatmap-pixel').removeClass('highlight');
             // get target
-            var target = $(e.originalEvent.target);
+            let target = $(e.originalEvent.target);
             if (!this.isTargetLayer(e.originalEvent.target)) {
                 // this layer is not the target
                 return;
@@ -69,15 +75,18 @@
             if (target.hasClass('heatmap-pixel')) {
                 target.addClass('highlight');
             }
-            var value = target.attr('data-value');
+            let value = target.attr('data-value');
             if (value) {
-                var $parent = target.parents('.leaflet-html-tile');
+                // get layer coord
+                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                // get tile coord
+                let coord = this.getTileCoordFromLayerPoint(layerPoint);
                 this.fire('click', {
                     elem: e.originalEvent.target,
                     value: parseInt(value, 10),
-                    x: parseInt($parent.attr('data-x'), 10),
-                    y: parseInt($parent.attr('data-y'), 10),
-                    z: this._map.getZoom(),
+                    x: coord.x,
+                    y: coord.y,
+                    z: coord.z,
                     bx: parseInt(target.attr('data-bx'), 10),
                     by: parseInt(target.attr('data-by'), 10),
                     type: 'heatmap',
@@ -90,16 +99,15 @@
             if (!data) {
                 return;
             }
-            var bins = new Float64Array(data);
-            var resolution = Math.sqrt(bins.length);
-            var ramp = this.getColorRamp();
-            var pixelSize = this.options.tileSize / resolution;
-            var self = this;
-            var color = [0, 0, 0, 0];
-            var html = '';
-            var nval, rval, bin;
-            var left, top;
-            var i;
+            let bins = new Float64Array(data);
+            let resolution = Math.sqrt(bins.length);
+            let ramp = this.getColorRamp();
+            let pixelSize = this.options.tileSize / resolution;
+            let color = [0, 0, 0, 0];
+            let html = '';
+            let nval, rval, bin;
+            let left, top;
+            let i;
             for (i=0; i<bins.length; i++) {
                 bin = bins[i];
                 if (bin === 0) {
@@ -107,25 +115,28 @@
                 } else {
                     left = (i % resolution);
                     top = Math.floor(i / resolution);
-                    nval = self.transformValue(bin);
-                    rval = self.interpolateToRange(nval);
+                    nval = this.transformValue(bin);
+                    rval = this.interpolateToRange(nval);
                     ramp(rval, color);
                 }
-                var rgba = 'rgba(' +
-                    Math.round(color[0] * 255) + ',' +
-                    Math.round(color[1] * 255) + ',' +
-                    Math.round(color[2] * 255) + ',' +
-                    color[3] + ')';
-                html += '<div class="heatmap-pixel" ' +
-                    'data-value="' + bin + '" ' +
-                    'data-bx="' + left + '" ' +
-                    'data-by="' + top + '" ' +
-                    'style="' +
-                    'height:' + pixelSize + 'px;' +
-                    'width:' + pixelSize + 'px;' +
-                    'left:' + (left * pixelSize) + 'px;' +
-                    'top:' + (top * pixelSize) + 'px;' +
-                    'background-color:' + rgba + ';"></div>';
+                let r = Math.round(color[0] * 255);
+                let g = Math.round(color[1] * 255);
+                let b = Math.round(color[2] * 255);
+                let a = color[3];
+                let rgba = `rgba(${r}, ${g}, ${b}, ${a})`;
+                html += `
+                    <div class="heatmap-pixel"
+                        data-value="${bin}"
+                        data-bx="${left}"
+                        data-by="${top}"
+                        style="
+                            height: ${pixelSize}px;
+                            width: ${pixelSize}px;
+                            left: ${left * pixelSize}px;
+                            top: ${top * pixelSize}px;
+                            background-color: ${rgba};">
+                    </div>
+                    `;
             }
             container.innerHTML = html;
         }

@@ -2,21 +2,23 @@
 
     'use strict';
 
-    var DELAY = 1200;
+    let DELAY = 1200;
 
     module.exports = {
 
         renderTile: function(elem) {
-            var delay = -(Math.random() * DELAY) + 'ms';
+            let delay = -(Math.random() * DELAY);
             elem.innerHTML =
-                '<div class="vertical-centered-box blinking" style="animation-delay:' + delay + '">' +
-                    '<div class="content">' +
-                        '<div class="loader-circle"></div>' +
-                        '<div class="loader-line-mask" style="animation-delay:' + delay + '">' +
-                            '<div class="loader-line"></div>' +
-                        '</div>' +
-                    '</div>' +
-                '</div>';
+                `
+                <div class="vertical-centered-box blinking" style="animation-delay: ${delay}ms">
+                    <div class="content">
+                        <div class="loader-circle"></div>
+                        <div class="loader-line-mask" style="animation-delay: ${delay}ms">
+                            <div class="loader-line"></div>
+                        </div>
+                    </div>
+                </div>
+                `;
         }
 
     };

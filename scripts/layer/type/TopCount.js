@@ -2,13 +2,14 @@
 
     'use strict';
 
-    var Live = require('../core/Live');
-    var Elastic = require('../param/Elastic');
-    var Tiling = require('../param/Tiling');
-    var TopTerms = require('../agg/TopTerms');
-    var Histogram = require('../agg/Histogram');
+    let Live = require('../core/Live');
+    let Elastic = require('../param/Elastic');
+    let Tiling = require('../param/Tiling');
+    let TopTerms = require('../agg/TopTerms');
+    let Histogram = require('../agg/Histogram');
+    let TopHits = require('../agg/TopHits');
 
-    var TopCount = Live.extend({
+    let TopCount = Live.extend({
 
         includes: [
             // params
@@ -16,7 +17,8 @@
             Tiling,
             TopTerms,
             // aggs
-            Histogram
+            Histogram,
+            TopHits
         ],
 
         type: 'top_count'

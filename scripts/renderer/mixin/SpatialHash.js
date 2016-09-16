@@ -2,7 +2,7 @@
 
     'use strict';
 
-    var TILE_SIZE = 256;
+    let TILE_SIZE = 256;
 
     function fract(f) {
         return f % 1;
@@ -13,26 +13,26 @@
     }
 
     function getHash(lx, ly, radius) {
-        var diameter = radius * 2;
-        var xHash = Math.floor(lx / diameter);
-        var yHash = Math.floor(ly / diameter);
+        let diameter = radius * 2;
+        let xHash = Math.floor(lx / diameter);
+        let yHash = Math.floor(ly / diameter);
         return xHash + ':' + yHash;
     }
 
     function getHashes(lx, ly, radius, zoom) {
-        var diameter = radius * 2;
-        var numCells = Math.ceil((Math.pow(2, zoom) * TILE_SIZE) / diameter);
-        var x = lx / diameter;
-        var y = ly / diameter;
-        var fx = fract(x);
-        var fy = fract(y);
-        var px = fx > 0.5;
-        var nx = fx < 0.5;
-        var py = fy > 0.5;
-        var ny = fy < 0.5;
-        var cx = Math.floor(x);
-        var cy = Math.floor(y);
-        var cells = [
+        let diameter = radius * 2;
+        let numCells = Math.ceil((Math.pow(2, zoom) * TILE_SIZE) / diameter);
+        let x = lx / diameter;
+        let y = ly / diameter;
+        let fx = fract(x);
+        let fy = fract(y);
+        let px = fx > 0.5;
+        let nx = fx < 0.5;
+        let py = fy > 0.5;
+        let ny = fy < 0.5;
+        let cx = Math.floor(x);
+        let cy = Math.floor(y);
+        let cells = [
             [cx, cy]
         ];
         if (px) {
@@ -60,7 +60,7 @@
             cells.push([cx+1, cy-1]);
         }
         // return hashes
-        return cells.map(function(cell) {
+        return cells.map(cell => {
             // mod the cell coords if they overflow
             cell[0] = mod(cell[0], numCells);
             cell[1] = mod(cell[1], numCells);
@@ -70,8 +70,8 @@
     }
 
     function circleCollision(point, origin, radius, zoom) {
-        var dim = Math.pow(2, zoom) * TILE_SIZE;
-        var p, o;
+        let dim = Math.pow(2, zoom) * TILE_SIZE;
+        let p, o;
         // check cases where the point is near the opposing horizontal extrema
         // of the map and ensure that the distance calculated is the shortest
         if (point.x < radius && dim - origin.x < radius) {
@@ -90,9 +90,9 @@
             p = point;
             o = origin;
         }
-        var dx = p.x - o.x;
-        var dy = p.y - o.y;
-        var distSqr = (dx * dx) + (dy * dy);
+        let dx = p.x - o.x;
+        let dy = p.y - o.y;
+        let distSqr = (dx * dx) + (dy * dy);
         if (distSqr < (radius * radius)) {
             return true;
         }
@@ -109,13 +109,13 @@
 
     function addPoint(point, radius, zoom) {
         // spatial hash key
-        var x = point.x;
-        var y = point.y;
-        var hashes = getHashes(x, y, radius, zoom);
+        let x = point.x;
+        let y = point.y;
+        let hashes = getHashes(x, y, radius, zoom);
         // add pixel to hash
-        var i;
+        let i;
         for (i=0; i<hashes.length; i++) {
-            var hash = hashes[i];
+            let hash = hashes[i];
             this._spatialHash[hash] = this._spatialHash[hash] || [];
             this._spatialHash[hash].push(point);
         }
@@ -123,14 +123,14 @@
 
     function removePoint(point, radius, zoom) {
         // spatial hash key
-        var hashes = getHashes(point.x, point.y, radius, zoom);
+        let hashes = getHashes(point.x, point.y, radius, zoom);
         // add pixel to hash
-        var i;
+        let i;
         for (i=0; i<hashes.length; i++) {
-            var hash = hashes[i];
-            var points = this._spatialHash[hash];
+            let hash = hashes[i];
+            let points = this._spatialHash[hash];
             if (points) {
-                var index = points.indexOf(point);
+                let index = points.indexOf(point);
                 if (index >= 0) {
                     points.splice(index, 1);
                 }
@@ -139,12 +139,12 @@
     }
 
     function pick(point, radius, zoom) {
-        var hash = getHash(point.x, point.y, radius);
+        let hash = getHash(point.x, point.y, radius);
         // get points in bin
-        var points = this._spatialHash[hash];
+        let points = this._spatialHash[hash];
         if (points) {
             // find first intersecting point in the bin
-            var p, i;
+            let p, i;
             for (i=0; i<points.length; i++) {
                 p = points[i];
                 // check for collision

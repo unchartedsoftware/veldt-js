@@ -2,14 +2,15 @@
 
     'use strict';
 
-    var Live = require('../core/Live');
-    var Elastic = require('../param/Elastic');
-    var Tiling = require('../param/Tiling');
-    var TopTerms = require('../agg/TopTerms');
-    var DateHistogram = require('../agg/DateHistogram');
-    var Histogram = require('../agg/Histogram');
+    let Live = require('../core/Live');
+    let Elastic = require('../param/Elastic');
+    let Tiling = require('../param/Tiling');
+    let TopTerms = require('../agg/TopTerms');
+    let DateHistogram = require('../agg/DateHistogram');
+    let Histogram = require('../agg/Histogram');
+    let TopHits = require('../agg/TopHits');
 
-    var TopFrequency = Live.extend({
+    let TopFrequency = Live.extend({
 
         includes: [
             // params
@@ -18,7 +19,8 @@
             // aggs
             TopTerms,
             DateHistogram,
-            Histogram
+            Histogram,
+            TopHits
         ],
 
         type: 'top_frequency',

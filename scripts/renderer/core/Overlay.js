@@ -2,11 +2,11 @@
 
     'use strict';
 
-    var Base = require('../../layer/core/Base');
+    let Base = require('../../layer/core/Base');
 
-    var NO_OP = function() {};
+    let NO_OP = function() {};
 
-    var Overlay = Base.extend({
+    let Overlay = Base.extend({
 
         options: {
             zIndex: 1
@@ -50,7 +50,7 @@
         _removeTilesAtZoom: NO_OP,
         _setZoomTransforms: NO_OP,
 
-        _initContainer: function () {
+        _initContainer: function() {
             if (!this._container) {
                 this._container = document.createElement('canvas');
                 this._container.className += 'leaflet-layer leaflet-zoom-animated';
@@ -59,54 +59,52 @@
             this.getPane().appendChild(this._container);
         },
 
-        _pruneTiles: function () {
+        _pruneTiles: function() {
             if (!this._map) {
                 return;
             }
-            var zoom = this._map.getZoom();
+            let zoom = this._map.getZoom();
             if (zoom > this.options.maxZoom ||
                 zoom < this.options.minZoom) {
                 this._removeAllTiles();
                 return;
             }
-            var self = this;
-            _.forIn(this._tiles, function(tile) {
+            _.forIn(this._tiles, tile => {
                 tile.retain = tile.current;
             });
-            _.forIn(this._tiles, function(tile) {
+            _.forIn(this._tiles, tile => {
                 if (tile.current && !tile.active) {
-                    var coords = tile.coords;
-                    if (!self._retainParent(coords.x, coords.y, coords.z, coords.z - 5)) {
-                        self._retainChildren(coords.x, coords.y, coords.z, coords.z + 2);
+                    let coords = tile.coords;
+                    if (!this._retainParent(coords.x, coords.y, coords.z, coords.z - 5)) {
+                        this._retainChildren(coords.x, coords.y, coords.z, coords.z + 2);
                     }
                 }
             });
-            _.forIn(this._tiles, function(tile, key) {
+            _.forIn(this._tiles, (tile, key) => {
                 if (!tile.retain) {
-                    self._removeTile(key);
+                    this._removeTile(key);
                 }
             });
         },
 
-        _removeAllTiles: function () {
-            var self = this;
-            _.forIn(this._tiles, function(tile, key) {
-                self._removeTile(key);
+        _removeAllTiles: function() {
+            _.forIn(this._tiles, (tile, key) => {
+                this._removeTile(key);
             });
         },
 
-        _invalidateAll: function () {
+        _invalidateAll: function() {
             this._removeAllTiles();
             this._tileZoom = null;
         },
 
-        _setView: function (center, zoom, noPrune, noUpdate) {
-            var tileZoom = Math.round(zoom);
+        _setView: function(center, zoom, noPrune, noUpdate) {
+            let tileZoom = Math.round(zoom);
             if ((this.options.maxZoom !== undefined && tileZoom > this.options.maxZoom) ||
                 (this.options.minZoom !== undefined && tileZoom < this.options.minZoom)) {
                 tileZoom = undefined;
             }
-            var tileZoomChanged = this.options.updateWhenZooming && (tileZoom !== this._tileZoom);
+            let tileZoomChanged = this.options.updateWhenZooming && (tileZoom !== this._tileZoom);
             if (!noUpdate || tileZoomChanged) {
                 this._tileZoom = tileZoom;
                 if (this._abortLoading) {
@@ -123,16 +121,16 @@
             this._setZoomTransform(center, zoom);
         },
 
-        _setZoomTransform: function (center, zoom) {
-            var currentCenter = this._map.getCenter();
-            var currentZoom = this._map.getZoom();
-            var scale = this._map.getZoomScale(zoom, currentZoom);
-            var position = L.DomUtil.getPosition(this._container);
-            var viewHalf = this._map.getSize().multiplyBy(0.5);
-            var currentCenterPoint = this._map.project(currentCenter, zoom);
-            var destCenterPoint = this._map.project(center, zoom);
-            var centerOffset = destCenterPoint.subtract(currentCenterPoint);
-            var topLeftOffset = viewHalf.multiplyBy(-scale).add(position).add(viewHalf).subtract(centerOffset);
+        _setZoomTransform: function(center, zoom) {
+            let currentCenter = this._map.getCenter();
+            let currentZoom = this._map.getZoom();
+            let scale = this._map.getZoomScale(zoom, currentZoom);
+            let position = L.DomUtil.getPosition(this._container);
+            let viewHalf = this._map.getSize().multiplyBy(0.5);
+            let currentCenterPoint = this._map.project(currentCenter, zoom);
+            let destCenterPoint = this._map.project(center, zoom);
+            let centerOffset = destCenterPoint.subtract(currentCenterPoint);
+            let topLeftOffset = viewHalf.multiplyBy(-scale).add(position).add(viewHalf).subtract(centerOffset);
             if (L.Browser.any3d) {
                 L.DomUtil.setTransform(this._container, topLeftOffset, scale);
             } else {
@@ -141,12 +139,12 @@
         },
 
         // Private method to load tiles in the grid's active zoom level according to map bounds
-        _update: function (center) {
-            var map = this._map;
+        _update: function(center) {
+            let map = this._map;
             if (!map) {
                 return;
             }
-            var zoom = map.getZoom();
+            let zoom = map.getZoom();
             if (center === undefined) {
                 center = map.getCenter();
             }
@@ -154,12 +152,12 @@
                 // if out of minzoom/maxzoom
                 return;
             }
-            var pixelBounds = this._getTiledPixelBounds(center),
+            let pixelBounds = this._getTiledPixelBounds(center),
                 tileRange = this._pxBoundsToTileRange(pixelBounds),
                 tileCenter = tileRange.getCenter(),
                 queue = [];
 
-            _.forIn(this._tiles, function(tile) {
+            _.forIn(this._tiles, tile => {
                 tile.current = false;
             });
             // _update just loads more tiles. If the tile zoom level differs too much
@@ -169,17 +167,17 @@
                 return;
             }
             // create a queue of coordinates to load tiles from
-            var i, j;
+            let i, j;
             for (j = tileRange.min.y; j <= tileRange.max.y; j++) {
                 for (i = tileRange.min.x; i <= tileRange.max.x; i++) {
-                    var coords = new L.Point(i, j);
+                    let coords = new L.Point(i, j);
                     coords.z = this._tileZoom;
 
                     if (!this._isValidTile(coords)) {
                         continue;
                     }
 
-                    var tile = this._tiles[this._tileCoordsToKey(coords)];
+                    let tile = this._tiles[this._tileCoordsToKey(coords)];
                     if (tile) {
                         tile.current = true;
                     } else {
@@ -188,7 +186,7 @@
                 }
             }
             // sort tile queue to load tiles in order of their distance to center
-            queue.sort(function (a, b) {
+            queue.sort((a, b) => {
                 return a.distanceTo(tileCenter) - b.distanceTo(tileCenter);
             });
             if (queue.length !== 0) {
@@ -205,8 +203,8 @@
             }
         },
 
-        _removeTile: function (key) {
-            var tile = this._tiles[key];
+        _removeTile: function(key) {
+            let tile = this._tiles[key];
             if (!tile) {
                 return;
             }
@@ -219,20 +217,20 @@
         },
 
         createTile: function(coords, done) {
-            var tile = {
+            let tile = {
                 coords: coords,
                 current: true
             };
-            this._requestTile(coords, tile, function() {
+            this._requestTile(coords, tile, () => {
                 done(null, tile);
             });
             return tile;
         },
 
-        _addTile: function (coords) {
+        _addTile: function(coords) {
 
-            var tile = this.createTile(coords, L.bind(this._tileReady, this, coords));
-            var key = this._tileCoordsToKey(coords);
+            let tile = this.createTile(coords, L.bind(this._tileReady, this, coords));
+            let key = this._tileCoordsToKey(coords);
             this._tiles[key] = tile;
 
             // @event tileloadstart: TileEvent

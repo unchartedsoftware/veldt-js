@@ -2,23 +2,22 @@
 
     'use strict';
 
-    var DOM = require('./DOM');
+    let DOM = require('./DOM');
 
-    var HTML = DOM.extend({
+    let HTML = DOM.extend({
 
         onAdd: function(map) {
             DOM.prototype.onAdd.call(this, map);
             // handlers
-            var self = this;
             map.on('click', this.onClick, this);
-            $(this._container).on('mousemove', function(e) {
-                self.onMouseMove(e);
+            $(this._container).on('mousemove', event => {
+                this.onMouseMove(event);
             });
-            $(this._container).on('mouseover', function(e) {
-                self.onMouseOver(e);
+            $(this._container).on('mouseover', event => {
+                this.onMouseOver(event);
             });
-            $(this._container).on('mouseout', function(e) {
-                self.onMouseOut(e);
+            $(this._container).on('mouseout', event => {
+                this.onMouseOut(event);
             });
         },
 
@@ -32,10 +31,10 @@
         },
 
         createTile: function(coords, done) {
-            var tile = L.DomUtil.create('div', 'leaflet-tile leaflet-html-tile');
+            let tile = L.DomUtil.create('div', 'leaflet-tile leaflet-html-tile');
             tile.width = this.options.tileSize;
             tile.height = this.options.tileSize;
-            this._requestTile(coords, tile, function() {
+            this._requestTile(coords, tile, () => {
                 done(null, tile);
             });
             return tile;

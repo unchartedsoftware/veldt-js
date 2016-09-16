@@ -2,7 +2,7 @@
 
     'use strict';
 
-    var checkField = function(meta, field) {
+    let checkField = function(meta, field) {
         if (meta) {
             if (meta.type !== 'string') {
                 throw 'Terms `field` ' + field + ' is not of type `string` in meta data.';

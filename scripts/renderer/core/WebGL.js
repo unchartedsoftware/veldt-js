@@ -2,12 +2,10 @@
 
     'use strict';
 
-    var esper = require('esper');
-    var Overlay = require('./Overlay');
+    let esper = require('esper');
+    let Overlay = require('./Overlay');
 
-    var TILE_SIZE = 256;
-
-    var WebGL = Overlay.extend({
+    let WebGL = Overlay.extend({
 
         onAdd: function(map) {
             Overlay.prototype.onAdd.call(this, map);
@@ -27,12 +25,14 @@
 
         onZoomEnd: function() {
             this._isZooming = false;
-            var gl = this._gl;
-            gl.clear(gl.COLOR_BUFFER_BIT);
-            this.renderFrame();
+            if (this._initialized) {
+                let gl = this._gl;
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                this.renderFrame();
+            }
         },
 
-        _initContainer: function () {
+        _initContainer: function() {
             Overlay.prototype._initContainer.call(this);
             if (!this._gl) {
                 this._initGL();
@@ -42,13 +42,12 @@
             this._isZooming = false;
         },
 
-        onWebGLInit: function() {
-            // impl
+        onWebGLInit: function(done) {
+            done(null);
         },
 
         _initGL: function() {
-            var self = this;
-            var gl = this._gl = esper.WebGLContext.get(this._container);
+            let gl = this._gl = esper.WebGLContext.get(this._container);
             // handle missing context
             if (!gl) {
                 throw 'Unable to acquire a WebGL context';
@@ -58,37 +57,32 @@
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
             gl.disable(gl.DEPTH_TEST);
+            // get map size
+            let size = this._map.getSize();
+            let devicePixelRatio = window.devicePixelRatio;
+            // set viewport size
+            this._viewport = new esper.Viewport({
+                width: size.x * devicePixelRatio,
+                height: size.y * devicePixelRatio
+            });
+            // set canvas size
+            this._gl.canvas.style.width = size.x + 'px';
+            this._gl.canvas.style.height = size.y + 'px';
             // webgl init callback
-            self.onWebGLInit();
-            // load shaders
-            new esper.Shader({
-                vert: this.options.shaders.vert,
-                frag: this.options.shaders.frag
-            }, function(err, shader) {
+            this.onWebGLInit(err => {
                 if (err) {
                     console.error(err);
                     return;
                 }
-                // execute callback
-                var size = self._map.getSize();
-                var devicePixelRatio = window.devicePixelRatio;
-                // set viewport size
-                self._viewport = new esper.Viewport({
-                    width: size.x * devicePixelRatio,
-                    height: size.y * devicePixelRatio
-                });
-                // set canvas size
-                self._gl.canvas.style.width = size.x + 'px';
-                self._gl.canvas.style.height = size.y + 'px';
                 // flag as ready
-                self._initialized = true;
-                self._shader = shader;
-                self._draw();
+                this._initialized = true;
+                // start draw loop
+                this._draw();
             });
         },
 
         getTranslationMatrix: function(x, y, z) {
-            var mat = new Float32Array(16);
+            let mat = new Float32Array(16);
             mat[0] = 1;
             mat[1] = 0;
             mat[2] = 0;
@@ -109,7 +103,7 @@
         },
 
         getOrthoMatrix: function(left, right, bottom, top, near, far) {
-            var mat = new Float32Array(16);
+            let mat = new Float32Array(16);
             mat[0] = 2 / (right - left);
             mat[1] = 0;
             mat[2] = 0;
@@ -129,20 +123,9 @@
             return mat;
         },
 
-        getProjectionMatrix: function() {
-            var bounds = this._map.getPixelBounds();
-            var dim = Math.pow(2, this._map.getZoom()) * TILE_SIZE;
-            return this.getOrthoMatrix(
-                bounds.min.x,
-                bounds.max.x,
-                (dim - bounds.max.y),
-                (dim - bounds.min.y),
-                -1, 1);
-        },
-
         _positionContainer: function() {
-            var size = this._map.getSize();
-            var devicePixelRatio = window.devicePixelRatio;
+            let size = this._map.getSize();
+            let devicePixelRatio = window.devicePixelRatio;
             // set viewport size
             this._viewport.resize(
                 size.x * devicePixelRatio,
@@ -151,7 +134,7 @@
             this._gl.canvas.style.width = size.x + 'px';
             this._gl.canvas.style.height = size.y + 'px';
             // re-position container
-            var topLeft = this._map.containerPointToLayerPoint([0, 0]);
+            let topLeft = this._map.containerPointToLayerPoint([0, 0]);
             L.DomUtil.setPosition(this._container, topLeft);
         },
 
@@ -163,7 +146,7 @@
                         // position the container and resize viewport
                         this._positionContainer();
                         // clear buffer
-                        var gl = this._gl;
+                        let gl = this._gl;
                         gl.clear(gl.COLOR_BUFFER_BIT);
                         // draw the frame
                         this.renderFrame();

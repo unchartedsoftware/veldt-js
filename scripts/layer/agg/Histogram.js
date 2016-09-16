@@ -2,7 +2,7 @@
 
     'use strict';
 
-    var checkField = function(meta, field) {
+    let checkField = function(meta, field) {
         if (meta) {
             if (!meta.extrema) {
                 throw 'Histogram `field` ' + field + ' is not ordinal in meta data';
@@ -12,7 +12,7 @@
         }
     };
 
-    var setHistogram = function(field, interval) {
+    let setHistogram = function(field, interval) {
         if (!field) {
             throw 'Histogram `field` is missing from argument';
         }
@@ -28,7 +28,7 @@
         return this;
     };
 
-    var getHistogram = function() {
+    let getHistogram = function() {
         return this._params.histogram;
     };
 
