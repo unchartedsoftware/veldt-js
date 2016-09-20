@@ -151,11 +151,17 @@
             attribute vec2 aPosition;
             attribute vec2 aTextureCoord;
             uniform mat4 uProjectionMatrix;
-            uniform mat4 uModelMatrix;
+            uniform ivec2 uViewOffset;
+            uniform ivec2 uTileOffset;
+            uniform vec2 uTextureCoordOffset;
+            uniform vec2 uTextureCoordExtent;
             varying vec2 vTextureCoord;
             void main() {
-                vTextureCoord = aTextureCoord;
-                gl_Position = uProjectionMatrix * uModelMatrix * vec4(aPosition, 0.0, 1.0);
+                vTextureCoord = vec2(
+                    uTextureCoordOffset.x + (aTextureCoord.x * uTextureCoordExtent.x),
+                    uTextureCoordOffset.y + (aTextureCoord.y * uTextureCoordExtent.y));
+                ivec2 mPosition = ivec2(aPosition) - uViewOffset + uTileOffset;
+                gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
             }
             `,
         frag:
