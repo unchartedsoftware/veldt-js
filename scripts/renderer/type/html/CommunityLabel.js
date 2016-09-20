@@ -15,7 +15,9 @@
 
         options: {
             minFontSize: 10,
-            maxFontSize: 14,
+            maxFontSize: 24,
+            minOpacity: 0.75,
+            maxOpacity: 1.0,
             labelMaxLength: TILE_SIZE,
             labelThreshold: 0.8
         },
@@ -48,8 +50,12 @@
         },
 
         _createLabelDiv: function(community, coord, className) {
-            let nval = this.transformValue(community.numNodes);
-            let fontSize = this.options.minFontSize + nval * (this.options.maxFontSize - this.options.minFontSize);
+            let nval = this.transformValue(community.degree);
+            // normalize the nval as it is currently in the range [this.options.labelThreshold : 1]
+            nval = (nval - this.options.labelThreshold) / (1.0 - this.options.labelThreshold);
+            let zIndex = Math.ceil(100 * nval);
+            let fontSize = this.options.minFontSize + (nval * (this.options.maxFontSize - this.options.minFontSize));
+            let opacity = this.options.minOpacity + (nval * (this.options.maxOpacity - this.options.minOpacity));
             let dim = Math.pow(2, coord.z);
             let tileSpan = Math.pow(2, 32) / dim;
             let left = (community.pixel.x % tileSpan) / tileSpan * TILE_SIZE - (this.options.labelMaxLength / 2);
@@ -59,7 +65,9 @@
                 <div class="${className}" style="
                     left: ${left}px;
                     top: ${top}px;
+                    opacity: ${opacity};
                     font-size: ${fontSize}px;
+                    z-index: ${zIndex};
                     line-height: ${fontSize}px;">${community.title}</div>
                 `);
         },
@@ -73,7 +81,7 @@
                 if (community.title === '') {
                     return;
                 }
-                const nval = this.transformValue(community.numNodes);
+                const nval = this.transformValue(community.degree);
                 if (nval < this.options.labelThreshold) {
                     return;
                 }

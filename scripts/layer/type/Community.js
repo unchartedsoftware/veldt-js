@@ -30,11 +30,11 @@
             }
             return {
                 min: _.minBy(data, community => {
-                    return community.numNodes;
-                }).numNodes,
+                    return community.degree;
+                }).degree,
                 max: _.maxBy(data, community => {
-                    return community.numNodes;
-                }).numNodes
+                    return community.degree;
+                }).degree
             };
         }
     });
