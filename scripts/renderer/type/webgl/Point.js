@@ -144,7 +144,7 @@
             if (!this._ext) {
                 throw 'ANGLE_instanced_arrays WebGL extension is not supported';
             }
-            // clear the chunks
+            // init the chunks
             this.initChunks();
             // load shaders
             parallel({

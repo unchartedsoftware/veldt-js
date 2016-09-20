@@ -153,9 +153,13 @@
             uniform mat4 uProjectionMatrix;
             uniform ivec2 uViewOffset;
             uniform ivec2 uTileOffset;
+            uniform vec2 uTextureCoordOffset;
+            uniform vec2 uTextureCoordExtent;
             varying vec2 vTextureCoord;
             void main() {
-                vTextureCoord = aTextureCoord;
+                vTextureCoord = vec2(
+                    uTextureCoordOffset.x + (aTextureCoord.x * uTextureCoordExtent.x),
+                    uTextureCoordOffset.y + (aTextureCoord.y * uTextureCoordExtent.y));
                 ivec2 mPosition = ivec2(aPosition) - uViewOffset + uTileOffset;
                 gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
             }
