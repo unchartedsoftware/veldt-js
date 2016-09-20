@@ -130,15 +130,34 @@
             }
         },
 
+        getWrapAroundOffset: function(coords) {
+            let size = Math.pow(2, this._map.getZoom());
+            // create model matrix
+            let xWrap = Math.floor(coords.x / size);
+            let yWrap = Math.floor(coords.y / size);
+            return [
+                size * TILE_SIZE * xWrap,
+                size * TILE_SIZE * yWrap
+            ];
+        },
+
         getProjectionMatrix: function() {
+            let size = this._map.getSize();
+            return this.getOrthoMatrix(
+                0,
+                size.x,
+                0,
+                size.y,
+                -1, 1);
+        },
+
+        getViewOffset: function() {
             let bounds = this._map.getPixelBounds();
             let dim = Math.pow(2, this._map.getZoom()) * TILE_SIZE;
-            return this.getOrthoMatrix(
+            return [
                 bounds.min.x,
-                bounds.max.x,
-                (dim - bounds.max.y),
-                (dim - bounds.min.y),
-                -1, 1);
+                dim - bounds.max.y
+            ];
         },
 
         renderTiles: function() {
@@ -148,6 +167,8 @@
             let dim = Math.pow(2, zoom) * TILE_SIZE;
             // bind buffer
             buffer.bind();
+            // calc view offset
+            let viewOffset = this.getViewOffset();
             // for each tile
             _.forIn(this._cache, cached => {
                 if (!cached.texture) {
@@ -162,11 +183,19 @@
                     if (coords.z !== zoom) {
                         return;
                     }
-                    let x = TILE_SIZE * coords.x;
-                    let y = (this.options.tms) ? (TILE_SIZE * (coords.y + 1)) : dim - (TILE_SIZE * coords.y);
+                    // upload view offset
+                    let offset = this.getWrapAroundOffset(coords);
+                    let totalOffset = [
+                        viewOffset[0] - offset[0],
+                        viewOffset[1] - offset[1],
+                    ];
+                    shader.setUniform('uViewOffset', totalOffset);
+                    let tileOffset = [
+                        TILE_SIZE * coords.x,
+                        (this.options.tms) ? (TILE_SIZE * (coords.y + 1)) : dim - (TILE_SIZE * coords.y)
+                    ];
                     // create model matrix
-                    let model = this.getTranslationMatrix(x, y, 0);
-                    shader.setUniform('uModelMatrix', model);
+                    shader.setUniform('uTileOffset', tileOffset);
                     // draw the tile
                     buffer.draw();
                 });
