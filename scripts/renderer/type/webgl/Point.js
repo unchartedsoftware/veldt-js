@@ -112,10 +112,10 @@
         ],
 
         options: {
-            pointOutline: 1,
-            pointOutlineColor: [0.0, 0.0, 0.0, 1.0],
-            pointFillColor: [0.2, 0.15, 0.4, 0.5],
-            pointRadius: POINT_RADIUS,
+            outlineWidth: 1,
+            outlineColor: [0.0, 0.0, 0.0, 1.0],
+            fillColor: [0.2, 0.15, 0.4, 0.5],
+            radius: POINT_RADIUS,
             selectedOutlineColor: [0.0, 0.0, 0.0, 1.0],
             selectedFillColor: [0.8, 0.4, 0.2, 0.5],
             selectedRadius: POINT_RADIUS + POINT_RADIUS_INC,
@@ -181,7 +181,7 @@
         },
 
         getCollisionRadius: function() {
-            return this.options.pointRadius + this.options.pointOutline;
+            return this.options.radius + this.options.outlineWidth;
         },
 
         onAdd: function(map) {
@@ -356,7 +356,6 @@
                 let numBytes = data.length * COMPONENT_BYTE_SIZE * COMPONENTS_PER_POINT;
                 let buffer = new ArrayBuffer(Math.min(numBytes, MAX_TILE_BYTE_SIZE));
                 let positions = new Uint16Array(buffer);
-                let count = 0;
                 let numDatum = Math.min(data.length, MAX_POINTS_PER_TILE);
                 let points = [];
                 let collisions = {};
@@ -384,25 +383,21 @@
                         }
                         // store point
                         points.push(point);
-
                         // encode the point into the buffer
                         encodePoint(
                             positions,
                             i*4,
                             point.x,
                             (size * TILE_SIZE) - point.y);
-
                         // add point to spatial hash
                         this.addPoint(point, radius, zoom);
-                        // increment count
-                        count++;
                     }
                 }
-                if (count > 0) {
+                if (points.length > 0) {
                     // store points in the cache
                     cached.points = points;
                     // buffer the data
-                    this.addTileToBuffer(coords, positions, count);
+                    this.addTileToBuffer(coords, positions, points.length);
                 }
             }
         },
@@ -556,14 +551,14 @@
             // draw instanced fill
             this.drawInstanced(
                 this._circleFillBuffer,
-                this.options.pointFillColor,
-                this.options.pointRadius);
+                this.options.fillColor,
+                this.options.radius);
             // draw instanced outlines
-            gl.lineWidth(this.options.pointOutline);
+            gl.lineWidth(this.options.outlineWidth);
             this.drawInstanced(
                 this._circleOutlineBuffer,
-                this.options.pointOutlineColor,
-                this.options.pointRadius);
+                this.options.outlineColor,
+                this.options.radius);
 
             // draw individual points
 
@@ -576,7 +571,7 @@
                     this.highlighted.tiles,
                     this.highlighted.point);
                 // draw individual outline
-                gl.lineWidth(this.options.pointOutline);
+                gl.lineWidth(this.options.outlineWidth);
                 this.drawIndividual(
                     this._circleOutlineBuffer,
                     this.options.highlightedOutlineColor,
@@ -594,7 +589,7 @@
                     this.selected.tiles,
                     this.selected.point);
                 // draw individual outline
-                gl.lineWidth(this.options.pointOutline);
+                gl.lineWidth(this.options.outlineWidth);
                 this.drawIndividual(
                     this._circleOutlineBuffer,
                     this.options.selectedOutlineColor,

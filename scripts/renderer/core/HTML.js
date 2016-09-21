@@ -6,10 +6,15 @@
 
     let HTML = DOM.extend({
 
+        options: {
+            zoomAnimation: false
+        },
+
         onAdd: function(map) {
             DOM.prototype.onAdd.call(this, map);
             // handlers
             map.on('click', this.onClick, this);
+            map.on('zoomstart', this.clearTiles, this);
             $(this._container).on('mousemove', event => {
                 this.onMouseMove(event);
             });
@@ -24,10 +29,24 @@
         onRemove: function(map) {
             // handlers
             map.off('click', this.onClick, this);
+            map.off('zoomstart', this.clearTiles, this);
             $(this._container).off('mousemove');
             $(this._container).off('mouseover');
             $(this._container).off('mouseout');
             DOM.prototype.onRemove.call(this, map);
+        },
+
+        clearTiles: function() {
+            if (!this.options.zoomAnimation) {
+                // empty tiles on zoom since they scale horrifically
+                _.forIn(this._cache, cached => {
+                    _.forIn(cached.tiles, tile => {
+                        tile.innerHTML = '';
+                    });
+                });
+                // remove scaled level
+                this._invalidateAll();
+            }
         },
 
         createTile: function(coords, done) {
