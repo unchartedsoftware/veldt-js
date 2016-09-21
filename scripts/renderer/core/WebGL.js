@@ -20,6 +20,7 @@
         },
 
         onZoomStart: function() {
+            this.clearExtrema();
             this._isZooming = true;
         },
 
