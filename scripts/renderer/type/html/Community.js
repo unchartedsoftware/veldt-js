@@ -3,9 +3,19 @@
     'use strict';
 
     let HTML = require('../../core/HTML');
+    let ValueTransform = require('../../mixin/ValueTransform');
     let TILE_SIZE = 256;
 
     let Community = HTML.extend({
+
+        includes: [
+            // mixins
+            ValueTransform
+        ],
+
+        options: {
+            communityThreshold: 0.5
+        },
 
         onMouseOver: function(e) {
             // forward community metadata string to app level mousemove handler
@@ -69,14 +79,16 @@
             }
             let divs = $();
             data.forEach(community => {
-                if (community.numNodes > 1) {
-                    let div = this._createRingDiv(
-                        community,
-                        coord,
-                        'community-ring');
-                    div.data('communityData', community);
-                    divs = divs.add(div);
+                const nval = this.transformValue(community.degree);
+                if (nval < this.options.communityThreshold) {
+                    return;
                 }
+                let div = this._createRingDiv(
+                    community,
+                    coord,
+                    'community-ring');
+                div.data('communityData', community);
+                divs = divs.add(div);
             });
             $(container).empty().append(divs);
         }

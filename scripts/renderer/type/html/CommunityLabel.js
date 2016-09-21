@@ -16,10 +16,10 @@
         options: {
             minFontSize: 10,
             maxFontSize: 24,
-            minOpacity: 0.75,
+            minOpacity: 0.5,
             maxOpacity: 1.0,
             labelMaxLength: TILE_SIZE,
-            labelThreshold: 0.8
+            labelThreshold: 0.6
         },
 
         onMouseOver: function(e) {
