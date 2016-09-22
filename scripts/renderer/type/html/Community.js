@@ -14,7 +14,8 @@
         ],
 
         options: {
-            communityThreshold: 0.5
+            communityThreshold: 0.5,
+            padding: 0
         },
 
         onMouseOver: function(e) {
@@ -56,7 +57,7 @@
         },
 
         _createRingDiv: function(community, coord, className) {
-            let radius = Math.max(4, community.radius * Math.pow(2, coord.z));
+            let radius = this.options.padding + Math.max(4, community.radius * Math.pow(2, coord.z));
             let diameter = radius * 2;
             let dim = Math.pow(2, coord.z);
             let tileSpan = Math.pow(2, 32) / dim;
