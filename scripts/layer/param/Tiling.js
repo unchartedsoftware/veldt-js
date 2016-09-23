@@ -23,7 +23,7 @@
         return false;
     };
 
-    let setXField = function(field) {
+    let setXField = function(field, type, relationship) {
         if (field !== this._params.binning.x) {
             if (field === DEFAULT_X_FIELD) {
                 // reset if default
@@ -41,6 +41,8 @@
                 }
             }
         }
+        this._params.binning.xType = type;
+        this._params.binning.xRelationship = relationship;
         return this;
     };
 
@@ -48,7 +50,7 @@
         return this._params.binning.x;
     };
 
-    let setYField = function(field) {
+    let setYField = function(field, type, relationship) {
         if (field !== this._params.binning.y) {
             if (field === DEFAULT_Y_FIELD) {
                 // reset if default
@@ -66,6 +68,8 @@
                 }
             }
         }
+        this._params.binning.yType = type;
+        this._params.binning.yRelationship = relationship;
         return this;
     };
 
