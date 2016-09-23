@@ -19,7 +19,8 @@
             minOpacity: 0.5,
             maxOpacity: 1.0,
             labelMaxLength: TILE_SIZE,
-            labelThreshold: 0.6
+            labelThreshold: 0.6,
+            labelField: 'metadata'
         },
 
         onMouseOver: function(e) {
@@ -68,7 +69,7 @@
                     opacity: ${opacity};
                     font-size: ${fontSize}px;
                     z-index: ${zIndex};
-                    line-height: ${fontSize}px;">${community.title}</div>
+                    line-height: ${fontSize}px;">${community[this.options.labelField]}</div>
                 `);
         },
 
@@ -78,7 +79,7 @@
             }
             let divs = $();
             data.forEach(community => {
-                if (community.title === '') {
+                if (!community[this.options.labelField]) {
                     return;
                 }
                 const nval = this.transformValue(community.degree);

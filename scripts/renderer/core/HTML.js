@@ -38,12 +38,6 @@
 
         clearTiles: function() {
             if (!this.options.zoomAnimation) {
-                // empty tiles on zoom since they scale horrifically
-                _.forIn(this._cache, cached => {
-                    _.forIn(cached.tiles, tile => {
-                        tile.innerHTML = '';
-                    });
-                });
                 // remove scaled level
                 this._invalidateAll();
             }
