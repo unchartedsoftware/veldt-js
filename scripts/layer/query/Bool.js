@@ -54,6 +54,8 @@
         range: require('./Range'),
         terms: require('./Terms'),
         match: require('./Match'),
+        has_parent: require('./HasParent'),
+        has_child: require('./HasChild')
     };
 
     module.exports = checkBool;
