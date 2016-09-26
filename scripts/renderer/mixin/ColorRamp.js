@@ -186,7 +186,7 @@
 
     let buildLookupFunction = function(RAMP) {
         return function(scaledValue, inColor) {
-            let index = Math.floor(scaledValue * (NUM_GRADIENT_STEPS - 1));
+            let index = Math.floor(scaledValue * (RAMP.length / 4 - 1));
             inColor[0] = RAMP[index * 4];
             inColor[1] = RAMP[index * 4 + 1];
             inColor[2] = RAMP[index * 4 + 2];
