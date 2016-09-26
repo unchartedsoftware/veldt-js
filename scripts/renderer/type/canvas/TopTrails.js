@@ -32,25 +32,27 @@
         clearHighlight: function() {
             if (this.highlighted) {
                 this.highlighted = null;
-                this.clearTiles();
+                this._highlightTrails();
             }
         },
 
         clearSelection: function() {
             if (this.selected) {
                 this.selected = null;
-                this.clearTiles();
+                this._highlightTrails();
             }
         },
 
         setSelection: function(value) {
             this.clearSelection();
             this.selected = value;
+            this._highlightTrails();
         },
 
         setHighlight: function(value) {
             this.clearHighlight();
             this.highlighted = value;
+            this._highlightTrails();
         },
 
         onClick: function(e) {
@@ -64,12 +66,10 @@
                 });
                 // flag as selected
                 this.setSelection(bin);
-                this._highlightTrails();
                 return;
             }
             // clear selected flag
             this.clearSelection();
-            this._highlightTrails();
         },
 
         onMouseMove: function(e) {
@@ -85,7 +85,6 @@
                 }
                 // flag as highlighted
                 this.setHighlight(bin);
-                this._highlightTrails();
                 // set cursor
                 $(this._map._container).css('cursor', 'pointer');
                 // exit early
@@ -99,7 +98,6 @@
                 });
             }
             this.clearHighlight();
-            this._highlightTrails();
         },
 
         _getBinData: function(e) {
@@ -165,6 +163,7 @@
         },
 
         _highlightTrails: function() {
+            this.clearTiles();
             _.forIn(this._cache, cached => {
                 this._highlightTrailsForData(cached);
             });
