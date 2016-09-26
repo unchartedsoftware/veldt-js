@@ -1,6 +1,6 @@
 {
   "name": "prism-client",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "author": "Kevin Birk <kbirk@uncharted.software>",
   "description": "Leaflet layer plugins for prism applications",
   "main": "build/prism.js",
