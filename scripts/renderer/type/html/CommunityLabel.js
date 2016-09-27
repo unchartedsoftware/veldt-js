@@ -20,7 +20,9 @@
             maxOpacity: 1.0,
             labelMaxLength: TILE_SIZE,
             labelThreshold: 0.6,
-            labelField: 'metadata'
+            labelField: 'metadata',
+            radiusField: 'node.radius',
+            degreeField: 'nopde.properties.degree'
         },
 
         onMouseOver: function(e) {
@@ -51,7 +53,7 @@
         },
 
         _createLabelDiv: function(community, coord, className) {
-            let nval = this.transformValue(community.degree);
+            let nval = this.transformValue(community[this.options.degreeField]);
             // normalize the nval as it is currently in the range [this.options.labelThreshold : 1]
             nval = (nval - this.options.labelThreshold) / (1.0 - this.options.labelThreshold);
             let zIndex = Math.ceil(100 * nval);
@@ -59,8 +61,8 @@
             let opacity = this.options.minOpacity + (nval * (this.options.maxOpacity - this.options.minOpacity));
             let dim = Math.pow(2, coord.z);
             let tileSpan = Math.pow(2, 32) / dim;
-            let left = (community.pixel.x % tileSpan) / tileSpan * TILE_SIZE - (this.options.labelMaxLength / 2);
-            let top = (community.pixel.y % tileSpan) / tileSpan * TILE_SIZE - (fontSize / 2);
+            let left = (community[this.getXField()] % tileSpan) / tileSpan * TILE_SIZE - (this.options.labelMaxLength / 2);
+            let top = (community[this.getXField()] % tileSpan) / tileSpan * TILE_SIZE - (fontSize / 2);
             return $(
                 `
                 <div class="${className}" style="
@@ -82,7 +84,7 @@
                 if (!community[this.options.labelField]) {
                     return;
                 }
-                const nval = this.transformValue(community.degree);
+                const nval = this.transformValue(community[this.options.degreeField]);
                 if (nval < this.options.labelThreshold) {
                     return;
                 }

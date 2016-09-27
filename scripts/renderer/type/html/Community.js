@@ -15,7 +15,9 @@
 
         options: {
             communityThreshold: 0.5,
-            padding: 0
+            padding: 0,
+            radiusField: 'node.radius',
+            degreeField: 'nopde.properties.degree'
         },
 
         onMouseOver: function(e) {
@@ -23,7 +25,7 @@
             // when pointer is over a community ring
             let target = $(e.originalEvent.target);
             let data = target.data('communityData');
-            let value = {name: data.metadata, count: data.numNodes};
+            let value = {name: data.properties.metadata, count: data.properties.numNodes};
             if (!value) {
                 value = {};
             }
@@ -57,12 +59,12 @@
         },
 
         _createRingDiv: function(community, coord, className) {
-            let radius = this.options.padding + Math.max(4, community.radius * Math.pow(2, coord.z));
+            let radius = this.options.padding + Math.max(4, community[this.options.radiusfield] * Math.pow(2, coord.z));
             let diameter = radius * 2;
             let dim = Math.pow(2, coord.z);
             let tileSpan = Math.pow(2, 32) / dim;
-            let left = (community.pixel.x % tileSpan) / tileSpan * TILE_SIZE;
-            let top = (community.pixel.y % tileSpan) / tileSpan * TILE_SIZE;
+            let left = (community[this.getXField()] % tileSpan) / tileSpan * TILE_SIZE;
+            let top = (community[this.getYField()] % tileSpan) / tileSpan * TILE_SIZE;
             return $(
                 `
                 <div class="${className}" style="
@@ -80,7 +82,7 @@
             }
             let divs = $();
             data.forEach(community => {
-                const nval = this.transformValue(community.degree);
+                const nval = this.transformValue(community[this.options.degreeField]);
                 if (nval < this.options.communityThreshold) {
                     return;
                 }
