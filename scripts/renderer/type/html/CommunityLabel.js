@@ -20,9 +20,7 @@
             maxOpacity: 1.0,
             labelMaxLength: TILE_SIZE,
             labelThreshold: 0.6,
-            labelField: 'metadata',
-            radiusField: 'node.radius',
-            degreeField: 'nopde.properties.degree'
+            labelField: 'metadata'
         },
 
         onMouseOver: function(e) {
@@ -53,7 +51,7 @@
         },
 
         _createLabelDiv: function(community, coord, className) {
-            let nval = this.transformValue(community[this.options.degreeField]);
+            let nval = this.transformValue(_.get(community, this.options.degreeField));
             // normalize the nval as it is currently in the range [this.options.labelThreshold : 1]
             nval = (nval - this.options.labelThreshold) / (1.0 - this.options.labelThreshold);
             let zIndex = Math.ceil(100 * nval);
@@ -61,8 +59,10 @@
             let opacity = this.options.minOpacity + (nval * (this.options.maxOpacity - this.options.minOpacity));
             let dim = Math.pow(2, coord.z);
             let tileSpan = Math.pow(2, 32) / dim;
-            let left = (community[this.getXField()] % tileSpan) / tileSpan * TILE_SIZE - (this.options.labelMaxLength / 2);
-            let top = (community[this.getXField()] % tileSpan) / tileSpan * TILE_SIZE - (fontSize / 2);
+            let x = _.get(community, this.getXField());
+            let y = _.get(community, this.getYField());
+            let left = ((x % tileSpan) / tileSpan) * TILE_SIZE - (this.options.labelMaxLength / 2);
+            let top = ((y % tileSpan) / tileSpan) * TILE_SIZE - (fontSize / 2);
             return $(
                 `
                 <div class="${className}" style="
@@ -71,7 +71,7 @@
                     opacity: ${opacity};
                     font-size: ${fontSize}px;
                     z-index: ${zIndex};
-                    line-height: ${fontSize}px;">${community[this.options.labelField]}</div>
+                    line-height: ${fontSize}px;">${_.get(community, this.options.labelField)}</div>
                 `);
         },
 
@@ -81,10 +81,10 @@
             }
             let divs = $();
             data.forEach(community => {
-                if (!community[this.options.labelField]) {
+                if (!_.get(community, this.options.labelField)) {
                     return;
                 }
-                const nval = this.transformValue(community[this.options.degreeField]);
+                const nval = this.transformValue(_.get(community, this.options.degreeField));
                 if (nval < this.options.labelThreshold) {
                     return;
                 }

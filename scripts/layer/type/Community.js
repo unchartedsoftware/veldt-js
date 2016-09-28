@@ -18,6 +18,10 @@
             TopHits
         ],
 
+        options: {
+            degreeField: 'properties.degree'
+        },
+
         type: 'micro',
 
         // extreme not relevant for micro
@@ -29,12 +33,12 @@
                 };
             }
             return {
-                min: _.minBy(data, community => {
-                    return community.degree;
-                }).degree,
-                max: _.maxBy(data, community => {
-                    return community.degree;
-                }).degree
+                min: _.get(_.minBy(data, community => {
+                    return _.get(community, this.options.degreeField);
+                }), this.options.degreeField),
+                max: _.get(_.maxBy(data, community => {
+                    return _.get(community, this.options.degreeField);
+                }), this.options.degreeField)
             };
         }
     });
