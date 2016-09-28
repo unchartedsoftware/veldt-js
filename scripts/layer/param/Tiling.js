@@ -25,9 +25,9 @@
 
     let setXField = function(field, type, relationship) {
         if (field !== this._params.binning.x) {
-            if (field === DEFAULT_X_FIELD) {
+            if (field.indexOf(DEFAULT_X_FIELD) !== -1) {
                 // reset if default
-                this._params.binning.x = DEFAULT_X_FIELD;
+                this._params.binning.x = field;
                 this._params.binning.left = DEFAULT_PIXEL_MIN;
                 this._params.binning.right = DEFAULT_PIXEL_MAX;
                 this.clearExtrema();
@@ -52,9 +52,9 @@
 
     let setYField = function(field, type, relationship) {
         if (field !== this._params.binning.y) {
-            if (field === DEFAULT_Y_FIELD) {
+            if (field.indexOf(DEFAULT_Y_FIELD) !== -1) {
                 // reset if default
-                this._params.binning.y = DEFAULT_Y_FIELD;
+                this._params.binning.y = field;
                 this._params.binning.bottom = DEFAULT_PIXEL_MAX;
                 this._params.binning.top = DEFAULT_PIXEL_MIN;
                 this.clearExtrema();
