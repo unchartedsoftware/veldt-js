@@ -3,9 +3,9 @@
     'use strict';
 
     let esper = require('esper');
+    let rbush = require('rbush');
     let parallel = require('async/parallel');
     let WebGL = require('../../core/WebGL');
-    let SpatialHash = require('../../mixin/SpatialHash');
     let VertexAtlas = require('./VertexAtlas');
     let Shaders = require('./Shaders');
     let Shapes = require('./Shapes');
@@ -38,11 +38,6 @@
 
     let Point = WebGL.extend({
 
-        includes: [
-            // mixins
-            SpatialHash
-        ],
-
         options: {
             outlineWidth: 1,
             outlineColor: [0.0, 0.0, 0.0, 1.0],
@@ -59,10 +54,6 @@
             jitterDistance: 10
         },
 
-        initialize: function() {
-            SpatialHash.initialize.apply(this, arguments);
-        },
-
         onWebGLInit: function(done) {
             // ensure we use the correct context
             esper.WebGLContext.bind(this._container);
@@ -76,6 +67,8 @@
             this._circleOutlineBuffer = Shapes.circle.outline(NUM_SLICES);
             // vertex atlas for all tiles
             this._atlas = new VertexAtlas();
+            // create spatial index
+            this._rtree = new rbush();
             // load shaders
             parallel({
                 instanced: (done) => {
@@ -125,18 +118,23 @@
         },
 
         onZoomStart: function() {
-            this.clearHash();
+            this._rtree.clear();
             WebGL.prototype.onZoomStart.apply(this, arguments);
         },
 
         onMouseMove: function(e) {
             let target = e.originalEvent.target;
             let layerPixel = this.getLayerPointFromEvent(e.originalEvent);
-            let radius = this.getCollisionRadius();
             let zoom = this._map.getZoom();
-            let collision = this.pick(layerPixel, radius, zoom);
             let size = Math.pow(2, zoom);
-            if (collision) {
+            let collisions = this._rtree.search({
+                minX: layerPixel.x,
+                maxX: layerPixel.x,
+                minY: layerPixel.y,
+                maxY: layerPixel.y
+            });
+            if (collisions.length > 0) {
+                const collision = collisions[0];
                 // mimic mouseover / mouseout events
                 if (this.highlighted) {
                     if (this.highlighted.value !== collision) {
@@ -189,11 +187,16 @@
         onClick: function(e) {
             let target = e.originalEvent.target;
             let layerPixel = this.getLayerPointFromEvent(e.originalEvent);
-            let radius = this.getCollisionRadius();
             let zoom = this._map.getZoom();
             let size = Math.pow(2, zoom);
-            let collision = this.pick(layerPixel, radius, zoom);
-            if (collision) {
+            let collisions = this._rtree.search({
+                minX: layerPixel.x,
+                maxX: layerPixel.x,
+                minY: layerPixel.y,
+                maxY: layerPixel.y
+            });
+            if (collisions.length > 0) {
+                const collision = collisions[0];
                 // use collision point to find tile
                 let coord = this.getTileCoordFromLayerPoint(collision);
                 let hash = this.cacheKeyFromCoord(coord);
@@ -240,35 +243,38 @@
                     if (x !== undefined && y !== undefined) {
                         // get position in layer
                         let layerPoint = this.getLayerPointFromDataPoint(x, y, zoom);
-                        // create pixel
-                        let point = {
-                            x: layerPoint.x,
-                            y: layerPoint.y,
-                            data: hit
-                        };
-                        let hash = point.x + ':' + point.y;
+                        // add jitter if specified
                         if (this.options.jitter) {
+                            let hash = layerPoint.x + ':' + layerPoint.y;
                             if (collisions[hash]) {
-                                applyJitter(point, this.options.jitterDistance);
+                                applyJitter(layerPoint, this.options.jitterDistance);
                             }
                             collisions[hash] = true;
                         }
                         // store point
-                        points.push(point);
+                        points.push({
+                            x: layerPoint.x,
+                            y: layerPoint.y,
+                            minX: layerPoint.x - radius,
+                            maxX: layerPoint.x + radius,
+                            minY: layerPoint.y - radius,
+                            maxY: layerPoint.y + radius,
+                            data: hit
+                        });
                         // encode the point into the buffer
                         encodePoint(
                             positions,
-                            i*4,
-                            point.x,
-                            (size * TILE_SIZE) - point.y);
-                        // add point to spatial hash
-                        this.addPoint(point, radius, zoom);
+                            i*COMPONENTS_PER_POINT,
+                            layerPoint.x,
+                            (size * TILE_SIZE) - layerPoint.y);
                     }
                 }
                 if (points.length > 0) {
+                    // bulk insert points to the rtree
+                    this._rtree.load(points);
                     // store points in the cache
                     cached.points = points;
-                    // buffer the data
+                    // add to atlas
                     let ncoords = this.getNormalizedCoords(coords);
                     let hash = this.cacheKeyFromCoord(ncoords);
                     this._atlas.addTile(hash, positions, points.length);
@@ -280,12 +286,13 @@
             let cached = event.entry;
             let coords = event.coords;
             if (cached.points) { //cached.data && cached.data.length > 0) {
+                // remove from atlas
                 let ncoords = this.getNormalizedCoords(coords);
                 let hash = this.cacheKeyFromCoord(ncoords);
-                this.removeTileFromBuffer(hash);
-                let radius = this.getCollisionRadius();
+                this._atlas.removeTile(hash);
+                // remove from rtree
                 cached.points.forEach(point => {
-                    this.removePoint(point, radius, coords.z);
+                    this._rtree.remove(point);
                 });
                 cached.points = null;
             }
