@@ -1,11 +1,12 @@
 {
   "name": "prism-client",
-  "version": "0.10.5",
+  "version": "0.10.6",
   "author": "Kevin Birk <kbirk@uncharted.software>",
   "description": "Leaflet layer plugins for prism applications",
   "main": "build/prism.js",
   "style": "build/prism.css",
   "license": "MIT",
+  "registry": "github",
   "repository": {
     "type": "git",
     "url": "https://github.com/unchartedsoftware/prism-client.git"
