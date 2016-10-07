@@ -3,24 +3,23 @@
     'use strict';
 
     let esper = require('esper');
+    let rbush = require('rbush');
     let parallel = require('async/parallel');
     let WebGL = require('../../core/WebGL');
-    let SpatialHash = require('../../mixin/SpatialHash');
+    let VertexAtlas = require('./VertexAtlas');
     let Shaders = require('./Shaders');
+    let Shapes = require('./Shapes');
 
     let TILE_SIZE = 256;
     let COMPONENT_BYTE_SIZE = 2;
     let COMPONENTS_PER_POINT = 4; // encoding two uint32's across xy/zw
-    let MAX_TILES = 128;
-    let MAX_POINTS_PER_TILE = 256 * 256;
+    let MAX_POINTS_PER_TILE = TILE_SIZE * TILE_SIZE;
     let MAX_TILE_BYTE_SIZE = MAX_POINTS_PER_TILE * COMPONENTS_PER_POINT * COMPONENT_BYTE_SIZE;
-    let MAX_BUFFER_BYTE_SIZE = MAX_TILES * MAX_TILE_BYTE_SIZE;
 
     let NUM_SLICES = 64;
     let POINT_RADIUS = 8;
     let POINT_RADIUS_INC = 2;
 
-    let POSITIONS_INDEX = 0;
     let OFFSETS_INDEX = 1;
 
     function encodePoint(arraybuffer, index, x, y) {
@@ -37,79 +36,7 @@
         point.y += Math.floor(Math.sin(angle) * dist);
     }
 
-    function createCircleOutlineBuffer(numSegments) {
-        let theta = (2 * Math.PI) / numSegments;
-        let radius = 1.0;
-        // precalculate sine and cosine
-        let c = Math.cos(theta);
-        let s = Math.sin(theta);
-        let t;
-        // start at angle = 0
-        let x = radius;
-        let y = 0;
-        let positions = new Float32Array(numSegments * 2);
-        for(let i = 0; i < numSegments; i++) {
-            positions[i*2] = x;
-            positions[i*2+1] = y;
-            // apply the rotation
-            t = x;
-            x = c * x - s * y;
-            y = s * t + c * y;
-        }
-        let pointers = {};
-        pointers[POSITIONS_INDEX] = {
-            size: 2,
-            type: 'FLOAT'
-        };
-        let options = {
-            mode: 'LINE_LOOP',
-            count: positions.length / 2
-        };
-        return new esper.VertexBuffer(positions, pointers, options);
-    }
-
-    function createCircleFillBuffer(numSegments) {
-        let theta = (2 * Math.PI) / numSegments;
-        let radius = 1.0;
-        // precalculate sine and cosine
-        let c = Math.cos(theta);
-        let s = Math.sin(theta);
-        let t;
-        // start at angle = 0
-        let x = radius;
-        let y = 0;
-        let positions = new Float32Array((numSegments + 2) * 2);
-        positions[0] = 0;
-        positions[1] = 0;
-        positions[positions.length-2] = radius;
-        positions[positions.length-1] = 0;
-        for(let i = 0; i < numSegments; i++) {
-            positions[(i+1)*2] = x;
-            positions[(i+1)*2+1] = y;
-            // apply the rotation
-            t = x;
-            x = c * x - s * y;
-            y = s * t + c * y;
-        }
-
-        let pointers = {};
-        pointers[POSITIONS_INDEX] = {
-            size: 2,
-            type: 'FLOAT'
-        };
-        let options = {
-            mode: 'TRIANGLE_FAN',
-            count: positions.length / 2
-        };
-        return new esper.VertexBuffer(positions, pointers, options);
-    }
-
     let Point = WebGL.extend({
-
-        includes: [
-            // mixins
-            SpatialHash
-        ],
 
         options: {
             outlineWidth: 1,
@@ -127,25 +54,21 @@
             jitterDistance: 10
         },
 
-        initialize: function() {
-            SpatialHash.initialize.apply(this, arguments);
-        },
-
         onWebGLInit: function(done) {
             // ensure we use the correct context
             esper.WebGLContext.bind(this._container);
-            // create the circle vertexbuffer
-            this._circleFillBuffer = createCircleFillBuffer(NUM_SLICES);
-            this._circleOutlineBuffer = createCircleOutlineBuffer(NUM_SLICES);
-            // create the root offset buffer
-            this._offsetBuffer = new esper.VertexBuffer(MAX_BUFFER_BYTE_SIZE);
             // get the extension for hardware instancing
             this._ext = esper.WebGLContext.getExtension('ANGLE_instanced_arrays');
             if (!this._ext) {
                 throw 'ANGLE_instanced_arrays WebGL extension is not supported';
             }
-            // init the chunks
-            this.initChunks();
+            // create the circle vertexbuffer
+            this._circleFillBuffer = Shapes.circle.fill(NUM_SLICES);
+            this._circleOutlineBuffer = Shapes.circle.outline(NUM_SLICES);
+            // vertex atlas for all tiles
+            this._atlas = new VertexAtlas();
+            // create spatial index
+            this._rtree = new rbush();
             // load shaders
             parallel({
                 instanced: (done) => {
@@ -195,45 +118,23 @@
         },
 
         onZoomStart: function() {
-            this.clearHash();
+            this._rtree.clear();
             WebGL.prototype.onZoomStart.apply(this, arguments);
-        },
-
-        initChunks: function() {
-            // ensure we use the correct context
-            esper.WebGLContext.bind(this._container);
-            // allocate available chunks
-            this._availableChunks = new Array(MAX_TILES);
-            for (let i=0; i<MAX_TILES; i++) {
-                let byteOffset = i * MAX_TILE_BYTE_SIZE;
-                this._availableChunks[i] = {
-                    byteOffset: byteOffset,
-                    count: 0,
-                    vertexBuffer: new esper.VertexBuffer(
-                        this._offsetBuffer.buffer,
-                        {
-                            1: {
-                                size: 4,
-                                type: 'UNSIGNED_SHORT',
-                                byteOffset: byteOffset
-                            }
-                        }, {
-                            mode: 'POINTS',
-                            byteLength: MAX_BUFFER_BYTE_SIZE
-                        })
-                };
-            }
-            this._usedChunks = {};
         },
 
         onMouseMove: function(e) {
             let target = e.originalEvent.target;
             let layerPixel = this.getLayerPointFromEvent(e.originalEvent);
-            let radius = this.getCollisionRadius();
             let zoom = this._map.getZoom();
-            let collision = this.pick(layerPixel, radius, zoom);
             let size = Math.pow(2, zoom);
-            if (collision) {
+            let collisions = this._rtree.search({
+                minX: layerPixel.x,
+                maxX: layerPixel.x,
+                minY: layerPixel.y,
+                maxY: layerPixel.y
+            });
+            if (collisions.length > 0) {
+                const collision = collisions[0];
                 // mimic mouseover / mouseout events
                 if (this.highlighted) {
                     if (this.highlighted.value !== collision) {
@@ -286,11 +187,16 @@
         onClick: function(e) {
             let target = e.originalEvent.target;
             let layerPixel = this.getLayerPointFromEvent(e.originalEvent);
-            let radius = this.getCollisionRadius();
             let zoom = this._map.getZoom();
             let size = Math.pow(2, zoom);
-            let collision = this.pick(layerPixel, radius, zoom);
-            if (collision) {
+            let collisions = this._rtree.search({
+                minX: layerPixel.x,
+                maxX: layerPixel.x,
+                minY: layerPixel.y,
+                maxY: layerPixel.y
+            });
+            if (collisions.length > 0) {
+                const collision = collisions[0];
                 // use collision point to find tile
                 let coord = this.getTileCoordFromLayerPoint(collision);
                 let hash = this.cacheKeyFromCoord(coord);
@@ -313,35 +219,6 @@
 
         },
 
-        addTileToBuffer: function(coords, data, count) {
-            if (this._availableChunks.length === 0) {
-                console.warn('No available chunks remaining to buffer data');
-                return;
-            }
-            // get an available chunk
-            let chunk = this._availableChunks.pop();
-            // set count
-            chunk.count = count;
-            // buffer the data into the physical chunk
-            this._offsetBuffer.bufferSubData(data, chunk.byteOffset);
-            // flag as used
-            let ncoords = this.getNormalizedCoords(coords);
-            let hash = this.cacheKeyFromCoord(ncoords);
-            this._usedChunks[hash] = chunk;
-        },
-
-        removeTileFromBuffer: function(coords) {
-            let ncoords = this.getNormalizedCoords(coords);
-            let hash = this.cacheKeyFromCoord(ncoords);
-            let chunk = this._usedChunks[hash];
-            // clear the count
-            chunk.count = 0;
-            delete this._usedChunks[hash];
-            // add as a new available chunk
-            this._availableChunks.push(chunk);
-            // no need to actually unbuffer the data
-        },
-
         onCacheLoad: function(event) {
             let cached = event.entry;
             let coords = event.coords;
@@ -354,50 +231,53 @@
                 let size = Math.pow(2, zoom);
                 let radius = this.getCollisionRadius();
                 let numBytes = data.length * COMPONENT_BYTE_SIZE * COMPONENTS_PER_POINT;
-                let buffer = new ArrayBuffer(Math.min(numBytes, MAX_TILE_BYTE_SIZE));
-                let positions = new Uint16Array(buffer);
-                let numDatum = Math.min(data.length, MAX_POINTS_PER_TILE);
+                let positions = new Uint16Array(Math.min(numBytes, MAX_TILE_BYTE_SIZE));
+                let numPoints = Math.min(data.length, MAX_POINTS_PER_TILE);
                 let points = [];
                 let collisions = {};
-                let i;
                 // calc pixel locations
-                for (i=0; i<numDatum; i++) {
+                for (let i=0; i<numPoints; i++) {
                     let hit = data[i];
                     let x = _.get(hit, xField);
                     let y = _.get(hit, yField);
                     if (x !== undefined && y !== undefined) {
                         // get position in layer
                         let layerPoint = this.getLayerPointFromDataPoint(x, y, zoom);
-                        // create pixel
-                        let point = {
-                            x: layerPoint.x,
-                            y: layerPoint.y,
-                            data: hit
-                        };
-                        let hash = point.x + ':' + point.y;
+                        // add jitter if specified
                         if (this.options.jitter) {
+                            let hash = layerPoint.x + ':' + layerPoint.y;
                             if (collisions[hash]) {
-                                applyJitter(point, this.options.jitterDistance);
+                                applyJitter(layerPoint, this.options.jitterDistance);
                             }
                             collisions[hash] = true;
                         }
                         // store point
-                        points.push(point);
+                        points.push({
+                            x: layerPoint.x,
+                            y: layerPoint.y,
+                            minX: layerPoint.x - radius,
+                            maxX: layerPoint.x + radius,
+                            minY: layerPoint.y - radius,
+                            maxY: layerPoint.y + radius,
+                            data: hit
+                        });
                         // encode the point into the buffer
                         encodePoint(
                             positions,
-                            i*4,
-                            point.x,
-                            (size * TILE_SIZE) - point.y);
-                        // add point to spatial hash
-                        this.addPoint(point, radius, zoom);
+                            i*COMPONENTS_PER_POINT,
+                            layerPoint.x,
+                            (size * TILE_SIZE) - layerPoint.y);
                     }
                 }
                 if (points.length > 0) {
+                    // bulk insert points to the rtree
+                    this._rtree.load(points);
                     // store points in the cache
                     cached.points = points;
-                    // buffer the data
-                    this.addTileToBuffer(coords, positions, points.length);
+                    // add to atlas
+                    let ncoords = this.getNormalizedCoords(coords);
+                    let hash = this.cacheKeyFromCoord(ncoords);
+                    this._atlas.addTile(hash, positions, points.length);
                 }
             }
         },
@@ -406,43 +286,16 @@
             let cached = event.entry;
             let coords = event.coords;
             if (cached.points) { //cached.data && cached.data.length > 0) {
-                this.removeTileFromBuffer(coords);
-                let radius = this.getCollisionRadius();
+                // remove from atlas
+                let ncoords = this.getNormalizedCoords(coords);
+                let hash = this.cacheKeyFromCoord(ncoords);
+                this._atlas.removeTile(hash);
+                // remove from rtree
                 cached.points.forEach(point => {
-                    this.removePoint(point, radius, coords.z);
+                    this._rtree.remove(point);
                 });
                 cached.points = null;
             }
-        },
-
-        getWrapAroundOffset: function(coords) {
-            let size = Math.pow(2, this._map.getZoom());
-            // create model matrix
-            let xWrap = Math.floor(coords.x / size);
-            let yWrap = Math.floor(coords.y / size);
-            return [
-                size * TILE_SIZE * xWrap,
-                size * TILE_SIZE * yWrap
-            ];
-        },
-
-        getProjectionMatrix: function() {
-            let size = this._map.getSize();
-            return this.getOrthoMatrix(
-                0,
-                size.x,
-                0,
-                size.y,
-                -1, 1);
-        },
-
-        getViewOffset: function() {
-            let bounds = this._map.getPixelBounds();
-            let dim = Math.pow(2, this._map.getZoom()) * TILE_SIZE;
-            return [
-                bounds.min.x,
-                dim - bounds.max.y
-            ];
         },
 
         drawInstanced: function(buffer, color, radius) {
@@ -470,7 +323,7 @@
             // enable instancing
             ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 1);
             // for each allocated chunk
-            _.forIn(this._usedChunks, (chunk, hash) => {
+            this._atlas.forEach((chunk, hash) => {
                 // for each tile referring to the data
                 let cached = cache[hash];
                 if (cached) {
@@ -491,7 +344,11 @@
                         ];
                         shader.setUniform('uViewOffset', totalOffset);
                         // draw the istances
-                        ext.drawArraysInstancedANGLE(gl[buffer.mode], 0, buffer.count, chunk.count);
+                        ext.drawArraysInstancedANGLE(
+                            gl[buffer.mode],
+                            0,
+                            buffer.count,
+                            chunk.count);
                     });
                     // unbind
                     chunk.vertexBuffer.unbind();

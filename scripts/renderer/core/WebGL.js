@@ -5,6 +5,8 @@
     let esper = require('esper');
     let Overlay = require('./Overlay');
 
+    const TILE_SIZE = 256;
+
     let WebGL = Overlay.extend({
 
         onAdd: function(map) {
@@ -122,6 +124,42 @@
             mat[14] = -((far + near) / (far - near));
             mat[15] = 1;
             return mat;
+        },
+
+        getWrapAroundOffset: function(coords) {
+            let size = Math.pow(2, this._map.getZoom());
+            // create model matrix
+            let xWrap = Math.floor(coords.x / size);
+            let yWrap = Math.floor(coords.y / size);
+            return [
+                size * TILE_SIZE * xWrap,
+                size * TILE_SIZE * yWrap
+            ];
+        },
+
+        getProjectionMatrix: function() {
+            let size = this._map.getSize();
+            return this.getOrthoMatrix(
+                0, size.x,
+                0, size.y,
+                -1, 1);
+        },
+
+        getViewOffset: function() {
+            let bounds = this._map.getPixelBounds();
+            let dim = Math.pow(2, this._map.getZoom()) * TILE_SIZE;
+            return [
+                bounds.min.x,
+                dim - bounds.max.y
+            ];
+        },
+
+        getTileOffset: function(coords) {
+            let dim = Math.pow(2, coords.z) * TILE_SIZE;
+            return [
+                TILE_SIZE * coords.x,
+                (this.options.tms) ? (TILE_SIZE * (coords.y + 1)) : dim - (TILE_SIZE * coords.y)
+            ];
         },
 
         _positionContainer: function() {
