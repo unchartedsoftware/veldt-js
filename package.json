@@ -6,6 +6,7 @@
   "main": "build/prism.js",
   "style": "build/prism.css",
   "license": "MIT",
+  "registry": "github",
   "repository": {
     "type": "git",
     "url": "https://github.com/unchartedsoftware/prism-client.git"
