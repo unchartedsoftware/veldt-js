@@ -11,23 +11,15 @@
     let Shapes = require('./Shapes');
 
     let TILE_SIZE = 256;
-    let COMPONENT_BYTE_SIZE = 2;
-    let COMPONENTS_PER_POINT = 4; // encoding two uint32's across xy/zw
+    let COMPONENT_BYTE_SIZE = 4;
+    let COMPONENTS_PER_POINT = 2;
     let MAX_POINTS_PER_TILE = TILE_SIZE * TILE_SIZE;
-    let MAX_TILE_BYTE_SIZE = MAX_POINTS_PER_TILE * COMPONENTS_PER_POINT * COMPONENT_BYTE_SIZE;
 
     let NUM_SLICES = 64;
     let POINT_RADIUS = 8;
     let POINT_RADIUS_INC = 2;
 
     let OFFSETS_INDEX = 1;
-
-    function encodePoint(arraybuffer, index, x, y) {
-        arraybuffer[index] = x >> 16;
-        arraybuffer[index+1] = x & 0x0000FFFF;
-        arraybuffer[index+2] = y >> 16;
-        arraybuffer[index+3] = y & 0x0000FFFF;
-    }
 
     function applyJitter(point, maxDist) {
         let angle = Math.random() * (Math.PI * 2);
@@ -122,11 +114,93 @@
             WebGL.prototype.onZoomStart.apply(this, arguments);
         },
 
+        onCacheLoad: function(event) {
+            const cached = event.entry;
+            const coords = event.coords;
+            if (cached.data && cached.data.length > 0) {
+                // convert x / y to tile pixels
+                const data = cached.data;
+                const xField = this.getXField();
+                const yField = this.getYField();
+                const zoom = coords.z;
+                const radius = this.getCollisionRadius();
+                const numPoints = Math.min(data.length, MAX_POINTS_PER_TILE);
+                const numBytes = numPoints * COMPONENT_BYTE_SIZE * COMPONENTS_PER_POINT;
+                const positions = new Float32Array(numBytes);
+                const points = [];
+                const collisions = {};
+
+                const xOffset = coords.x * TILE_SIZE;
+                const yOffset = coords.y * TILE_SIZE;
+
+                // calc pixel locations
+                for (let i=0; i<numPoints; i++) {
+                    const hit = data[i];
+                    const x = _.get(hit, xField);
+                    const y = _.get(hit, yField);
+                    // get position in layer
+                    const layerPoint = this.getLayerPointFromDataPoint(x, y, zoom);
+                    // add jitter if specified
+                    if (this.options.jitter) {
+                        let hash = layerPoint.x + ':' + layerPoint.y;
+                        if (collisions[hash]) {
+                            applyJitter(layerPoint, this.options.jitterDistance);
+                        }
+                        collisions[hash] = true;
+                    }
+                    // get position in tile
+                    const tilePoint = {
+                        x: layerPoint.x - xOffset,
+                        y: TILE_SIZE - (layerPoint.y - yOffset)
+                    };
+                    // store point
+                    points.push({
+                        x: tilePoint.x,
+                        y: tilePoint.y,
+                        minX: layerPoint.x - radius,
+                        maxX: layerPoint.x + radius,
+                        minY: layerPoint.y - radius,
+                        maxY: layerPoint.y + radius,
+                        data: hit,
+                        coords: coords
+                    });
+                    // add point to buffer
+                    positions[i * 2] = tilePoint.x;
+                    positions[i * 2 + 1] = tilePoint.y;
+                }
+                if (points.length > 0) {
+                    // bulk insert points to the rtree
+                    this._rtree.load(points);
+                    // store points in the cache
+                    cached.points = points;
+                    // add to atlas
+                    let ncoords = this.getNormalizedCoords(coords);
+                    let hash = this.cacheKeyFromCoord(ncoords);
+                    this._atlas.addTile(hash, positions, points.length);
+                }
+            }
+        },
+
+        onCacheUnload: function(event) {
+            let cached = event.entry;
+            let coords = event.coords;
+            if (cached.points) { //cached.data && cached.data.length > 0) {
+                // remove from atlas
+                let ncoords = this.getNormalizedCoords(coords);
+                let hash = this.cacheKeyFromCoord(ncoords);
+                this._atlas.removeTile(hash);
+                // remove from rtree
+                cached.points.forEach(point => {
+                    this._rtree.remove(point);
+                });
+                cached.points = null;
+            }
+        },
+
+
         onMouseMove: function(e) {
             let target = e.originalEvent.target;
             let layerPixel = this.getLayerPointFromEvent(e.originalEvent);
-            let zoom = this._map.getZoom();
-            let size = Math.pow(2, zoom);
             let collisions = this._rtree.search({
                 minX: layerPixel.x,
                 maxX: layerPixel.x,
@@ -158,15 +232,14 @@
                     });
                 }
                 // use collision point to find tile
-                let coord = this.getTileCoordFromLayerPoint(collision);
-                let hash = this.cacheKeyFromCoord(coord);
+                const hash = this.cacheKeyFromCoord(collision.coords);
                 // flag as highlighted
                 this.highlighted = {
                     tiles: this._cache[hash].tiles,
                     value: collision,
                     point: [
                         collision.x,
-                        (size * TILE_SIZE) - collision.y
+                        collision.y
                     ]
                 };
                 // set cursor
@@ -185,11 +258,9 @@
         },
 
         onClick: function(e) {
-            let target = e.originalEvent.target;
-            let layerPixel = this.getLayerPointFromEvent(e.originalEvent);
-            let zoom = this._map.getZoom();
-            let size = Math.pow(2, zoom);
-            let collisions = this._rtree.search({
+            const target = e.originalEvent.target;
+            const layerPixel = this.getLayerPointFromEvent(e.originalEvent);
+            const collisions = this._rtree.search({
                 minX: layerPixel.x,
                 maxX: layerPixel.x,
                 minY: layerPixel.y,
@@ -198,15 +269,14 @@
             if (collisions.length > 0) {
                 const collision = collisions[0];
                 // use collision point to find tile
-                let coord = this.getTileCoordFromLayerPoint(collision);
-                let hash = this.cacheKeyFromCoord(coord);
+                const hash = this.cacheKeyFromCoord(collision.coords);
                 // flag as selected
                 this.selected = {
                     tiles: this._cache[hash].tiles,
                     value: collision,
                     point: [
                         collision.x,
-                        (size * TILE_SIZE) - collision.y
+                        collision.y
                     ]
                 };
                 this.fire('click', {
@@ -217,85 +287,6 @@
                 this.selected = null;
             }
 
-        },
-
-        onCacheLoad: function(event) {
-            let cached = event.entry;
-            let coords = event.coords;
-            if (cached.data && cached.data.length > 0) {
-                // convert x / y to tile pixels
-                let data = cached.data;
-                let xField = this.getXField();
-                let yField = this.getYField();
-                let zoom = coords.z;
-                let size = Math.pow(2, zoom);
-                let radius = this.getCollisionRadius();
-                let numBytes = data.length * COMPONENT_BYTE_SIZE * COMPONENTS_PER_POINT;
-                let positions = new Uint16Array(Math.min(numBytes, MAX_TILE_BYTE_SIZE));
-                let numPoints = Math.min(data.length, MAX_POINTS_PER_TILE);
-                let points = [];
-                let collisions = {};
-                // calc pixel locations
-                for (let i=0; i<numPoints; i++) {
-                    let hit = data[i];
-                    let x = _.get(hit, xField);
-                    let y = _.get(hit, yField);
-                    if (x !== undefined && y !== undefined) {
-                        // get position in layer
-                        let layerPoint = this.getLayerPointFromDataPoint(x, y, zoom);
-                        // add jitter if specified
-                        if (this.options.jitter) {
-                            let hash = layerPoint.x + ':' + layerPoint.y;
-                            if (collisions[hash]) {
-                                applyJitter(layerPoint, this.options.jitterDistance);
-                            }
-                            collisions[hash] = true;
-                        }
-                        // store point
-                        points.push({
-                            x: layerPoint.x,
-                            y: layerPoint.y,
-                            minX: layerPoint.x - radius,
-                            maxX: layerPoint.x + radius,
-                            minY: layerPoint.y - radius,
-                            maxY: layerPoint.y + radius,
-                            data: hit
-                        });
-                        // encode the point into the buffer
-                        encodePoint(
-                            positions,
-                            i*COMPONENTS_PER_POINT,
-                            layerPoint.x,
-                            (size * TILE_SIZE) - layerPoint.y);
-                    }
-                }
-                if (points.length > 0) {
-                    // bulk insert points to the rtree
-                    this._rtree.load(points);
-                    // store points in the cache
-                    cached.points = points;
-                    // add to atlas
-                    let ncoords = this.getNormalizedCoords(coords);
-                    let hash = this.cacheKeyFromCoord(ncoords);
-                    this._atlas.addTile(hash, positions, points.length);
-                }
-            }
-        },
-
-        onCacheUnload: function(event) {
-            let cached = event.entry;
-            let coords = event.coords;
-            if (cached.points) { //cached.data && cached.data.length > 0) {
-                // remove from atlas
-                let ncoords = this.getNormalizedCoords(coords);
-                let hash = this.cacheKeyFromCoord(ncoords);
-                this._atlas.removeTile(hash);
-                // remove from rtree
-                cached.points.forEach(point => {
-                    this._rtree.remove(point);
-                });
-                cached.points = null;
-            }
         },
 
         drawInstanced: function(buffer, color, radius) {
@@ -315,7 +306,7 @@
             shader.setUniform('uColor', color);
             shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
             shader.setUniform('uOpacity', this.getOpacity());
-            shader.setUniform('uScale', radius);
+            shader.setUniform('uRadius', radius);
             // calc view offset
             let viewOffset = this.getViewOffset();
             // binds the buffer to instance
@@ -336,13 +327,16 @@
                             // NOTE: we have to check here if the tiles are stale or not
                             return;
                         }
-                        // upload view offset
-                        let offset = this.getWrapAroundOffset(coords);
+                        // get wrap offset
+                        let wrapOffset = this.getWrapAroundOffset(coords);
+                        // get tile offset
+                        let tileOffset = this.getTileOffset(coords);
+                        // calculate the total tile offset
                         let totalOffset = [
-                            viewOffset[0] - offset[0],
-                            viewOffset[1] - offset[1],
+                            tileOffset[0] + wrapOffset[0] - viewOffset[0],
+                            tileOffset[1] + wrapOffset[1] - viewOffset[1]
                         ];
-                        shader.setUniform('uViewOffset', totalOffset);
+                        shader.setUniform('uTileOffset', totalOffset);
                         // draw the istances
                         ext.drawArraysInstancedANGLE(
                             gl[buffer.mode],
@@ -374,7 +368,7 @@
             // use uniform for offset
             shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
             shader.setUniform('uOpacity', this.getOpacity());
-            shader.setUniform('uScale', radius);
+            shader.setUniform('uRadius', radius);
             // view offset
             let viewOffset = this.getViewOffset();
             _.forIn(tiles, tile => {
@@ -382,13 +376,16 @@
                     // NOTE: we have to check here if the tiles are stale or not
                     return;
                 }
-                // upload view offset
-                let offset = this.getWrapAroundOffset(tile.coords);
+                // get wrap offset
+                let wrapOffset = this.getWrapAroundOffset(tile.coords);
+                // get tile offset
+                let tileOffset = this.getTileOffset(tile.coords);
+                // calculate the total tile offset
                 let totalOffset = [
-                    viewOffset[0] - offset[0],
-                    viewOffset[1] - offset[1],
+                    tileOffset[0] + wrapOffset[0] - viewOffset[0],
+                    tileOffset[1] + wrapOffset[1] - viewOffset[1]
                 ];
-                shader.setUniform('uViewOffset', totalOffset);
+                shader.setUniform('uTileOffset', totalOffset);
                 shader.setUniform('uOffset', point);
                 shader.setUniform('uColor', color);
                 buffer.draw();

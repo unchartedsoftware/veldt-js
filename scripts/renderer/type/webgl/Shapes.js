@@ -76,12 +76,12 @@
         // quad vertices
         let vertices = new Float32Array([
             // positions
-            0, -size,
-            size, -size,
-            size, 0,
-            0, -size,
-            size, 0,
             0, 0,
+            size, 0,
+            size, size,
+            0, 0,
+            size, size,
+            0, size,
             // uvs
             0, 0,
             1, 0,

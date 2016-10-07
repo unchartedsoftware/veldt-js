@@ -155,10 +155,12 @@
         },
 
         getTileOffset: function(coords) {
-            let dim = Math.pow(2, coords.z) * TILE_SIZE;
+            const dim = Math.pow(2, coords.z);
+            const x = coords.x;
+            const y = (this.options.tms) ? coords.y : dim - coords.y - 1;
             return [
-                TILE_SIZE * coords.x,
-                (this.options.tms) ? (TILE_SIZE * (coords.y + 1)) : dim - (TILE_SIZE * coords.y)
+                x * TILE_SIZE,
+                y * TILE_SIZE
             ];
         },
 

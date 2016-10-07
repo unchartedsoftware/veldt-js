@@ -5,8 +5,8 @@
     let esper = require('esper');
 
     let TILE_SIZE = 256;
-    let COMPONENT_BYTE_SIZE = 2;
-    let COMPONENTS_PER_POINT = 4; // encoding two uint32's across xy/zw
+    let COMPONENT_BYTE_SIZE = 4;
+    let COMPONENTS_PER_POINT = 2;
     let MAX_TILES = 128;
     let MAX_POINTS_PER_TILE = TILE_SIZE * TILE_SIZE;
     let MAX_TILE_BYTE_SIZE = MAX_POINTS_PER_TILE * COMPONENTS_PER_POINT * COMPONENT_BYTE_SIZE;
@@ -28,8 +28,8 @@
                 const byteOffset = i * MAX_TILE_BYTE_SIZE;
                 const pointer = {};
                 pointer[OFFSETS_INDEX] = {
-                    size: 4,
-                    type: 'UNSIGNED_SHORT',
+                    size: 2,
+                    type: 'FLOAT',
                     byteOffset: byteOffset
                 };
                 this.available[i] = {
