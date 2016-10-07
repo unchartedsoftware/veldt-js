@@ -26,13 +26,6 @@
         }
         `;
 
-    let decodeUint16ToUint32 =
-        `
-        int decodeUint16ToUint32(float a, float b) {
-            return int(a * 65536.0) + int(b);
-        }
-        `;
-
     /**
      * transforms
      */
@@ -151,7 +144,6 @@
             attribute vec2 aPosition;
             attribute vec2 aTextureCoord;
             uniform mat4 uProjectionMatrix;
-            uniform ivec2 uViewOffset;
             uniform ivec2 uTileOffset;
             uniform vec2 uTextureCoordOffset;
             uniform vec2 uTextureCoordExtent;
@@ -160,8 +152,8 @@
                 vTextureCoord = vec2(
                     uTextureCoordOffset.x + (aTextureCoord.x * uTextureCoordExtent.x),
                     uTextureCoordOffset.y + (aTextureCoord.y * uTextureCoordExtent.y));
-                ivec2 mPosition = ivec2(aPosition) - uViewOffset + uTileOffset;
-                gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
+                ivec2 wPosition = ivec2(aPosition) + uTileOffset;
+                gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
             }
             `,
         frag:
@@ -194,18 +186,15 @@
     let instancedPoint = {
         vert:
             precision +
-            decodeUint16ToUint32 +
             `
             attribute vec2 aPosition;
-            attribute vec4 aOffset;
-            uniform ivec2 uViewOffset;
-            uniform float uScale;
+            attribute vec2 aOffset;
+            uniform ivec2 uTileOffset;
+            uniform float uRadius;
             uniform mat4 uProjectionMatrix;
             void main() {
-                ivec2 iOffset = ivec2(
-                    decodeUint16ToUint32(aOffset.x, aOffset.y),
-                    decodeUint16ToUint32(aOffset.z, aOffset.w));
-                vec2 mPosition = uScale * aPosition + vec2(iOffset - uViewOffset);
+                ivec2 iOffset = ivec2(aOffset);
+                vec2 mPosition = (uRadius * aPosition) + vec2(iOffset + uTileOffset);
                 gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
             }
             `,
@@ -226,11 +215,11 @@
             `
             attribute vec2 aPosition;
             uniform ivec2 uOffset;
-            uniform ivec2 uViewOffset;
-            uniform float uScale;
+            uniform ivec2 uTileOffset;
+            uniform float uRadius;
             uniform mat4 uProjectionMatrix;
             void main() {
-                vec2 mPosition = uScale * aPosition + vec2(uOffset - uViewOffset);
+                vec2 mPosition = uRadius * aPosition + vec2(uOffset + uTileOffset);
                 gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
             }
             `,

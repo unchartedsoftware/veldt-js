@@ -113,16 +113,16 @@
                         if (coords.z !== zoom) {
                             return;
                         }
-                        // upload view offset
-                        let offset = this.getWrapAroundOffset(coords);
-                        let totalOffset = [
-                            viewOffset[0] - offset[0],
-                            viewOffset[1] - offset[1],
-                        ];
-                        shader.setUniform('uViewOffset', totalOffset);
+                        // get wraparound offset
+                        let wrapOffset = this.getWrapAroundOffset(coords);
+                        // get tile offset
                         let tileOffset = this.getTileOffset(coords);
-                        // create model matrix
-                        shader.setUniform('uTileOffset', tileOffset);
+                        // calculate the total tile offset
+                        let totalOffset = [
+                            tileOffset[0] + wrapOffset[0] - viewOffset[0],
+                            tileOffset[1] + wrapOffset[1] - viewOffset[1]
+                        ];
+                        shader.setUniform('uTileOffset', totalOffset);
                         // uv offset and extent
                         shader.setUniform('uTextureCoordOffset', chunk.uvOffset);
                         shader.setUniform('uTextureCoordExtent', chunk.uvExtent);

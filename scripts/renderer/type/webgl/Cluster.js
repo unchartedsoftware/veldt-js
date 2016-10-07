@@ -14,13 +14,6 @@
 
     let OFFSETS_INDEX = 1;
 
-    function encodePoint(arraybuffer, index, x, y) {
-        arraybuffer[index] = x >> 16;
-        arraybuffer[index+1] = x & 0x0000FFFF;
-        arraybuffer[index+2] = y >> 16;
-        arraybuffer[index+3] = y & 0x0000FFFF;
-    }
-
     let Cluster = WebGL.extend({
 
         options: {
@@ -57,31 +50,28 @@
         },
 
         onCacheLoad: function(event) {
-            let cached = event.entry;
-            let coords = event.coords;
-            let zoom = coords.z;
-            let size = Math.pow(2, zoom);
-            let data = new Float64Array(cached.data);
-            let positions = new Uint16Array(data.length * 4);
-            let resolution = Math.sqrt(data.length);
-            let pixelExtent = TILE_SIZE / resolution;
-            let bin, i;
+            const cached = event.entry;
+            const coords = event.coords;
+            const data = new Float64Array(cached.data);
+            const positions = new Float32Array(cached.data);
+            const resolution = Math.sqrt(data.length);
+            const pointWidth = TILE_SIZE / resolution;
+            const halfWidth = pointWidth / 2;
             let numPoints = 0;
-            for (i=0; i<data.length; i++) {
-                bin = data[i];
+
+            for (let i=0; i<data.length; i++) {
+                const bin = data[i];
                 if (bin > 0) {
-                    let x = ((i % resolution) * pixelExtent) + (coords.x * TILE_SIZE);
-                    let y = (Math.floor(i / resolution) * pixelExtent) + (coords.y * TILE_SIZE);
-                    // encode the point into the buffer
-                    encodePoint(
-                        positions,
-                        numPoints*4,
-                        x,
-                        (size * TILE_SIZE) - y);
+                    const x = (i % resolution) * pointWidth + halfWidth;
+                    const y = Math.floor(i / resolution) * pointWidth + halfWidth;
+                    // add point to buffer
+                    positions[numPoints * 2] = x;
+                    positions[numPoints * 2 + 1] = (TILE_SIZE - y);
                     // increment point count
                     numPoints++;
                 }
             }
+
             cached.numPoints = numPoints;
             if (numPoints > 0) {
                 let ncoords = this.getNormalizedCoords(coords);
@@ -118,7 +108,7 @@
             shader.setUniform('uColor', color);
             shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
             shader.setUniform('uOpacity', this.getOpacity());
-            shader.setUniform('uScale', radius);
+            shader.setUniform('uRadius', radius);
             // calc view offset
             let viewOffset = this.getViewOffset();
             // binds the buffer to instance
@@ -139,13 +129,16 @@
                             // NOTE: we have to check here if the tiles are stale or not
                             return;
                         }
-                        // upload view offset
-                        let offset = this.getWrapAroundOffset(coords);
+                        // get wrap offset
+                        let wrapOffset = this.getWrapAroundOffset(coords);
+                        // get tile offset
+                        let tileOffset = this.getTileOffset(coords);
+                        // calculate the total tile offset
                         let totalOffset = [
-                            viewOffset[0] - offset[0],
-                            viewOffset[1] - offset[1],
+                            tileOffset[0] + wrapOffset[0] - viewOffset[0],
+                            tileOffset[1] + wrapOffset[1] - viewOffset[1]
                         ];
-                        shader.setUniform('uViewOffset', totalOffset);
+                        shader.setUniform('uTileOffset', totalOffset);
                         // draw the istances
                         ext.drawArraysInstancedANGLE(
                             gl[buffer.mode],
