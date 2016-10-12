@@ -30,7 +30,8 @@
     let WebGL = {
         Heatmap: require('./type/webgl/Heatmap'),
         Point: require('./type/webgl/Point'),
-        Cluster: require('./type/webgl/Cluster')
+        Cluster: require('./type/webgl/Cluster'),
+        Community: require('./type/webgl/Community')
     };
 
     // pending layer renderers

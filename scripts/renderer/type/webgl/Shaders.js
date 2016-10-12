@@ -234,6 +234,65 @@
             `
     };
 
+    /**
+     * instanced ring shader
+     */
+    let instancedRing = {
+        vert:
+            precision +
+            `
+            attribute vec2 aPosition;
+            attribute vec2 aOffset;
+            attribute float aRadius;
+            uniform ivec2 uTileOffset;
+            uniform float uDegrees;
+            uniform float uRadiusOffset;
+            uniform mat4 uProjectionMatrix;
+            uniform vec4 uColor;
+            varying vec4 vColor;
+            void main() {
+                ivec2 iOffset = ivec2(aOffset);
+                vec2 mPosition = (aPosition + (normalize(aPosition) * (aRadius - uRadiusOffset))) + vec2(iOffset + uTileOffset);
+                vColor = uColor;
+                gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
+            }
+            `,
+        frag:
+            precision +
+            `
+            uniform float uOpacity;
+            varying vec4 vColor;
+            void main() {
+                gl_FragColor = vec4(vColor.rgb, vColor.a * uOpacity);
+            }
+            `
+    };
+
+    let ring = {
+        vert:
+            precision +
+            `
+            attribute vec2 aPosition;
+            uniform ivec2 uOffset;
+            uniform float uRadius;
+            uniform ivec2 uTileOffset;
+            uniform mat4 uProjectionMatrix;
+            void main() {
+                vec2 mPosition = (aPosition + (uRadius - 1.0)) + vec2(uOffset + uTileOffset);
+                gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
+            }
+            `,
+        frag:
+            precision +
+            `
+            uniform float uOpacity;
+            uniform vec4 uColor;
+            void main() {
+                gl_FragColor = vec4(uColor.rgb, uColor.a * uOpacity);
+            }
+            `
+    };
+
     module.exports = {
 
         /**
@@ -249,7 +308,17 @@
         /**
          * point shader
          */
-        point: point
+        point: point,
+
+        /**
+         * instanced ring shader
+         */
+        instancedRing: instancedRing,
+
+        /**
+         * ring shader
+         */
+        ring: ring
 
     };
 

@@ -4,8 +4,6 @@
 
     const esper = require('esper');
 
-    const POSITIONS_INDEX = 0;
-
     function circleOutline(numSegments) {
         let theta = (2 * Math.PI) / numSegments;
         let radius = 1.0;
@@ -17,7 +15,7 @@
         let x = radius;
         let y = 0;
         let positions = new Float32Array(numSegments * 2);
-        for(let i = 0; i < numSegments; i++) {
+        for (let i = 0; i < numSegments; i++) {
             positions[i*2] = x;
             positions[i*2+1] = y;
             // apply the rotation
@@ -25,10 +23,11 @@
             x = c * x - s * y;
             y = s * t + c * y;
         }
-        let pointers = {};
-        pointers[POSITIONS_INDEX] = {
-            size: 2,
-            type: 'FLOAT'
+        let pointers = {
+            0: {
+                size: 2,
+                type: 'FLOAT'
+            }
         };
         let options = {
             mode: 'LINE_LOOP',
@@ -52,7 +51,7 @@
         positions[1] = 0;
         positions[positions.length-2] = radius;
         positions[positions.length-1] = 0;
-        for(let i = 0; i < numSegments; i++) {
+        for (let i = 0; i < numSegments; i++) {
             positions[(i+1)*2] = x;
             positions[(i+1)*2+1] = y;
             // apply the rotation
@@ -60,13 +59,56 @@
             x = c * x - s * y;
             y = s * t + c * y;
         }
-        let pointers = {};
-        pointers[POSITIONS_INDEX] = {
-            size: 2,
-            type: 'FLOAT'
+        let pointers = {
+            0: {
+                size: 2,
+                type: 'FLOAT'
+            }
         };
         let options = {
             mode: 'TRIANGLE_FAN',
+            count: positions.length / 2
+        };
+        return new esper.VertexBuffer(positions, pointers, options);
+    }
+
+    function ringFill(numSegments, radius, outline) {
+        let theta = (2 * Math.PI) / numSegments;
+        // precalculate sine and cosine
+        let c = Math.cos(theta);
+        let s = Math.sin(theta);
+        let t;
+        // start at angle = 0
+        let x0 = radius - (outline / 2);
+        let y0 = 0;
+        let x1 = radius + (outline / 2);
+        let y1 = 0;
+        let positions = new Float32Array(numSegments * (2 * 2) + 4);
+        for (let i = 0; i < numSegments; i++) {
+            positions[i*4] = x0;
+            positions[i*4+1] = y0;
+            positions[i*4+2] = x1;
+            positions[i*4+3] = y1;
+            // apply the rotation
+            t = x0;
+            x0 = c * x0 - s * y0;
+            y0 = s * t + c * y0;
+            t = x1;
+            x1 = c * x1 - s * y1;
+            y1 = s * t + c * y1;
+        }
+        positions[positions.length-4] = positions[0];
+        positions[positions.length-3] = positions[1];
+        positions[positions.length-2] = positions[2];
+        positions[positions.length-1] = positions[3];
+        let pointers = {
+            0: {
+                size: 2,
+                type: 'FLOAT'
+            }
+        };
+        let options = {
+            mode: 'TRIANGLE_STRIP',
             count: positions.length / 2
         };
         return new esper.VertexBuffer(positions, pointers, options);
@@ -119,6 +161,10 @@
 
         quad: {
             fill: quadFill
+        },
+
+        ring: {
+            fill: ringFill
         }
 
     };
