@@ -2,12 +2,12 @@
 
     'use strict';
 
-    let DELAY = 1200;
+    const DELAY = 1200;
 
     module.exports = {
 
         renderTile: function(elem) {
-            let delay = -(Math.random() * DELAY);
+            const delay = -(Math.random() * DELAY);
             elem.innerHTML =
                 `
                 <div class="vertical-centered-box blinking" style="animation-delay: ${delay}ms">

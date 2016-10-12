@@ -2,7 +2,7 @@
 
     'use strict';
 
-    let Graph = require('../projection/Graph');
+    const Graph = require('../projection/Graph');
 
     L.CRS.Graph = L.extend({}, L.CRS, {
 
@@ -21,8 +21,8 @@
         },
 
         distance: function(latlng1, latlng2) {
-            let dx = latlng2.lng - latlng1.lng;
-            let dy = latlng2.lat - latlng1.lat;
+            const dx = latlng2.lng - latlng1.lng;
+            const dy = latlng2.lat - latlng1.lat;
             return Math.sqrt(dx * dx + dy * dy);
         }
     });

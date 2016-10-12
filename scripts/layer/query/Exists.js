@@ -2,7 +2,7 @@
 
     'use strict';
 
-    let checkField = function(meta, field) {
+    const checkField = function(meta, field) {
         if (!meta) {
             throw 'Exists `field` ' + field + ' is not recognized in meta data.';
         }

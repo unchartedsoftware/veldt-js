@@ -2,31 +2,31 @@
 
     'use strict';
 
-    let HTML = require('../../core/HTML');
-    let ValueTransform = require('../../mixin/ValueTransform');
-    let sentiment = require('../../sentiment/Sentiment');
-    let sentimentFunc = sentiment.getClassFunc(-1, 1);
+    const HTML = require('../../core/HTML');
+    const ValueTransform = require('../../mixin/ValueTransform');
+    const sentiment = require('../../sentiment/Sentiment');
+    const sentimentFunc = sentiment.getClassFunc(-1, 1);
 
-    let isSingleValue = function(count) {
+    const isSingleValue = function(count) {
         // single values are never null, and always numbers
         return count !== null && _.isNumber(count);
     };
 
-    let extractCount = function(count) {
+    const extractCount = function(count) {
         if (isSingleValue(count)) {
             return count;
         }
         return sentiment.getTotal(count);
     };
 
-    let extractSentimentClass = function(avg) {
+    const extractSentimentClass = function(avg) {
         if (avg !== undefined) {
             return sentimentFunc(avg);
         }
         return '';
     };
 
-    let extractFrequency = function(count) {
+    const extractFrequency = function(count) {
         count = count.counts || count;
         if (isSingleValue(count)) {
             return {
@@ -39,17 +39,17 @@
         };
     };
 
-    let extractAvg = function(frequencies) {
+    const extractAvg = function(frequencies) {
         if (frequencies[0].avg === undefined) {
             return;
         }
-        let sum = _.sumBy(frequencies, function(frequency) {
+        const sum = _.sumBy(frequencies, function(frequency) {
             return frequency.avg;
         });
         return sum / frequencies.length;
     };
 
-    let WordHistogram = HTML.extend({
+    const WordHistogram = HTML.extend({
 
         includes: [
             // mixins
@@ -80,19 +80,19 @@
         },
 
         onMouseOver: function(e) {
-            let target = $(e.originalEvent.target);
+            const target = $(e.originalEvent.target);
             $('.word-histogram-entry').removeClass('hover');
-            let word = target.attr('data-word');
+            const word = target.attr('data-word');
             if (word) {
                 $(`.word-histogram-entry[data-word="${word}"]`).addClass('hover');
                 // get layer coord
-                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                const layerPoint = this.getLayerPointFromEvent(e.originalEvent);
                 // get tile coord
-                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                const coord = this.getTileCoordFromLayerPoint(layerPoint);
                 // get cache key
-                let nkey = this.cacheKeyFromCoord(coord, true);
+                const nkey = this.cacheKeyFromCoord(coord, true);
                 // get cache entry
-                let cached = this._cache[nkey];
+                const cached = this._cache[nkey];
                 if (cached && cached.data) {
                     this.fire('mouseover', {
                         elem: e.originalEvent.target,
@@ -109,18 +109,18 @@
         },
 
         onMouseOut: function(e) {
-            let target = $(e.originalEvent.target);
+            const target = $(e.originalEvent.target);
             $('.word-histogram-entry').removeClass('hover');
-            let word = target.attr('data-word');
+            const word = target.attr('data-word');
             if (word) {
                 // get layer coord
-                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                const layerPoint = this.getLayerPointFromEvent(e.originalEvent);
                 // get tile coord
-                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                const coord = this.getTileCoordFromLayerPoint(layerPoint);
                 // get cache key
-                let nkey = this.cacheKeyFromCoord(coord, true);
+                const nkey = this.cacheKeyFromCoord(coord, true);
                 // get cache entry
-                let cached = this._cache[nkey];
+                const cached = this._cache[nkey];
                 if (cached && cached.data) {
                     this.fire('mouseout', {
                         elem: e.originalEvent.target,
@@ -141,22 +141,22 @@
             $('.word-histogram-entry').removeClass('highlight');
             $(this._container).removeClass('highlight');
             // get target
-            let target = $(e.originalEvent.target);
+            const target = $(e.originalEvent.target);
             if (!this.isTargetLayer(e.originalEvent.target)) {
                 // this layer is not the target
                 return;
             }
-            let word = target.attr('data-word');
+            const word = target.attr('data-word');
             if (word) {
                 this.setHighlight(word);
                 // get layer coord
-                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                const layerPoint = this.getLayerPointFromEvent(e.originalEvent);
                 // get tile coord
-                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                const coord = this.getTileCoordFromLayerPoint(layerPoint);
                 // get cache key
-                let nkey = this.cacheKeyFromCoord(coord, true);
+                const nkey = this.cacheKeyFromCoord(coord, true);
                 // get cache entry
-                let cached = this._cache[nkey];
+                const cached = this._cache[nkey];
                 if (cached && cached.data) {
                     this.fire('click', {
                         elem: e.originalEvent.target,
@@ -175,7 +175,7 @@
         },
 
         extractExtrema: function(data) {
-            let sums = _.map(data, counts => {
+            const sums = _.map(data, counts => {
                 return _.sumBy(counts, extractCount);
             });
             return {
@@ -189,12 +189,12 @@
         },
 
         extractValues: function(data, key) {
-            let frequencies = _.map(data, extractFrequency);
-            let avg = extractAvg(frequencies);
-            let max = _.maxBy(frequencies, function(val) {
+            const frequencies = _.map(data, extractFrequency);
+            const avg = extractAvg(frequencies);
+            const max = _.maxBy(frequencies, function(val) {
                 return val.count;
             }).count;
-            let total = _.sumBy(frequencies, function(val) {
+            const total = _.sumBy(frequencies, function(val) {
                 return val.count;
             });
             return {
@@ -211,33 +211,33 @@
             if (!data || _.isEmpty(data)) {
                 return;
             }
-            let highlight = this.highlight;
+            const highlight = this.highlight;
             // convert object to array
-            let values = _.map(data, this.extractValues.bind(this)).sort((a, b) => {
+            const values = _.map(data, this.extractValues.bind(this)).sort((a, b) => {
                 return b.total - a.total;
             });
             // get number of entries
-            let numEntries = Math.min(values.length, this.options.maxNumWords);
-            let $html = $('<div class="word-histograms" style="display:inline-block;"></div>');
+            const numEntries = Math.min(values.length, this.options.maxNumWords);
+            const $html = $('<div class="word-histograms" style="display:inline-block;"></div>');
             let totalHeight = 0;
-            let minFontSize = this.options.minFontSize;
-            let maxFontSize = this.options.maxFontSize;
+            const minFontSize = this.options.minFontSize;
+            const maxFontSize = this.options.maxFontSize;
             values.slice(0, numEntries).forEach(value => {
-                let key = value.key;
-                let topic = value.topic;
-                let frequencies = value.frequencies;
-                let max = value.max;
-                let total = value.total;
-                let avg = value.avg;
-                let sentimentClass = extractSentimentClass(avg);
-                let highlightClass = (key === highlight) ? 'highlight' : '';
+                const key = value.key;
+                const topic = value.topic;
+                const frequencies = value.frequencies;
+                const max = value.max;
+                const total = value.total;
+                const avg = value.avg;
+                const sentimentClass = extractSentimentClass(avg);
+                const highlightClass = (key === highlight) ? 'highlight' : '';
                 // scale the height based on level min / max
-                let percent = this.transformValue(total);
-                let percentLabel = Math.round((percent * 100) / 10) * 10;
-                let height = minFontSize + percent * (maxFontSize - minFontSize);
+                const percent = this.transformValue(total);
+                const percentLabel = Math.round((percent * 100) / 10) * 10;
+                const height = minFontSize + percent * (maxFontSize - minFontSize);
                 totalHeight += height;
                 // create container 'entry' for chart and hashtag
-                let $entry = $(
+                const $entry = $(
                     `
                     <div class="word-histogram-entry ${highlightClass}"
                         data-sentiment="${avg}"
@@ -246,26 +246,26 @@
                     </div>
                     `);
                 // create chart
-                let $chart = $(
+                const $chart = $(
                     `
                     <div class="word-histogram-left"
                         data-sentiment="${avg}"
                         data-word="${key}">
                     </div>
                     `);
-                let barWidth = 'calc(' + (100 / frequencies.length) + '%)';
+                const barWidth = 'calc(' + (100 / frequencies.length) + '%)';
                 // create bars
                 frequencies.forEach(frequency => {
-                    let count = frequency.count;
-                    let avg = frequency.avg;
-                    let sentimentClass = extractSentimentClass(avg);
+                    const count = frequency.count;
+                    const avg = frequency.avg;
+                    const sentimentClass = extractSentimentClass(avg);
                     // get the percent relative to the highest count in the tile
-                    let relativePercent = (max !== 0) ? (count / max) * 100 : 0;
+                    const relativePercent = (max !== 0) ? (count / max) * 100 : 0;
                     // make invisible if zero count
-                    let visibility = relativePercent === 0 ? 'hidden' : 'visible';
+                    const visibility = relativePercent === 0 ? 'hidden' : 'visible';
                     // Get the style class of the bar
-                    let percentLabel = Math.round(relativePercent / 10) * 10;
-                    let barClasses = [
+                    const percentLabel = Math.round(relativePercent / 10) * 10;
+                    const barClasses = [
                             'word-histogram-bar',
                             `word-histogram-bar-${percentLabel}`,
                             `${sentimentClass}-fill`
@@ -294,13 +294,13 @@
                         `);
                 });
                 $entry.append($chart);
-                let topicClasses = [
+                const topicClasses = [
                     'word-histogram-label',
                     `word-histogram-label-${percentLabel}`,
                     sentimentClass
                 ].join(' ');
                 // create tag label
-                let $topic = $(
+                const $topic = $(
                     `
                     <div class="word-histogram-right">
                         <div class="${topicClasses}"

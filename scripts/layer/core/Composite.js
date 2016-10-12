@@ -11,10 +11,10 @@
             funcName[0] !== '_';
     }
 
-    let Composite = L.Class.extend({
+    const Composite = L.Class.extend({
 
         initialize: function(layers = []) {
-            let functions = {};
+            const functions = {};
             // get a list of all functions for each layer
             layers.forEach(layer => {
                 _.forIn(layer, (val, key) => {
@@ -44,9 +44,9 @@
         },
 
         off: function(evt, func) {
-            let handlers = this._handlers[evt];
+            const handlers = this._handlers[evt];
             if (handlers) {
-                let index = handlers.indexOf(func);
+                const index = handlers.indexOf(func);
                 if (index !== -1) {
                     this._layers.forEach(function(layer) {
                         layer.off(evt, func);
@@ -76,14 +76,12 @@
         },
 
         _extend: function(func) {
-            let functions = this._functions;
+            const functions = this._functions;
             this[func] = function() {
-                let layers = functions[func];
-                let layer, i;
-                let result;
-                for (i=0; i<layers.length; i++) {
-                    layer = layers[i];
-                    result = layer[func].apply(layer, arguments);
+                const layers = functions[func];
+                for (let i=0; i<layers.length; i++) {
+                    const layer = layers[i];
+                    const result = layer[func].apply(layer, arguments);
                     if (result !== undefined && result !== layer) {
                         return result;
                     }
@@ -92,11 +90,11 @@
         },
 
         addSubLayer: function(layer) {
-            let index = this._layers.indexOf(layer);
+            const index = this._layers.indexOf(layer);
             if (index !== -1) {
                 return;
             }
-            let functions = this._functions;
+            const functions = this._functions;
             _.forIn(layer, (val, key) => {
                 // if it is a function and valid to copy
                 if (_.isFunction(val) && validToCopy(key)) {
@@ -124,15 +122,15 @@
         },
 
         removeSubLayer: function(layer) {
-            let index = this._layers.indexOf(layer);
+            const index = this._layers.indexOf(layer);
             if (index === -1) {
                 return;
             }
-            let functions = this._functions;
+            const functions = this._functions;
             // remove all functions used exclusively by this layer
             _.forIn(layer, (val, key) => {
                 if (_.isFunction(val) && validToCopy(key)) {
-                    let index = functions[key].indexOf(layer);
+                    const index = functions[key].indexOf(layer);
                     if (index !== -1) {
                         // remove from function list
                         functions[key].splice(index, 1);

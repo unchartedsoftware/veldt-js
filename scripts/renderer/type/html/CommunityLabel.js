@@ -2,11 +2,11 @@
 
     'use strict';
 
-    let HTML = require('../../core/HTML');
-    let ValueTransform = require('../../mixin/ValueTransform');
-    let TILE_SIZE = 256;
+    const HTML = require('../../core/HTML');
+    const ValueTransform = require('../../mixin/ValueTransform');
+    const TILE_SIZE = 256;
 
-    let CommunityLabel = HTML.extend({
+    const CommunityLabel = HTML.extend({
 
         includes: [
             // mixins
@@ -26,12 +26,12 @@
         onMouseOver: function(e) {
             // forward community title string to app level mousemove handler
             // when pointer is over a community ring
-            let target = $(e.originalEvent.target);
-            let data = target.data('communityData');
-            let value = {name: data.metadata, count: data.numNodes};
-            if (!value) {
-                value = {};
-            }
+            const target = $(e.originalEvent.target);
+            const data = target.data('communityData');
+            const value = {
+                name: data.metadata,
+                count: data.numNodes
+            };
             this.fire('mouseover', {
                 elem: e.originalEvent.target,
                 value: value,
@@ -54,15 +54,15 @@
             let nval = this.transformValue(_.get(community, this.options.degreeField));
             // normalize the nval as it is currently in the range [this.options.labelThreshold : 1]
             nval = (nval - this.options.labelThreshold) / (1.0 - this.options.labelThreshold);
-            let zIndex = Math.ceil(100 * nval);
-            let fontSize = this.options.minFontSize + (nval * (this.options.maxFontSize - this.options.minFontSize));
-            let opacity = this.options.minOpacity + (nval * (this.options.maxOpacity - this.options.minOpacity));
-            let dim = Math.pow(2, coord.z);
-            let tileSpan = Math.pow(2, 32) / dim;
-            let x = _.get(community, this.getXField());
-            let y = _.get(community, this.getYField());
-            let left = ((x % tileSpan) / tileSpan) * TILE_SIZE - (this.options.labelMaxLength / 2);
-            let top = ((y % tileSpan) / tileSpan) * TILE_SIZE - (fontSize / 2);
+            const zIndex = Math.ceil(100 * nval);
+            const fontSize = this.options.minFontSize + (nval * (this.options.maxFontSize - this.options.minFontSize));
+            const opacity = this.options.minOpacity + (nval * (this.options.maxOpacity - this.options.minOpacity));
+            const dim = Math.pow(2, coord.z);
+            const tileSpan = Math.pow(2, 32) / dim;
+            const x = _.get(community, this.getXField());
+            const y = _.get(community, this.getYField());
+            const left = ((x % tileSpan) / tileSpan) * TILE_SIZE - (this.options.labelMaxLength / 2);
+            const top = ((y % tileSpan) / tileSpan) * TILE_SIZE - (fontSize / 2);
             return $(
                 `
                 <div class="${className}" style="
@@ -88,7 +88,7 @@
                 if (nval < this.options.labelThreshold) {
                     return;
                 }
-                let div = this._createLabelDiv(community, coord, 'community-label');
+                const div = this._createLabelDiv(community, coord, 'community-label');
                 div.data('communityData', community);
                 divs = divs.add(div);
             });

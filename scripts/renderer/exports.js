@@ -22,7 +22,6 @@
         Ring: require('./type/html/Ring'),
         WordCloud: require('./type/html/WordCloud'),
         WordHistogram: require('./type/html/WordHistogram'),
-        Community: require('./type/html/Community'),
         CommunityLabel: require('./type/html/CommunityLabel')
     };
 

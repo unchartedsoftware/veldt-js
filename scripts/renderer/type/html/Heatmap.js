@@ -2,11 +2,11 @@
 
     'use strict';
 
-    let HTML = require('../../core/HTML');
-    let ColorRamp = require('../../mixin/ColorRamp');
-    let ValueTransform = require('../../mixin/ValueTransform');
+    const HTML = require('../../core/HTML');
+    const ColorRamp = require('../../mixin/ColorRamp');
+    const ValueTransform = require('../../mixin/ValueTransform');
 
-    let Heatmap = HTML.extend({
+    const Heatmap = HTML.extend({
 
         includes: [
             // mixins
@@ -20,13 +20,13 @@
         },
 
         onMouseOver: function(e) {
-            let target = $(e.originalEvent.target);
-            let value = target.attr('data-value');
+            const target = $(e.originalEvent.target);
+            const value = target.attr('data-value');
             if (value) {
                 // get layer coord
-                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                const layerPoint = this.getLayerPointFromEvent(e.originalEvent);
                 // get tile coord
-                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                const coord = this.getTileCoordFromLayerPoint(layerPoint);
                 this.fire('mouseover', {
                     elem: e.originalEvent.target,
                     value: parseInt(value, 10),
@@ -42,13 +42,13 @@
         },
 
         onMouseOut: function(e) {
-            let target = $(e.originalEvent.target);
-            let value = target.attr('data-value');
+            const target = $(e.originalEvent.target);
+            const value = target.attr('data-value');
             if (value) {
                 // get layer coord
-                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                const layerPoint = this.getLayerPointFromEvent(e.originalEvent);
                 // get tile coord
-                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                const coord = this.getTileCoordFromLayerPoint(layerPoint);
                 this.fire('mouseout', {
                     elem: e.originalEvent.target,
                     value: parseInt(value, 10),
@@ -67,7 +67,7 @@
             // un-select any prev selected pixel
             $('.heatmap-pixel').removeClass('highlight');
             // get target
-            let target = $(e.originalEvent.target);
+            const target = $(e.originalEvent.target);
             if (!this.isTargetLayer(e.originalEvent.target)) {
                 // this layer is not the target
                 return;
@@ -75,12 +75,12 @@
             if (target.hasClass('heatmap-pixel')) {
                 target.addClass('highlight');
             }
-            let value = target.attr('data-value');
+            const value = target.attr('data-value');
             if (value) {
                 // get layer coord
-                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                const layerPoint = this.getLayerPointFromEvent(e.originalEvent);
                 // get tile coord
-                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                const coord = this.getTileCoordFromLayerPoint(layerPoint);
                 this.fire('click', {
                     elem: e.originalEvent.target,
                     value: parseInt(value, 10),
@@ -99,17 +99,18 @@
             if (!data) {
                 return;
             }
-            let bins = new Float64Array(data);
-            let resolution = Math.sqrt(bins.length);
-            let ramp = this.getColorRamp();
-            let pixelSize = this.options.tileSize / resolution;
-            let color = [0, 0, 0, 0];
+            const bins = new Float64Array(data);
+            const resolution = Math.sqrt(bins.length);
+            const ramp = this.getColorRamp();
+            const pixelSize = this.options.tileSize / resolution;
+            const color = [0, 0, 0, 0];
             let html = '';
-            let nval, rval, bin;
-            let left, top;
-            let i;
-            for (i=0; i<bins.length; i++) {
-                bin = bins[i];
+            let nval = 0;
+            let rval = 0;
+            let left = 0;
+            let top = 0;
+            for (let i=0; i<bins.length; i++) {
+                const bin = bins[i];
                 if (bin === 0) {
                     continue;
                 } else {
@@ -119,11 +120,11 @@
                     rval = this.interpolateToRange(nval);
                     ramp(rval, color);
                 }
-                let r = Math.round(color[0] * 255);
-                let g = Math.round(color[1] * 255);
-                let b = Math.round(color[2] * 255);
-                let a = color[3];
-                let rgba = `rgba(${r}, ${g}, ${b}, ${a})`;
+                const r = Math.round(color[0] * 255);
+                const g = Math.round(color[1] * 255);
+                const b = Math.round(color[2] * 255);
+                const a = color[3];
+                const rgba = `rgba(${r}, ${g}, ${b}, ${a})`;
                 html += `
                     <div class="heatmap-pixel"
                         data-value="${bin}"

@@ -2,14 +2,14 @@
 
     'use strict';
 
-    let checkField = function(meta, field) {
+    const checkField = function(meta, field) {
         if (meta) {
             if (meta.type !== 'string') {
                 throw 'Prefix `field` ' + field + ' is not of type `string` in meta data.';
             }
         } else {
             throw 'Prefix `field` ' + field + ' is not recognized in meta data.';
-        }        
+        }
     };
 
     module.exports = function(meta, query) {

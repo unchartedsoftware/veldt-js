@@ -241,7 +241,7 @@
         vert:
             precision +
             `
-            attribute vec2 aPosition;
+            attribute vec3 aPosition;
             attribute vec2 aOffset;
             attribute float aRadius;
             uniform ivec2 uTileOffset;
@@ -252,8 +252,12 @@
             varying vec4 vColor;
             void main() {
                 ivec2 iOffset = ivec2(aOffset);
-                vec2 mPosition = (aPosition + (normalize(aPosition) * (aRadius - uRadiusOffset))) + vec2(iOffset + uTileOffset);
-                vColor = uColor;
+                vec2 mPosition = (aPosition.xy + (normalize(aPosition.xy) * (aRadius - uRadiusOffset))) + vec2(iOffset + uTileOffset);
+                if (aPosition.z > uDegrees) {
+                    vColor = vec4(0.0, 0.0, 0.0, 0.0);
+                } else {
+                    vColor = uColor;
+                }
                 gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
             }
             `,
@@ -263,6 +267,9 @@
             uniform float uOpacity;
             varying vec4 vColor;
             void main() {
+                if (vColor.a == 0.0) {
+                    discard;
+                }
                 gl_FragColor = vec4(vColor.rgb, vColor.a * uOpacity);
             }
             `
@@ -272,13 +279,22 @@
         vert:
             precision +
             `
-            attribute vec2 aPosition;
+            attribute vec3 aPosition;
             uniform ivec2 uOffset;
             uniform float uRadius;
+            uniform float uDegrees;
+            uniform float uRadiusOffset;
             uniform ivec2 uTileOffset;
             uniform mat4 uProjectionMatrix;
+            uniform vec4 uColor;
+            varying vec4 vColor;
             void main() {
-                vec2 mPosition = (aPosition + (uRadius - 1.0)) + vec2(uOffset + uTileOffset);
+                vec2 mPosition = (aPosition.xy + (normalize(aPosition.xy) * (uRadius - uRadiusOffset))) + vec2(uOffset + uTileOffset);
+                if (aPosition.z > uDegrees) {
+                    vColor = vec4(0.0, 0.0, 0.0, 0.0);
+                } else {
+                    vColor = uColor;
+                }
                 gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
             }
             `,
@@ -286,9 +302,12 @@
             precision +
             `
             uniform float uOpacity;
-            uniform vec4 uColor;
+            varying vec4 vColor;
             void main() {
-                gl_FragColor = vec4(uColor.rgb, uColor.a * uOpacity);
+                if (vColor.a == 0.0) {
+                    discard;
+                }
+                gl_FragColor = vec4(vColor.rgb, vColor.a * uOpacity);
             }
             `
     };

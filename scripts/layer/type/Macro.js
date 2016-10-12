@@ -2,11 +2,11 @@
 
     'use strict';
 
-    let Live = require('../core/Live');
-    let Elastic = require('../param/Elastic');
-    let Binning = require('../param/Binning');
+    const Live = require('../core/Live');
+    const Elastic = require('../param/Elastic');
+    const Binning = require('../param/Binning');
 
-    let Macro = Live.extend({
+    const Macro = Live.extend({
 
         includes: [
             // params
@@ -17,7 +17,7 @@
         type: 'macro',
 
         extractExtrema: function(data) {
-            let bins = new Float64Array(data);
+            const bins = new Float64Array(data);
             return {
                 min: _.min(bins),
                 max: _.max(bins)

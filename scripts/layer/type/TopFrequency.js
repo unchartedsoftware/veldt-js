@@ -2,15 +2,15 @@
 
     'use strict';
 
-    let Live = require('../core/Live');
-    let Elastic = require('../param/Elastic');
-    let Tiling = require('../param/Tiling');
-    let TopTerms = require('../agg/TopTerms');
-    let DateHistogram = require('../agg/DateHistogram');
-    let Histogram = require('../agg/Histogram');
-    let TopHits = require('../agg/TopHits');
+    const Live = require('../core/Live');
+    const Elastic = require('../param/Elastic');
+    const Tiling = require('../param/Tiling');
+    const TopTerms = require('../agg/TopTerms');
+    const DateHistogram = require('../agg/DateHistogram');
+    const Histogram = require('../agg/Histogram');
+    const TopHits = require('../agg/TopHits');
 
-    let TopFrequency = Live.extend({
+    const TopFrequency = Live.extend({
 
         includes: [
             // params

@@ -2,11 +2,11 @@
 
     'use strict';
 
-    let Canvas = require('../../core/Canvas');
-    let ColorRamp = require('../../mixin/ColorRamp');
-    let ValueTransform = require('../../mixin/ValueTransform');
+    const Canvas = require('../../core/Canvas');
+    const ColorRamp = require('../../mixin/ColorRamp');
+    const ValueTransform = require('../../mixin/ValueTransform');
 
-    let TopTrails = Canvas.extend({
+    const TopTrails = Canvas.extend({
 
         includes: [
             // mixins
@@ -56,8 +56,8 @@
         },
 
         onClick: function(e) {
-            let target = e.originalEvent.target;
-            let bin = this._getBinData(e);
+            const target = e.originalEvent.target;
+            const bin = this._getBinData(e);
             if (bin) {
                 // execute callback
                 this.fire('click', {
@@ -73,8 +73,8 @@
         },
 
         onMouseMove: function(e) {
-            let target = e.originalEvent.target;
-            let bin = this._getBinData(e);
+            const target = e.originalEvent.target;
+            const bin = this._getBinData(e);
             if (bin) {
                 // execute callback
                 if (!this.highlighted) {
@@ -102,26 +102,26 @@
 
         _getBinData: function(e) {
             // get layer coord
-            let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+            const layerPoint = this.getLayerPointFromEvent(e.originalEvent);
             // get tile coord
-            let coord = this.getTileCoordFromLayerPoint(layerPoint);
+            const coord = this.getTileCoordFromLayerPoint(layerPoint);
             // get cache key
-            let nkey = this.cacheKeyFromCoord(coord, true);
+            const nkey = this.cacheKeyFromCoord(coord, true);
             // get cache entry
-            let cached = this._cache[nkey];
+            const cached = this._cache[nkey];
             if (cached && cached.pixels) {
                 // get bin coordinate
-                let bin = this.getBinCoordFromLayerPoint(layerPoint);
+                const bin = this.getBinCoordFromLayerPoint(layerPoint);
                 // downsample the bin res
-                let x = Math.floor(bin.x / this.options.downSampleFactor);
-                let y = Math.floor(bin.y / this.options.downSampleFactor);
+                const x = Math.floor(bin.x / this.options.downSampleFactor);
+                const y = Math.floor(bin.y / this.options.downSampleFactor);
                 // if hits a pixel
                 if (cached.pixels[x] && cached.pixels[x][y]) {
-                    let ids = Object.keys(cached.pixels[x][y]);
+                    const ids = Object.keys(cached.pixels[x][y]);
                     // take first entry
-                    let id = ids[0];
+                    const id = ids[0];
                     // create collision object
-                    let collision = {
+                    const collision = {
                         value: id,
                         x: coord.x,
                         y: coord.z,
@@ -138,8 +138,8 @@
         },
 
         _highlightTrailsForData: function(cached) {
-            let selected = this.selected;
-            let highlighted = this.highlighted;
+            const selected = this.selected;
+            const highlighted = this.highlighted;
             if (cached.data) {
                 let trail;
                 if (selected) {
@@ -170,13 +170,13 @@
         },
 
         _renderTrail: function(canvas, pixels, color) {
-            let resolution = this.getResolution();
-            let highlight = document.createElement('canvas');
+            const resolution = this.getResolution();
+            const highlight = document.createElement('canvas');
             highlight.height = resolution;
             highlight.width = resolution;
-            let highlightCtx = highlight.getContext('2d');
-            let imageData = highlightCtx.getImageData(0, 0, resolution, resolution);
-            let data = imageData.data;
+            const highlightCtx = highlight.getContext('2d');
+            const imageData = highlightCtx.getImageData(0, 0, resolution, resolution);
+            const data = imageData.data;
             let pixel, x, y, i, j;
             for (i=0; i<pixels.length; i++) {
                 pixel = pixels[i];
@@ -190,7 +190,7 @@
             }
             highlightCtx.putImageData(imageData, 0, 0);
             // draw to tile
-            let ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(
                 highlight,
@@ -205,32 +205,29 @@
                 return;
             }
             // modify cache entry
-            let nkey = this.cacheKeyFromCoord(coord, true);
-            let cached = this._cache[nkey];
+            const nkey = this.cacheKeyFromCoord(coord, true);
+            const cached = this._cache[nkey];
             if (cached.trails) {
                 // trails already added, exit early
                 return;
             }
-            let trails = cached.trails = {};
-            let pixels = cached.pixels = {};
-            let ids  = Object.keys(data);
-            let bins, bin;
-            let id, i, j;
-            let rx, ry, x, y;
-            for (i=0; i<ids.length; i++) {
-                id = ids[i];
-                bins = data[id];
-                for (j=0; j<bins.length; j++) {
-                    bin = bins[j];
+            const trails = cached.trails = {};
+            const pixels = cached.pixels = {};
+            const ids  = Object.keys(data);
+            for (let i=0; i<ids.length; i++) {
+                const id = ids[i];
+                const bins = data[id];
+                for (let j=0; j<bins.length; j++) {
+                    const bin = bins[j];
                     // down sample the pixel to make interaction easier
-                    rx = Math.floor(bin[0] / this.options.downSampleFactor);
-                    ry = Math.floor(bin[1] / this.options.downSampleFactor);
+                    const rx = Math.floor(bin[0] / this.options.downSampleFactor);
+                    const ry = Math.floor(bin[1] / this.options.downSampleFactor);
                     pixels[rx] = pixels[rx] || {};
                     pixels[rx][ry] = pixels[rx][ry] || {};
                     pixels[rx][ry][id] = true;
                     // add pixel under the trail at correct resolution
-                    x = bin[0];
-                    y = bin[1];
+                    const x = bin[0];
+                    const y = bin[1];
                     trails[id] = trails[id] || [];
                     trails[id].push([ x, y ]);
                 }

@@ -2,17 +2,17 @@
 
     'use strict';
 
-    let esper = require('esper');
-    let WebGL = require('../../core/WebGL');
-    let VertexAtlas = require('./VertexAtlas');
-    let Shaders = require('./Shaders');
-    let Shapes = require('./Shapes');
+    const esper = require('esper');
+    const WebGL = require('../../core/WebGL');
+    const VertexAtlas = require('./VertexAtlas');
+    const Shaders = require('./Shaders');
+    const Shapes = require('./Shapes');
 
-    let TILE_SIZE = 256;
-    let NUM_SLICES = 64;
-    let POINT_RADIUS = 2;
+    const TILE_SIZE = 256;
+    const NUM_SLICES = 64;
+    const POINT_RADIUS = 2;
 
-    let Cluster = WebGL.extend({
+    const Cluster = WebGL.extend({
 
         options: {
             outlineWidth: 1,
@@ -72,29 +72,29 @@
 
             cached.numPoints = numPoints;
             if (numPoints > 0) {
-                let ncoords = this.getNormalizedCoords(coords);
-                let hash = this.cacheKeyFromCoord(ncoords);
+                const ncoords = this.getNormalizedCoords(coords);
+                const hash = this.cacheKeyFromCoord(ncoords);
                 this._atlas.addTile(hash, positions, numPoints);
             }
         },
 
         onCacheUnload: function(event) {
-            let cached = event.entry;
-            let coords = event.coords;
+            const cached = event.entry;
+            const coords = event.coords;
             if (cached.numPoints > 0) {
                 cached.numPoints = 0;
-                let ncoords = this.getNormalizedCoords(coords);
-                let hash = this.cacheKeyFromCoord(ncoords);
+                const ncoords = this.getNormalizedCoords(coords);
+                const hash = this.cacheKeyFromCoord(ncoords);
                 this._atlas.removeTile(hash);
             }
         },
 
         drawInstanced: function(circle, color, radius) {
-            let gl = this._gl;
-            let shader = this._shader;
-            let cache = this._cache;
-            let zoom = this._map.getZoom();
-            let atlas = this._atlas;
+            const gl = this._gl;
+            const shader = this._shader;
+            const cache = this._cache;
+            const zoom = this._map.getZoom();
+            const atlas = this._atlas;
             if (this.options.blending) {
                 // enable blending
                 gl.enable(gl.BLEND);
@@ -108,7 +108,7 @@
             shader.setUniform('uOpacity', this.getOpacity());
             shader.setUniform('uRadius', radius);
             // calc view offset
-            let viewOffset = this.getViewOffset();
+            const viewOffset = this.getViewOffset();
             // bind the circle to instance
             circle.bind();
             // bind offsets and enable instancing
@@ -116,21 +116,21 @@
             // for each allocated chunk
             atlas.forEach((chunk, hash) => {
                 // for each tile referring to the data
-                let cached = cache[hash];
+                const cached = cache[hash];
                 if (cached) {
                     // render for each tile
                     _.keys(cached.tiles).forEach(hash => {
-                        let coords = this.coordFromCacheKey(hash);
+                        const coords = this.coordFromCacheKey(hash);
                         if (coords.z !== zoom) {
                             // NOTE: we have to check here if the tiles are stale or not
                             return;
                         }
                         // get wrap offset
-                        let wrapOffset = this.getWrapAroundOffset(coords);
+                        const wrapOffset = this.getWrapAroundOffset(coords);
                         // get tile offset
-                        let tileOffset = this.getTileOffset(coords);
+                        const tileOffset = this.getTileOffset(coords);
                         // calculate the total tile offset
-                        let totalOffset = [
+                        const totalOffset = [
                             tileOffset[0] + wrapOffset[0] - viewOffset[0],
                             tileOffset[1] + wrapOffset[1] - viewOffset[1]
                         ];
@@ -148,8 +148,8 @@
 
         renderFrame: function() {
             // setup
-            let gl = this._gl;
-            let viewport = this._viewport;
+            const gl = this._gl;
+            const viewport = this._viewport;
             viewport.push();
             // draw instanced fill
             this.drawInstanced(

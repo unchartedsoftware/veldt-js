@@ -2,15 +2,15 @@
 
     'use strict';
 
-    let POSITIVE = '1';
-    let NEUTRAL = '0';
-    let NEGATIVE = '-1';
+    const POSITIVE = '1';
+    const NEUTRAL = '0';
+    const NEGATIVE = '-1';
 
     function getClassFunc(min, max) {
         min = min !== undefined ? min : -1;
         max = max !== undefined ? max : 1;
-        let positive = [0.25 * max, 0.5 * max, 0.75 * max];
-        let negative = [-0.25 * min, -0.5 * min, -0.75 * min];
+        const positive = [0.25 * max, 0.5 * max, 0.75 * max];
+        const negative = [-0.25 * min, -0.5 * min, -0.75 * min];
         return function(sentiment) {
             let prefix;
             let range;
@@ -21,7 +21,7 @@
                 prefix = 'pos-';
                 range = positive;
             }
-            let abs = Math.abs(sentiment);
+            const abs = Math.abs(sentiment);
             if (abs > range[2]) {
                 return prefix + '4';
             } else if (abs > range[1]) {
@@ -37,9 +37,9 @@
         if (!count) {
             return 0;
         }
-        let pos = count[POSITIVE] ? count[POSITIVE] : 0;
-        let neu = count[NEUTRAL] ? count[NEUTRAL] : 0;
-        let neg = count[NEGATIVE] ? count[NEGATIVE] : 0;
+        const pos = count[POSITIVE] ? count[POSITIVE] : 0;
+        const neu = count[NEUTRAL] ? count[NEUTRAL] : 0;
+        const neg = count[NEGATIVE] ? count[NEGATIVE] : 0;
         return pos + neu + neg;
     }
 
@@ -47,10 +47,10 @@
         if (!count) {
             return 0;
         }
-        let pos = count[POSITIVE] ? count[POSITIVE] : 0;
-        let neu = count[NEUTRAL] ? count[NEUTRAL] : 0;
-        let neg = count[NEGATIVE] ? count[NEGATIVE] : 0;
-        let total = pos + neu + neg;
+        const pos = count[POSITIVE] ? count[POSITIVE] : 0;
+        const neu = count[NEUTRAL] ? count[NEUTRAL] : 0;
+        const neg = count[NEGATIVE] ? count[NEGATIVE] : 0;
+        const total = pos + neu + neg;
         return (total !== 0) ? (pos - neg) / total : 0;
     }
 

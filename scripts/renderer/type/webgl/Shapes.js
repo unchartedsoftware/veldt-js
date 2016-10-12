@@ -79,16 +79,19 @@
         let s = Math.sin(theta);
         let t;
         // start at angle = 0
-        let x0 = radius - (outline / 2);
-        let y0 = 0;
-        let x1 = radius + (outline / 2);
-        let y1 = 0;
-        let positions = new Float32Array(numSegments * (2 * 2) + 4);
+        let x0 = 0;
+        let y0 = radius - (outline / 2);
+        let x1 = 0;
+        let y1 = radius + (outline / 2);
+        let degPerSeg = (360 / numSegments);
+        let positions = new Float32Array(numSegments * (3 + 3) + 6);
         for (let i = 0; i < numSegments; i++) {
-            positions[i*4] = x0;
-            positions[i*4+1] = y0;
-            positions[i*4+2] = x1;
-            positions[i*4+3] = y1;
+            positions[i*6] = x0;
+            positions[i*6+1] = y0;
+            positions[i*6+2] = i * degPerSeg;
+            positions[i*6+3] = x1;
+            positions[i*6+4] = y1;
+            positions[i*6+5] = i * degPerSeg;
             // apply the rotation
             t = x0;
             x0 = c * x0 - s * y0;
@@ -97,19 +100,21 @@
             x1 = c * x1 - s * y1;
             y1 = s * t + c * y1;
         }
-        positions[positions.length-4] = positions[0];
-        positions[positions.length-3] = positions[1];
-        positions[positions.length-2] = positions[2];
-        positions[positions.length-1] = positions[3];
+        positions[positions.length-6] = positions[0];
+        positions[positions.length-5] = positions[1];
+        positions[positions.length-4] = positions[2];
+        positions[positions.length-3] = positions[3];
+        positions[positions.length-2] = positions[4];
+        positions[positions.length-1] = positions[5];
         let pointers = {
             0: {
-                size: 2,
+                size: 3, // x, y, degree
                 type: 'FLOAT'
             }
         };
         let options = {
             mode: 'TRIANGLE_STRIP',
-            count: positions.length / 2
+            count: positions.length / 3
         };
         return new esper.VertexBuffer(positions, pointers, options);
     }
