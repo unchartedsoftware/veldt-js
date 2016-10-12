@@ -2,19 +2,17 @@
 
     'use strict';
 
-    let esper = require('esper');
-    let WebGL = require('../../core/WebGL');
-    let VertexAtlas = require('./VertexAtlas');
-    let Shaders = require('./Shaders');
-    let Shapes = require('./Shapes');
+    const esper = require('esper');
+    const WebGL = require('../../core/WebGL');
+    const VertexAtlas = require('./VertexAtlas');
+    const Shaders = require('./Shaders');
+    const Shapes = require('./Shapes');
 
-    let TILE_SIZE = 256;
-    let NUM_SLICES = 64;
-    let POINT_RADIUS = 2;
+    const TILE_SIZE = 256;
+    const NUM_SLICES = 64;
+    const POINT_RADIUS = 2;
 
-    let OFFSETS_INDEX = 1;
-
-    let Cluster = WebGL.extend({
+    const Cluster = WebGL.extend({
 
         options: {
             outlineWidth: 1,
@@ -27,16 +25,16 @@
         onWebGLInit: function(done) {
             // ensure we use the correct context
             esper.WebGLContext.bind(this._container);
-            // get the extension for hardware instancing
-            this._ext = esper.WebGLContext.getExtension('ANGLE_instanced_arrays');
-            if (!this._ext) {
-                throw 'ANGLE_instanced_arrays WebGL extension is not supported';
-            }
             // create the circle vertexbuffer
             this._circleFillBuffer = Shapes.circle.fill(NUM_SLICES);
             this._circleOutlineBuffer = Shapes.circle.outline(NUM_SLICES);
             // vertex atlas for all tiles
-            this._atlas = new VertexAtlas();
+            this._atlas = new VertexAtlas({
+                1: {
+                    type: 'FLOAT',
+                    size: 2
+                }
+            });
             // load shader
             this._shader = new esper.Shader({
                 vert: Shaders.instancedPoint.vert,
@@ -53,7 +51,7 @@
             const cached = event.entry;
             const coords = event.coords;
             const data = new Float64Array(cached.data);
-            const positions = new Float32Array(cached.data);
+            const positions = new Float32Array(data.length * 2);
             const resolution = Math.sqrt(data.length);
             const pointWidth = TILE_SIZE / resolution;
             const halfWidth = pointWidth / 2;
@@ -74,29 +72,29 @@
 
             cached.numPoints = numPoints;
             if (numPoints > 0) {
-                let ncoords = this.getNormalizedCoords(coords);
-                let hash = this.cacheKeyFromCoord(ncoords);
+                const ncoords = this.getNormalizedCoords(coords);
+                const hash = this.cacheKeyFromCoord(ncoords);
                 this._atlas.addTile(hash, positions, numPoints);
             }
         },
 
         onCacheUnload: function(event) {
-            let cached = event.entry;
-            let coords = event.coords;
+            const cached = event.entry;
+            const coords = event.coords;
             if (cached.numPoints > 0) {
                 cached.numPoints = 0;
-                let ncoords = this.getNormalizedCoords(coords);
-                let hash = this.cacheKeyFromCoord(ncoords);
+                const ncoords = this.getNormalizedCoords(coords);
+                const hash = this.cacheKeyFromCoord(ncoords);
                 this._atlas.removeTile(hash);
             }
         },
 
-        drawInstanced: function(buffer, color, radius) {
-            let gl = this._gl;
-            let ext = this._ext;
-            let shader = this._shader;
-            let cache = this._cache;
-            let zoom = this._map.getZoom();
+        drawInstanced: function(circle, color, radius) {
+            const gl = this._gl;
+            const shader = this._shader;
+            const cache = this._cache;
+            const zoom = this._map.getZoom();
+            const atlas = this._atlas;
             if (this.options.blending) {
                 // enable blending
                 gl.enable(gl.BLEND);
@@ -110,56 +108,48 @@
             shader.setUniform('uOpacity', this.getOpacity());
             shader.setUniform('uRadius', radius);
             // calc view offset
-            let viewOffset = this.getViewOffset();
-            // binds the buffer to instance
-            buffer.bind();
-            // enable instancing
-            ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 1);
+            const viewOffset = this.getViewOffset();
+            // bind the circle to instance
+            circle.bind();
+            // bind offsets and enable instancing
+            atlas.bind();
             // for each allocated chunk
-            this._atlas.forEach((chunk, hash) => {
+            atlas.forEach((chunk, hash) => {
                 // for each tile referring to the data
-                let cached = cache[hash];
+                const cached = cache[hash];
                 if (cached) {
-                    // bind the chunk's buffer
-                    chunk.vertexBuffer.bind();
                     // render for each tile
                     _.keys(cached.tiles).forEach(hash => {
-                        let coords = this.coordFromCacheKey(hash);
+                        const coords = this.coordFromCacheKey(hash);
                         if (coords.z !== zoom) {
                             // NOTE: we have to check here if the tiles are stale or not
                             return;
                         }
                         // get wrap offset
-                        let wrapOffset = this.getWrapAroundOffset(coords);
+                        const wrapOffset = this.getWrapAroundOffset(coords);
                         // get tile offset
-                        let tileOffset = this.getTileOffset(coords);
+                        const tileOffset = this.getTileOffset(coords);
                         // calculate the total tile offset
-                        let totalOffset = [
+                        const totalOffset = [
                             tileOffset[0] + wrapOffset[0] - viewOffset[0],
                             tileOffset[1] + wrapOffset[1] - viewOffset[1]
                         ];
                         shader.setUniform('uTileOffset', totalOffset);
-                        // draw the istances
-                        ext.drawArraysInstancedANGLE(
-                            gl[buffer.mode],
-                            0,
-                            buffer.count,
-                            chunk.count);
+                        // draw the instances
+                        atlas.draw(hash, circle.mode, circle.count);
                     });
-                    // unbind
-                    chunk.vertexBuffer.unbind();
                 }
             });
             // disable instancing
-            ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 0);
+            atlas.unbind();
             // unbind buffer
-            buffer.unbind();
+            circle.unbind();
         },
 
         renderFrame: function() {
             // setup
-            let gl = this._gl;
-            let viewport = this._viewport;
+            const gl = this._gl;
+            const viewport = this._viewport;
             viewport.push();
             // draw instanced fill
             this.drawInstanced(

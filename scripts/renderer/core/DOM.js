@@ -2,9 +2,9 @@
 
     'use strict';
 
-    let Base = require('../../layer/core/Base');
+    const Base = require('../../layer/core/Base');
 
-    let DOM = Base.extend({
+    const DOM = Base.extend({
 
         onAdd: function(map) {
             L.GridLayer.prototype.onAdd.call(this, map);
@@ -27,9 +27,9 @@
         },
 
         onCacheHit: function(event) {
-            let cached = event.entry;
-            let tile = event.tile;
-            let coords = event.coords;
+            const cached = event.entry;
+            const tile = event.tile;
+            const coords = event.coords;
             // data exists, render only this tile
             if (cached.data) {
                 this.renderTile(tile, cached.data, coords);
@@ -41,8 +41,8 @@
             // the case of a map with wraparound, we may have
             // multiple tiles dependent on the response, so iterate
             // over each tile and draw it.
-            let cached = event.entry;
-            let coords = event.coords;
+            const cached = event.entry;
+            const coords = event.coords;
             if (cached.data) {
                 _.forIn(cached.tiles, tile => {
                     this.renderTile(tile, cached.data, coords);
@@ -55,7 +55,10 @@
             _.forIn(this._cache, cached => {
                 _.forIn(cached.tiles, (tile, key) => {
                     if (cached.data) {
-                        this.renderTile(tile, cached.data, this.coordFromCacheKey(key));
+                        this.renderTile(
+                            tile,
+                            cached.data,
+                            this.coordFromCacheKey(key));
                     }
                 });
             });

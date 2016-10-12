@@ -2,11 +2,11 @@
 
     'use strict';
 
-    let Base = require('../../layer/core/Base');
+    const Base = require('../../layer/core/Base');
 
-    let NO_OP = function() {};
+    const NO_OP = function() {};
 
-    let Overlay = Base.extend({
+    const Overlay = Base.extend({
 
         options: {
             zIndex: 1
@@ -63,7 +63,7 @@
             if (!this._map) {
                 return;
             }
-            let zoom = this._map.getZoom();
+            const zoom = this._map.getZoom();
             if (zoom > this.options.maxZoom ||
                 zoom < this.options.minZoom) {
                 this._removeAllTiles();
@@ -74,7 +74,7 @@
             });
             _.forIn(this._tiles, tile => {
                 if (tile.current && !tile.active) {
-                    let coords = tile.coords;
+                    const coords = tile.coords;
                     if (!this._retainParent(coords.x, coords.y, coords.z, coords.z - 5)) {
                         this._retainChildren(coords.x, coords.y, coords.z, coords.z + 2);
                     }
@@ -104,7 +104,7 @@
                 (this.options.minZoom !== undefined && tileZoom < this.options.minZoom)) {
                 tileZoom = undefined;
             }
-            let tileZoomChanged = this.options.updateWhenZooming && (tileZoom !== this._tileZoom);
+            const tileZoomChanged = this.options.updateWhenZooming && (tileZoom !== this._tileZoom);
             if (!noUpdate || tileZoomChanged) {
                 this._tileZoom = tileZoom;
                 if (this._abortLoading) {
@@ -122,15 +122,15 @@
         },
 
         _setZoomTransform: function(center, zoom) {
-            let currentCenter = this._map.getCenter();
-            let currentZoom = this._map.getZoom();
-            let scale = this._map.getZoomScale(zoom, currentZoom);
-            let position = L.DomUtil.getPosition(this._container);
-            let viewHalf = this._map.getSize().multiplyBy(0.5);
-            let currentCenterPoint = this._map.project(currentCenter, zoom);
-            let destCenterPoint = this._map.project(center, zoom);
-            let centerOffset = destCenterPoint.subtract(currentCenterPoint);
-            let topLeftOffset = viewHalf.multiplyBy(-scale).add(position).add(viewHalf).subtract(centerOffset);
+            const currentCenter = this._map.getCenter();
+            const currentZoom = this._map.getZoom();
+            const scale = this._map.getZoomScale(zoom, currentZoom);
+            const position = L.DomUtil.getPosition(this._container);
+            const viewHalf = this._map.getSize().multiplyBy(0.5);
+            const currentCenterPoint = this._map.project(currentCenter, zoom);
+            const destCenterPoint = this._map.project(center, zoom);
+            const centerOffset = destCenterPoint.subtract(currentCenterPoint);
+            const topLeftOffset = viewHalf.multiplyBy(-scale).add(position).add(viewHalf).subtract(centerOffset);
             if (L.Browser.any3d) {
                 L.DomUtil.setTransform(this._container, topLeftOffset, scale);
             } else {
@@ -140,11 +140,11 @@
 
         // Private method to load tiles in the grid's active zoom level according to map bounds
         _update: function(center) {
-            let map = this._map;
+            const map = this._map;
             if (!map) {
                 return;
             }
-            let zoom = map.getZoom();
+            const zoom = map.getZoom();
             if (center === undefined) {
                 center = map.getCenter();
             }
@@ -152,7 +152,7 @@
                 // if out of minzoom/maxzoom
                 return;
             }
-            let pixelBounds = this._getTiledPixelBounds(center),
+            const pixelBounds = this._getTiledPixelBounds(center),
                 tileRange = this._pxBoundsToTileRange(pixelBounds),
                 tileCenter = tileRange.getCenter(),
                 queue = [];
@@ -161,23 +161,22 @@
                 tile.current = false;
             });
             // _update just loads more tiles. If the tile zoom level differs too much
-            // from the map's, let _setView reset levels and prune old tiles.
+            // from the map's, const _setView reset levels and prune old tiles.
             if (Math.abs(zoom - this._tileZoom) > 1) {
                 this._setView(center, zoom);
                 return;
             }
             // create a queue of coordinates to load tiles from
-            let i, j;
-            for (j = tileRange.min.y; j <= tileRange.max.y; j++) {
-                for (i = tileRange.min.x; i <= tileRange.max.x; i++) {
-                    let coords = new L.Point(i, j);
+            for (let j = tileRange.min.y; j <= tileRange.max.y; j++) {
+                for (let i = tileRange.min.x; i <= tileRange.max.x; i++) {
+                    const coords = new L.Point(i, j);
                     coords.z = this._tileZoom;
 
                     if (!this._isValidTile(coords)) {
                         continue;
                     }
 
-                    let tile = this._tiles[this._tileCoordsToKey(coords)];
+                    const tile = this._tiles[this._tileCoordsToKey(coords)];
                     if (tile) {
                         tile.current = true;
                     } else {
@@ -197,14 +196,14 @@
                     // Fired when the grid layer starts loading tiles
                     this.fire('loading');
                 }
-                for (i = 0; i < queue.length; i++) {
+                for (let i = 0; i < queue.length; i++) {
                     this._addTile(queue[i]);
                 }
             }
         },
 
         _removeTile: function(key) {
-            let tile = this._tiles[key];
+            const tile = this._tiles[key];
             if (!tile) {
                 return;
             }
@@ -217,7 +216,7 @@
         },
 
         createTile: function(coords, done) {
-            let tile = {
+            const tile = {
                 coords: coords,
                 current: true
             };
@@ -229,8 +228,8 @@
 
         _addTile: function(coords) {
 
-            let tile = this.createTile(coords, L.bind(this._tileReady, this, coords));
-            let key = this._tileCoordsToKey(coords);
+            const tile = this.createTile(coords, L.bind(this._tileReady, this, coords));
+            const key = this._tileCoordsToKey(coords);
             this._tiles[key] = tile;
 
             // @event tileloadstart: TileEvent

@@ -2,17 +2,17 @@
 
     'use strict';
 
-    let Live = require('../core/Live');
-    let Elastic = require('../param/Elastic');
-    let Tiling = require('../param/Tiling');
-    let TermsFilter = require('../agg/TermsFilter');
-    let DateHistogram = require('../agg/DateHistogram');
-    let Histogram = require('../agg/Histogram');
+    const Live = require('../core/Live');
+    const Elastic = require('../param/Elastic');
+    const Tiling = require('../param/Tiling');
+    const TermsFilter = require('../agg/TermsFilter');
+    const DateHistogram = require('../agg/DateHistogram');
+    const Histogram = require('../agg/Histogram');
 
-    let TopicFrequency = Live.extend({
+    const TopicFrequency = Live.extend({
 
         includes: [
-            // params            
+            // params
             Elastic,
             Tiling,
             // aggs

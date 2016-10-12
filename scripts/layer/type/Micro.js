@@ -2,12 +2,12 @@
 
     'use strict';
 
-    let Live = require('../core/Live');
-    let Elastic = require('../param/Elastic');
-    let Tiling = require('../param/Tiling');
-    let TopHits = require('../agg/TopHits');
+    const Live = require('../core/Live');
+    const Elastic = require('../param/Elastic');
+    const Tiling = require('../param/Tiling');
+    const TopHits = require('../agg/TopHits');
 
-    let Micro = Live.extend({
+    const Micro = Live.extend({
 
         includes: [
             // params

@@ -2,13 +2,13 @@
 
     'use strict';
 
-    let boolQueryCheck = require('../query/Bool');
+    const boolQueryCheck = require('../query/Bool');
 
     function mod(n, m) {
         return ((n % m) + m) % m;
     }
 
-    let Live = L.Class.extend({
+    const Live = L.Class.extend({
 
         options: {
             transform: val => { return val; }
@@ -55,7 +55,7 @@
         },
 
         updateExtrema: function(data) {
-            let extrema = this.extractExtrema(data);
+            const extrema = this.extractExtrema(data);
             let changed = false;
             if (extrema.min < this._extrema.min) {
                 changed = true;
@@ -115,7 +115,7 @@
         },
 
         getNormalizedCoords: function(coords) {
-            let pow = Math.pow(2, coords.z);
+            const pow = Math.pow(2, coords.z);
             return {
                 x: mod(coords.x, pow),
                 y: mod(coords.y, pow),
@@ -133,7 +133,7 @@
         },
 
         coordFromCacheKey: function(key) {
-            let arr = key.split(':');
+            const arr = key.split(':');
             return {
                 x: parseInt(arr[1], 10),
                 y: parseInt(arr[2], 10),
@@ -152,11 +152,11 @@
                 };
             }
             // cache key from coords
-            let key = this.cacheKeyFromCoord(coords);
+            const key = this.cacheKeyFromCoord(coords);
             // cache key from normalized coords
-            let nkey = this.cacheKeyFromCoord(coords, true);
+            const nkey = this.cacheKeyFromCoord(coords, true);
             // get cache entry
-            let cached = this._cache[nkey];
+            const cached = this._cache[nkey];
             // could the be case where the cache is cleared before tiles are
             // unloaded
             if (!cached) {
@@ -167,7 +167,7 @@
             // don't remove cache entry unless to tiles use it anymore
             if (_.keys(cached.tiles).length === 0) {
                 // get the tile being deleted
-                let tile = cached.tiles[key];
+                const tile = cached.tiles[key];
                 // no more tiles use this cached data, so delete it
                 this.fire('cacheunload', {
                     tile: tile,
@@ -187,13 +187,13 @@
                     z: coords.z
                 };
             }
-            let ncoords = this.getNormalizedCoords(coords);
+            const ncoords = this.getNormalizedCoords(coords);
             // cache key from coords
-            let key = this.cacheKeyFromCoord(coords);
+            const key = this.cacheKeyFromCoord(coords);
             // cache key from normalized coords
-            let nkey = this.cacheKeyFromCoord(coords, true);
+            const nkey = this.cacheKeyFromCoord(coords, true);
             // check cache
-            let cached = this._cache[nkey];
+            const cached = this._cache[nkey];
             if (cached) {
                 // add tile under normalize coords
                 cached.tiles[key] = tile;
@@ -222,7 +222,7 @@
                 this._cache[nkey].tiles[key] = tile;
                 // request the tile
                 this.requestTile(ncoords, data => {
-                    let cached = this._cache[nkey];
+                    const cached = this._cache[nkey];
                     if (!cached) {
                         // tile is no longer being tracked, ignore
                         return;

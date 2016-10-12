@@ -2,7 +2,7 @@
 
     'use strict';
 
-    let checkField = function(meta, field) {
+    const checkField = function(meta, field) {
         if (meta) {
             if (meta.type !== 'string') {
                 throw 'TopTerms `field` ' + field + ' is not of type `string` in meta data';
@@ -12,7 +12,7 @@
         }
     };
 
-    let setTopTerms = function(field, size) {
+    const setTopTerms = function(field, size) {
         if (!field) {
             throw 'TopTerms `field` is missing from argument';
         }
@@ -25,7 +25,7 @@
         return this;
     };
 
-    let getTopTerms = function() {
+    const getTopTerms = function() {
         return this._params.top_terms;
     };
 

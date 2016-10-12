@@ -2,11 +2,11 @@
 
     'use strict';
 
-    let esper = require('esper');
+    const esper = require('esper');
 
-    let TILE_SIZE = 256;
-    let HORIZONTAL_TILES = 16;
-    let VERTICAL_TILES = 8;
+    const TILE_SIZE = 256;
+    const HORIZONTAL_TILES = 16;
+    const VERTICAL_TILES = 8;
 
     class TextureAtlas {
 
@@ -42,7 +42,7 @@
                     };
                 }
             }
-            this.used = {};
+            this.used = new Map();
         }
 
         addTile(hash, data) {
@@ -51,7 +51,7 @@
                 return;
             }
             // get an available chunk
-            let chunk = this.available.pop();
+            const chunk = this.available.pop();
             // set chunk resolution and extents
             chunk.resolution = Math.sqrt(data.length / 4);
             chunk.uvExtent[0] = (chunk.resolution / TILE_SIZE) / HORIZONTAL_TILES;
@@ -64,21 +64,19 @@
                 chunk.resolution,
                 chunk.resolution);
             // flag as used
-            this.used[hash] = chunk;
+            this.used.set(hash, chunk);
         }
 
         removeTile(hash) {
-            let chunk = this.used[hash];
-            if (chunk) {
-                // remove from used
-                delete this.used[hash];
-                // add as a new available chunk
-                this.available.push(chunk);
-            }
+            const chunk = this.used.get(hash);
+            // remove from used
+            this.used.delete(hash);
+            // add as a new available chunk
+            this.available.push(chunk);
         }
 
         forEach(fn) {
-            _.forIn(this.used, fn);
+            this.used.forEach(fn);
         }
     }
 

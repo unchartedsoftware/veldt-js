@@ -2,9 +2,9 @@
 
     'use strict';
 
-    let Base = require('./Base');
+    const Base = require('./Base');
 
-    let Debug = Base.extend({
+    const Debug = Base.extend({
 
         options: {
             unloadInvisibleTiles: true,
@@ -25,7 +25,7 @@
 
         createTile: function(coord) {
             // create a <div> element for drawing
-            let tile = L.DomUtil.create('div', 'leaflet-tile');
+            const tile = L.DomUtil.create('div', 'leaflet-tile');
             // draw to it
             this.renderTile(tile, coord);
             // pass tile to callback

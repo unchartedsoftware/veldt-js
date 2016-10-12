@@ -2,8 +2,8 @@
 
     'use strict';
 
-    let stringify = require('json-stable-stringify');
-    let Requestor = require('./Requestor');
+    const stringify = require('json-stable-stringify');
+    const Requestor = require('./Requestor');
 
     function pruneEmpty(obj) {
         return function prune(current) {
@@ -28,12 +28,12 @@
             super(url, callback);
         }
         getHash(req) {
-            let coord = req.coord;
-            let hash = stringify(pruneEmpty(req.params));
+            const coord = req.coord;
+            const hash = stringify(pruneEmpty(req.params));
             return `${req.type}-${req.uri}-${req.store}-${coord.z}-${coord.x}-${coord.y}-${hash}`;
         }
         getURL(res) {
-            let coord = res.coord;
+            const coord = res.coord;
             return `tile/${res.type}/${res.uri}/${res.store}/${coord.z}/${coord.x}/${coord.y}`;
         }
     }

@@ -5,12 +5,12 @@
     let check;
 
     function checkQuery(meta, query) {
-        let keys = _.keys(query);
+        const keys = _.keys(query);
         if (keys.length !== 1) {
             throw 'Bool sub-query must only have a single key, query has multiple keys: `' + JSON.stringify(keys) + '`.';
         }
-        let type = keys[0];
-        let checkFunc = check[type];
+        const type = keys[0];
+        const checkFunc = check[type];
         if (!checkFunc) {
             throw 'Query type `' + type + '` is not recognized.';
         }

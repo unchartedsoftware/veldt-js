@@ -2,12 +2,12 @@
 
     'use strict';
 
-    let esper = require('esper');
-    let Overlay = require('./Overlay');
+    const esper = require('esper');
+    const Overlay = require('./Overlay');
 
     const TILE_SIZE = 256;
 
-    let WebGL = Overlay.extend({
+    const WebGL = Overlay.extend({
 
         onAdd: function(map) {
             Overlay.prototype.onAdd.call(this, map);
@@ -29,7 +29,7 @@
         onZoomEnd: function() {
             this._isZooming = false;
             if (this._initialized) {
-                let gl = this._gl;
+                const gl = this._gl;
                 gl.clear(gl.COLOR_BUFFER_BIT);
                 this.renderFrame();
             }
@@ -50,7 +50,7 @@
         },
 
         _initGL: function() {
-            let gl = this._gl = esper.WebGLContext.get(this._container);
+            const gl = this._gl = esper.WebGLContext.get(this._container);
             // handle missing context
             if (!gl) {
                 throw 'Unable to acquire a WebGL context';
@@ -61,8 +61,8 @@
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
             gl.disable(gl.DEPTH_TEST);
             // get map size
-            let size = this._map.getSize();
-            let devicePixelRatio = window.devicePixelRatio;
+            const size = this._map.getSize();
+            const devicePixelRatio = window.devicePixelRatio;
             // set viewport size
             this._viewport = new esper.Viewport({
                 width: size.x * devicePixelRatio,
@@ -85,7 +85,7 @@
         },
 
         getTranslationMatrix: function(x, y, z) {
-            let mat = new Float32Array(16);
+            const mat = new Float32Array(16);
             mat[0] = 1;
             mat[1] = 0;
             mat[2] = 0;
@@ -106,7 +106,7 @@
         },
 
         getOrthoMatrix: function(left, right, bottom, top, near, far) {
-            let mat = new Float32Array(16);
+            const mat = new Float32Array(16);
             mat[0] = 2 / (right - left);
             mat[1] = 0;
             mat[2] = 0;
@@ -127,10 +127,10 @@
         },
 
         getWrapAroundOffset: function(coords) {
-            let size = Math.pow(2, this._map.getZoom());
+            const size = Math.pow(2, this._map.getZoom());
             // create model matrix
-            let xWrap = Math.floor(coords.x / size);
-            let yWrap = Math.floor(coords.y / size);
+            const xWrap = Math.floor(coords.x / size);
+            const yWrap = Math.floor(coords.y / size);
             return [
                 size * TILE_SIZE * xWrap,
                 size * TILE_SIZE * yWrap
@@ -138,7 +138,7 @@
         },
 
         getProjectionMatrix: function() {
-            let size = this._map.getSize();
+            const size = this._map.getSize();
             return this.getOrthoMatrix(
                 0, size.x,
                 0, size.y,
@@ -146,8 +146,8 @@
         },
 
         getViewOffset: function() {
-            let bounds = this._map.getPixelBounds();
-            let dim = Math.pow(2, this._map.getZoom()) * TILE_SIZE;
+            const bounds = this._map.getPixelBounds();
+            const dim = Math.pow(2, this._map.getZoom()) * TILE_SIZE;
             return [
                 bounds.min.x,
                 dim - bounds.max.y
@@ -165,8 +165,8 @@
         },
 
         _positionContainer: function() {
-            let size = this._map.getSize();
-            let devicePixelRatio = window.devicePixelRatio;
+            const size = this._map.getSize();
+            const devicePixelRatio = window.devicePixelRatio;
             // set viewport size
             this._viewport.resize(
                 size.x * devicePixelRatio,
@@ -175,7 +175,7 @@
             this._gl.canvas.style.width = size.x + 'px';
             this._gl.canvas.style.height = size.y + 'px';
             // re-position container
-            let topLeft = this._map.containerPointToLayerPoint([0, 0]);
+            const topLeft = this._map.containerPointToLayerPoint([0, 0]);
             L.DomUtil.setPosition(this._container, topLeft);
         },
 
@@ -187,7 +187,7 @@
                         // position the container and resize viewport
                         this._positionContainer();
                         // clear buffer
-                        let gl = this._gl;
+                        const gl = this._gl;
                         gl.clear(gl.COLOR_BUFFER_BIT);
                         // draw the frame
                         this.renderFrame();

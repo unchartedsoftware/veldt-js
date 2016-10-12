@@ -2,10 +2,10 @@
 
     'use strict';
 
-    let HTML = require('../../core/HTML');
-    let ValueTransform = require('../../mixin/ValueTransform');
+    const HTML = require('../../core/HTML');
+    const ValueTransform = require('../../mixin/ValueTransform');
 
-    let Heatmap = HTML.extend({
+    const Heatmap = HTML.extend({
 
         includes: [
             // mixins
@@ -17,7 +17,7 @@
         },
 
         onClick: function(e) {
-            let target = $(e.originalEvent.target);
+            const target = $(e.originalEvent.target);
             $('.heatmap-ring').removeClass('highlight');
             if (!this.isTargetLayer(e.originalEvent.target)) {
                 // this layer is not the target
@@ -32,19 +32,19 @@
             if (!data) {
                 return;
             }
-            let bins = new Float64Array(data);
-            let resolution = Math.sqrt(bins.length);
-            let binSize = (this.options.tileSize / resolution);
+            const bins = new Float64Array(data);
+            const resolution = Math.sqrt(bins.length);
+            const binSize = (this.options.tileSize / resolution);
             let html = '';
             bins.forEach((bin, index) => {
                 if (!bin) {
                     return;
                 }
-                let percent = this.transformValue(bin);
-                let radius = percent * binSize;
-                let offset = (binSize - radius) / 2;
-                let left = (index % resolution) * binSize;
-                let top = Math.floor(index / resolution) * binSize;
+                const percent = this.transformValue(bin);
+                const radius = percent * binSize;
+                const offset = (binSize - radius) / 2;
+                const left = (index % resolution) * binSize;
+                const top = Math.floor(index / resolution) * binSize;
                 html +=
                     `
                     <div class="heatmap-ring" style="

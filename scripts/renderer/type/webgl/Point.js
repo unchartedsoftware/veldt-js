@@ -2,33 +2,29 @@
 
     'use strict';
 
-    let esper = require('esper');
-    let rbush = require('rbush');
-    let parallel = require('async/parallel');
-    let WebGL = require('../../core/WebGL');
-    let VertexAtlas = require('./VertexAtlas');
-    let Shaders = require('./Shaders');
-    let Shapes = require('./Shapes');
+    const esper = require('esper');
+    const rbush = require('rbush');
+    const parallel = require('async/parallel');
+    const WebGL = require('../../core/WebGL');
+    const VertexAtlas = require('./VertexAtlas');
+    const Shaders = require('./Shaders');
+    const Shapes = require('./Shapes');
 
-    let TILE_SIZE = 256;
-    let COMPONENT_BYTE_SIZE = 4;
-    let COMPONENTS_PER_POINT = 2;
-    let MAX_POINTS_PER_TILE = TILE_SIZE * TILE_SIZE;
+    const TILE_SIZE = 256;
+    const MAX_POINTS_PER_TILE = TILE_SIZE * TILE_SIZE;
 
-    let NUM_SLICES = 64;
-    let POINT_RADIUS = 8;
-    let POINT_RADIUS_INC = 2;
-
-    let OFFSETS_INDEX = 1;
+    const NUM_SLICES = 64;
+    const POINT_RADIUS = 8;
+    const POINT_RADIUS_INC = 2;
 
     function applyJitter(point, maxDist) {
-        let angle = Math.random() * (Math.PI * 2);
-        let dist = Math.random() * maxDist;
+        const angle = Math.random() * (Math.PI * 2);
+        const dist = Math.random() * maxDist;
         point.x += Math.floor(Math.cos(angle) * dist);
         point.y += Math.floor(Math.sin(angle) * dist);
     }
 
-    let Point = WebGL.extend({
+    const Point = WebGL.extend({
 
         options: {
             outlineWidth: 1,
@@ -46,25 +42,28 @@
             jitterDistance: 10
         },
 
+        highlighted: null,
+        selected: null,
+
         onWebGLInit: function(done) {
             // ensure we use the correct context
             esper.WebGLContext.bind(this._container);
-            // get the extension for hardware instancing
-            this._ext = esper.WebGLContext.getExtension('ANGLE_instanced_arrays');
-            if (!this._ext) {
-                throw 'ANGLE_instanced_arrays WebGL extension is not supported';
-            }
             // create the circle vertexbuffer
             this._circleFillBuffer = Shapes.circle.fill(NUM_SLICES);
             this._circleOutlineBuffer = Shapes.circle.outline(NUM_SLICES);
             // vertex atlas for all tiles
-            this._atlas = new VertexAtlas();
+            this._atlas = new VertexAtlas({
+                1: {
+                    type: 'FLOAT',
+                    size: 2
+                }
+            });
             // create spatial index
             this._rtree = new rbush();
             // load shaders
             parallel({
                 instanced: (done) => {
-                    let shader = new esper.Shader({
+                    const shader = new esper.Shader({
                         vert: Shaders.instancedPoint.vert,
                         frag: Shaders.instancedPoint.frag
                     }, err => {
@@ -75,7 +74,7 @@
                     });
                 },
                 individual: (done) => {
-                    let shader = new esper.Shader({
+                    const shader = new esper.Shader({
                         vert: Shaders.point.vert,
                         frag: Shaders.point.frag
                     }, err => {
@@ -125,14 +124,14 @@
                 const zoom = coords.z;
                 const radius = this.getCollisionRadius();
                 const numPoints = Math.min(data.length, MAX_POINTS_PER_TILE);
-                const numBytes = numPoints * COMPONENT_BYTE_SIZE * COMPONENTS_PER_POINT;
-                const positions = new Float32Array(numBytes);
+                const positions = new Float32Array(numPoints*2);
                 const points = [];
                 const collisions = {};
 
                 const xOffset = coords.x * TILE_SIZE;
                 const yOffset = coords.y * TILE_SIZE;
 
+                const tilePoint = { x: 0, y: 0 };
                 // calc pixel locations
                 for (let i=0; i<numPoints; i++) {
                     const hit = data[i];
@@ -142,17 +141,15 @@
                     const layerPoint = this.getLayerPointFromDataPoint(x, y, zoom);
                     // add jitter if specified
                     if (this.options.jitter) {
-                        let hash = layerPoint.x + ':' + layerPoint.y;
+                        const hash = layerPoint.x + ':' + layerPoint.y;
                         if (collisions[hash]) {
                             applyJitter(layerPoint, this.options.jitterDistance);
                         }
                         collisions[hash] = true;
                     }
                     // get position in tile
-                    const tilePoint = {
-                        x: layerPoint.x - xOffset,
-                        y: TILE_SIZE - (layerPoint.y - yOffset)
-                    };
+                    tilePoint.x = layerPoint.x - xOffset;
+                    tilePoint.y = TILE_SIZE - (layerPoint.y - yOffset);
                     // store point
                     points.push({
                         x: tilePoint.x,
@@ -174,20 +171,20 @@
                     // store points in the cache
                     cached.points = points;
                     // add to atlas
-                    let ncoords = this.getNormalizedCoords(coords);
-                    let hash = this.cacheKeyFromCoord(ncoords);
+                    const ncoords = this.getNormalizedCoords(coords);
+                    const hash = this.cacheKeyFromCoord(ncoords);
                     this._atlas.addTile(hash, positions, points.length);
                 }
             }
         },
 
         onCacheUnload: function(event) {
-            let cached = event.entry;
-            let coords = event.coords;
-            if (cached.points) { //cached.data && cached.data.length > 0) {
+            const cached = event.entry;
+            if (cached.points) {
+                const coords = event.coords;
                 // remove from atlas
-                let ncoords = this.getNormalizedCoords(coords);
-                let hash = this.cacheKeyFromCoord(ncoords);
+                const ncoords = this.getNormalizedCoords(coords);
+                const hash = this.cacheKeyFromCoord(ncoords);
                 this._atlas.removeTile(hash);
                 // remove from rtree
                 cached.points.forEach(point => {
@@ -197,11 +194,10 @@
             }
         },
 
-
         onMouseMove: function(e) {
-            let target = e.originalEvent.target;
-            let layerPixel = this.getLayerPointFromEvent(e.originalEvent);
-            let collisions = this._rtree.search({
+            const target = e.originalEvent.target;
+            const layerPixel = this.getLayerPointFromEvent(e.originalEvent);
+            const collisions = this._rtree.search({
                 minX: layerPixel.x,
                 maxX: layerPixel.x,
                 minY: layerPixel.y,
@@ -286,15 +282,14 @@
             } else {
                 this.selected = null;
             }
-
         },
 
-        drawInstanced: function(buffer, color, radius) {
-            let gl = this._gl;
-            let ext = this._ext;
-            let shader = this._instancedShader;
-            let cache = this._cache;
-            let zoom = this._map.getZoom();
+        drawInstanced: function(circle, color, radius) {
+            const gl = this._gl;
+            const shader = this._instancedShader;
+            const cache = this._cache;
+            const zoom = this._map.getZoom();
+            const atlas = this._atlas;
             if (this.options.blending) {
                 // enable blending
                 gl.enable(gl.BLEND);
@@ -308,59 +303,51 @@
             shader.setUniform('uOpacity', this.getOpacity());
             shader.setUniform('uRadius', radius);
             // calc view offset
-            let viewOffset = this.getViewOffset();
-            // binds the buffer to instance
-            buffer.bind();
-            // enable instancing
-            ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 1);
+            const viewOffset = this.getViewOffset();
+            // binds the circle to instance
+            circle.bind();
+            // bind offsets and enable instancing
+            atlas.bind();
             // for each allocated chunk
-            this._atlas.forEach((chunk, hash) => {
+            atlas.forEach((chunk, hash) => {
                 // for each tile referring to the data
-                let cached = cache[hash];
+                const cached = cache[hash];
                 if (cached) {
-                    // bind the chunk's buffer
-                    chunk.vertexBuffer.bind();
                     // render for each tile
                     _.keys(cached.tiles).forEach(hash => {
-                        let coords = this.coordFromCacheKey(hash);
+                        const coords = this.coordFromCacheKey(hash);
                         if (coords.z !== zoom) {
                             // NOTE: we have to check here if the tiles are stale or not
                             return;
                         }
                         // get wrap offset
-                        let wrapOffset = this.getWrapAroundOffset(coords);
+                        const wrapOffset = this.getWrapAroundOffset(coords);
                         // get tile offset
-                        let tileOffset = this.getTileOffset(coords);
+                        const tileOffset = this.getTileOffset(coords);
                         // calculate the total tile offset
-                        let totalOffset = [
+                        const totalOffset = [
                             tileOffset[0] + wrapOffset[0] - viewOffset[0],
                             tileOffset[1] + wrapOffset[1] - viewOffset[1]
                         ];
                         shader.setUniform('uTileOffset', totalOffset);
-                        // draw the istances
-                        ext.drawArraysInstancedANGLE(
-                            gl[buffer.mode],
-                            0,
-                            buffer.count,
-                            chunk.count);
+                        // draw the instances
+                        atlas.draw(hash, circle.mode, circle.count);
                     });
-                    // unbind
-                    chunk.vertexBuffer.unbind();
                 }
             });
             // disable instancing
-            ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 0);
+            atlas.unbind();
             // unbind buffer
-            buffer.unbind();
+            circle.unbind();
         },
 
-        drawIndividual: function(buffer, color, radius, tiles, point) {
+        drawIndividual: function(circle, color, radius, tiles, point) {
             // draw selected points
-            let gl = this._gl;
-            let shader = this._individualShader;
-            let zoom = this._map.getZoom();
+            const gl = this._gl;
+            const shader = this._individualShader;
+            const zoom = this._map.getZoom();
             // bind the buffer
-            buffer.bind();
+            circle.bind();
             // disable blending
             gl.disable(gl.BLEND);
             // use shader
@@ -370,34 +357,34 @@
             shader.setUniform('uOpacity', this.getOpacity());
             shader.setUniform('uRadius', radius);
             // view offset
-            let viewOffset = this.getViewOffset();
+            const viewOffset = this.getViewOffset();
             _.forIn(tiles, tile => {
                 if (tile.coords.z !== zoom) {
                     // NOTE: we have to check here if the tiles are stale or not
                     return;
                 }
                 // get wrap offset
-                let wrapOffset = this.getWrapAroundOffset(tile.coords);
+                const wrapOffset = this.getWrapAroundOffset(tile.coords);
                 // get tile offset
-                let tileOffset = this.getTileOffset(tile.coords);
+                const tileOffset = this.getTileOffset(tile.coords);
                 // calculate the total tile offset
-                let totalOffset = [
+                const totalOffset = [
                     tileOffset[0] + wrapOffset[0] - viewOffset[0],
                     tileOffset[1] + wrapOffset[1] - viewOffset[1]
                 ];
                 shader.setUniform('uTileOffset', totalOffset);
                 shader.setUniform('uOffset', point);
                 shader.setUniform('uColor', color);
-                buffer.draw();
+                circle.draw();
             });
             // unbind the buffer
-            buffer.unbind();
+            circle.unbind();
         },
 
         renderFrame: function() {
             // setup
-            let gl = this._gl;
-            let viewport = this._viewport;
+            const gl = this._gl;
+            const viewport = this._viewport;
             viewport.push();
 
             // draw instanced points

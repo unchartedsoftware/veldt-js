@@ -2,12 +2,12 @@
 
     'use strict';
 
-    let resetMouseCursorStyle = function() {
+    const resetMouseCursorStyle = function() {
         // we only want this bound ONCE per map
         $(this._container).css('cursor', '');
     };
 
-    let Map = L.Map.extend({
+    const Map = L.Map.extend({
 
         initialize: function() {
             L.Map.prototype.initialize.apply(this, arguments);

@@ -2,15 +2,15 @@
 
     'use strict';
 
-    let esper = require('esper');
-    let WebGL = require('../../core/WebGL');
-    let ColorRamp = require('../../mixin/ColorRamp');
-    let ValueTransform = require('../../mixin/ValueTransform');
-    let TextureAtlas = require('./TextureAtlas');
-    let Shaders = require('./Shaders');
-    let Shapes = require('./Shapes');
+    const esper = require('esper');
+    const WebGL = require('../../core/WebGL');
+    const ColorRamp = require('../../mixin/ColorRamp');
+    const ValueTransform = require('../../mixin/ValueTransform');
+    const TextureAtlas = require('./TextureAtlas');
+    const Shaders = require('./Shaders');
+    const Shapes = require('./Shapes');
 
-    let TILE_SIZE = 256;
+    const TILE_SIZE = 256;
 
     function encode(enc, val) {
         enc[0] = (val / 16777216.0) & 0xFF;
@@ -20,7 +20,7 @@
         return enc;
     }
 
-    let Heatmap = WebGL.extend({
+    const Heatmap = WebGL.extend({
 
         includes: [
             // mixins
@@ -53,8 +53,8 @@
         },
 
         onCacheLoad: function(event) {
-            let cached = event.entry;
-            let coords = event.coords;
+            const cached = event.entry;
+            const coords = event.coords;
             if (cached.data && cached.data.byteLength > 0) {
                 // add to atlas
                 this.bufferTileTexture(cached, coords);
@@ -62,23 +62,23 @@
         },
 
         onCacheUnload: function(event) {
-            let cached = event.entry;
-            let coords = event.coords;
+            const cached = event.entry;
+            const coords = event.coords;
             if (cached.data && cached.data.byteLength > 0) {
                 // remove from atlas
-                let ncoords = this.getNormalizedCoords(coords);
-                let hash = this.cacheKeyFromCoord(ncoords);
+                const ncoords = this.getNormalizedCoords(coords);
+                const hash = this.cacheKeyFromCoord(ncoords);
                 this._atlas.removeTile(hash);
             }
         },
 
         bufferTileTexture: function(cached, coords) {
-            let data = new Float64Array(cached.data);
-            let bins = new Uint8Array(data.length * 4);
-            let enc = [0, 0, 0, 0];
-            let bin, i;
+            const data = new Float64Array(cached.data);
+            const bins = new Uint8Array(data.length * 4);
+            const enc = [0, 0, 0, 0];
             let sum = 0;
-            for (i=0; i<data.length; i++) {
+            let bin = 0;
+            for (let i=0; i<data.length; i++) {
                 bin = data[i];
                 sum += bin;
                 encode(enc, bin);
@@ -88,37 +88,37 @@
                 bins[i * 4 + 3] = enc[3];
             }
             if (sum > 0) {
-                let ncoords = this.getNormalizedCoords(coords);
-                let hash = this.cacheKeyFromCoord(ncoords);
+                const ncoords = this.getNormalizedCoords(coords);
+                const hash = this.cacheKeyFromCoord(ncoords);
                 this._atlas.addTile(hash, bins);
             }
         },
 
         renderTiles: function() {
-            let buffer = this._quadBuffer;
-            let shader = this._shader;
-            let cache = this._cache;
-            let zoom = this._map.getZoom();
+            const buffer = this._quadBuffer;
+            const shader = this._shader;
+            const cache = this._cache;
+            const zoom = this._map.getZoom();
             // calc view offset
-            let viewOffset = this.getViewOffset();
+            const viewOffset = this.getViewOffset();
             this._atlas.forEach((chunk, hash) => {
                 // for each tile referring to the data
-                let cached = cache[hash];
+                const cached = cache[hash];
                 if (cached) {
                     // render for each tile
                     _.keys(cached.tiles).forEach(hash => {
                         // find the tiles position from its key
-                        let coords = this.coordFromCacheKey(hash);
+                        const coords = this.coordFromCacheKey(hash);
                         // NOTE: we have to check here if the tiles are stale or not
                         if (coords.z !== zoom) {
                             return;
                         }
                         // get wraparound offset
-                        let wrapOffset = this.getWrapAroundOffset(coords);
+                        const wrapOffset = this.getWrapAroundOffset(coords);
                         // get tile offset
-                        let tileOffset = this.getTileOffset(coords);
+                        const tileOffset = this.getTileOffset(coords);
                         // calculate the total tile offset
-                        let totalOffset = [
+                        const totalOffset = [
                             tileOffset[0] + wrapOffset[0] - viewOffset[0],
                             tileOffset[1] + wrapOffset[1] - viewOffset[1]
                         ];
