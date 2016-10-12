@@ -12,8 +12,6 @@
     let NUM_SLICES = 64;
     let POINT_RADIUS = 2;
 
-    let OFFSETS_INDEX = 1;
-
     let Cluster = WebGL.extend({
 
         options: {
@@ -27,16 +25,16 @@
         onWebGLInit: function(done) {
             // ensure we use the correct context
             esper.WebGLContext.bind(this._container);
-            // get the extension for hardware instancing
-            this._ext = esper.WebGLContext.getExtension('ANGLE_instanced_arrays');
-            if (!this._ext) {
-                throw 'ANGLE_instanced_arrays WebGL extension is not supported';
-            }
             // create the circle vertexbuffer
             this._circleFillBuffer = Shapes.circle.fill(NUM_SLICES);
             this._circleOutlineBuffer = Shapes.circle.outline(NUM_SLICES);
             // vertex atlas for all tiles
-            this._atlas = new VertexAtlas();
+            this._atlas = new VertexAtlas({
+                1: {
+                    type: 'FLOAT',
+                    size: 2
+                }
+            });
             // load shader
             this._shader = new esper.Shader({
                 vert: Shaders.instancedPoint.vert,
@@ -53,7 +51,7 @@
             const cached = event.entry;
             const coords = event.coords;
             const data = new Float64Array(cached.data);
-            const positions = new Float32Array(cached.data);
+            const positions = new Float32Array(data.length * 2);
             const resolution = Math.sqrt(data.length);
             const pointWidth = TILE_SIZE / resolution;
             const halfWidth = pointWidth / 2;
@@ -91,12 +89,12 @@
             }
         },
 
-        drawInstanced: function(buffer, color, radius) {
+        drawInstanced: function(circle, color, radius) {
             let gl = this._gl;
-            let ext = this._ext;
             let shader = this._shader;
             let cache = this._cache;
             let zoom = this._map.getZoom();
+            let atlas = this._atlas;
             if (this.options.blending) {
                 // enable blending
                 gl.enable(gl.BLEND);
@@ -111,17 +109,15 @@
             shader.setUniform('uRadius', radius);
             // calc view offset
             let viewOffset = this.getViewOffset();
-            // binds the buffer to instance
-            buffer.bind();
-            // enable instancing
-            ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 1);
+            // bind the circle to instance
+            circle.bind();
+            // bind offsets and enable instancing
+            atlas.bind();
             // for each allocated chunk
-            this._atlas.forEach((chunk, hash) => {
+            atlas.forEach((chunk, hash) => {
                 // for each tile referring to the data
                 let cached = cache[hash];
                 if (cached) {
-                    // bind the chunk's buffer
-                    chunk.vertexBuffer.bind();
                     // render for each tile
                     _.keys(cached.tiles).forEach(hash => {
                         let coords = this.coordFromCacheKey(hash);
@@ -139,21 +135,15 @@
                             tileOffset[1] + wrapOffset[1] - viewOffset[1]
                         ];
                         shader.setUniform('uTileOffset', totalOffset);
-                        // draw the istances
-                        ext.drawArraysInstancedANGLE(
-                            gl[buffer.mode],
-                            0,
-                            buffer.count,
-                            chunk.count);
+                        // draw the instances
+                        atlas.draw(hash, circle.mode, circle.count);
                     });
-                    // unbind
-                    chunk.vertexBuffer.unbind();
                 }
             });
             // disable instancing
-            ext.vertexAttribDivisorANGLE(OFFSETS_INDEX, 0);
+            atlas.unbind();
             // unbind buffer
-            buffer.unbind();
+            circle.unbind();
         },
 
         renderFrame: function() {
