@@ -30,6 +30,7 @@
     let Micro = require('./type/Micro');
     let Count = require('./type/Count');
     let Community = require('./type/Community');
+    let Custom = require('./type/Custom');
 
     module.exports = {
         Debug: Debug,
@@ -48,7 +49,8 @@
         Macro: Macro,
         Micro: Micro,
         Count: Count,
-        Community: Community
+        Community: Community,
+        Custom: Custom
     };
 
 }());
