@@ -2,7 +2,6 @@
 
     'use strict';
 
-    const _ = require('lodash');
     const Live = require('../core/Live');
     const Elastic = require('../param/Elastic');
     const Tiling = require('../param/Tiling');

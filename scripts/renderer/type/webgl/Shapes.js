@@ -5,31 +5,30 @@
     const esper = require('esper');
 
     function circleOutline(numSegments) {
-        let theta = (2 * Math.PI) / numSegments;
-        let radius = 1.0;
+        const theta = (2 * Math.PI) / numSegments;
+        const radius = 1.0;
         // precalculate sine and cosine
-        let c = Math.cos(theta);
-        let s = Math.sin(theta);
-        let t;
+        const c = Math.cos(theta);
+        const s = Math.sin(theta);
         // start at angle = 0
         let x = radius;
         let y = 0;
-        let positions = new Float32Array(numSegments * 2);
+        const positions = new Float32Array(numSegments * 2);
         for (let i = 0; i < numSegments; i++) {
             positions[i*2] = x;
             positions[i*2+1] = y;
             // apply the rotation
-            t = x;
+            const t = x;
             x = c * x - s * y;
             y = s * t + c * y;
         }
-        let pointers = {
+        const pointers = {
             0: {
                 size: 2,
                 type: 'FLOAT'
             }
         };
-        let options = {
+        const options = {
             mode: 'LINE_LOOP',
             count: positions.length / 2
         };
@@ -37,16 +36,15 @@
     }
 
     function circleFill(numSegments) {
-        let theta = (2 * Math.PI) / numSegments;
-        let radius = 1.0;
+        const theta = (2 * Math.PI) / numSegments;
+        const radius = 1.0;
         // precalculate sine and cosine
-        let c = Math.cos(theta);
-        let s = Math.sin(theta);
-        let t;
+        const c = Math.cos(theta);
+        const s = Math.sin(theta);
         // start at angle = 0
         let x = radius;
         let y = 0;
-        let positions = new Float32Array((numSegments + 2) * 2);
+        const positions = new Float32Array((numSegments + 2) * 2);
         positions[0] = 0;
         positions[1] = 0;
         positions[positions.length-2] = radius;
@@ -55,17 +53,17 @@
             positions[(i+1)*2] = x;
             positions[(i+1)*2+1] = y;
             // apply the rotation
-            t = x;
+            const t = x;
             x = c * x - s * y;
             y = s * t + c * y;
         }
-        let pointers = {
+        const pointers = {
             0: {
                 size: 2,
                 type: 'FLOAT'
             }
         };
-        let options = {
+        const options = {
             mode: 'TRIANGLE_FAN',
             count: positions.length / 2
         };
@@ -73,19 +71,18 @@
     }
 
     function ringFill(numSegments, radius, outline) {
-        let theta = (2 * Math.PI) / numSegments;
+        const theta = (2 * Math.PI) / numSegments;
         // precalculate sine and cosine
-        let c = Math.cos(theta);
-        let s = Math.sin(theta);
-        let t;
+        const c = Math.cos(theta);
+        const s = Math.sin(theta);
         // start at angle = 0
         let x0 = 0;
         let y0 = radius - (outline / 2);
         let x1 = 0;
         let y1 = radius + (outline / 2);
-        let degPerSeg = (360 / numSegments);
-        let positions = new Float32Array(numSegments * (3 + 3) + 6);
-        for (let i = 0; i < numSegments; i++) {
+        const degPerSeg = (360 / (numSegments+1));
+        const positions = new Float32Array((numSegments + 1) * (3 + 3));
+        for (let i = 0; i <= numSegments; i++) {
             positions[i*6] = x0;
             positions[i*6+1] = y0;
             positions[i*6+2] = i * degPerSeg;
@@ -93,35 +90,29 @@
             positions[i*6+4] = y1;
             positions[i*6+5] = i * degPerSeg;
             // apply the rotation
-            t = x0;
+            let t = x0;
             x0 = c * x0 - s * y0;
             y0 = s * t + c * y0;
             t = x1;
             x1 = c * x1 - s * y1;
             y1 = s * t + c * y1;
         }
-        positions[positions.length-6] = positions[0];
-        positions[positions.length-5] = positions[1];
-        positions[positions.length-4] = positions[2];
-        positions[positions.length-3] = positions[3];
-        positions[positions.length-2] = positions[4];
-        positions[positions.length-1] = positions[5];
-        let pointers = {
+        const pointers = {
             0: {
                 size: 3, // x, y, degree
                 type: 'FLOAT'
             }
         };
-        let options = {
+        const options = {
             mode: 'TRIANGLE_STRIP',
             count: positions.length / 3
         };
         return new esper.VertexBuffer(positions, pointers, options);
     }
 
-    function quadFill(size) {
+    function quadTextured(size) {
         // quad vertices
-        let vertices = new Float32Array([
+        const vertices = new Float32Array([
             // positions
             0, 0,
             size, 0,
@@ -157,6 +148,32 @@
             });
     }
 
+    function quadFill(left, right, bottom, top) {
+        // quad vertices
+        const vertices = new Float32Array([
+            // positions
+            left, bottom,
+            right, bottom,
+            right, top,
+            left, bottom,
+            right, top,
+            left, top
+        ]);
+        // quad buffer
+        return new esper.VertexBuffer(
+            vertices,
+            {
+                0: {
+                    size: 2,
+                    type: 'FLOAT',
+                    byteOffset: 0
+                }
+            },
+            {
+                count: 6,
+            });
+    }
+
     module.exports = {
 
         circle: {
@@ -165,6 +182,7 @@
         },
 
         quad: {
+            textured: quadTextured,
             fill: quadFill
         },
 

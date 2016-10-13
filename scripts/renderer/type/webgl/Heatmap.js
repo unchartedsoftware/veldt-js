@@ -32,19 +32,15 @@
             // ensure we use the correct context
             esper.WebGLContext.bind(this._container);
             // quad buffer
-            this._quadBuffer = Shapes.quad.fill(TILE_SIZE);
+            this._quadBuffer = Shapes.quad.textured(TILE_SIZE);
             // texture atlas for all tiles
             this._atlas = new TextureAtlas();
             // load shader
             this._shader = new esper.Shader({
                 vert: Shaders.heatmap.vert,
                 frag: Shaders.heatmap.frag
-            }, err => {
-                if (err) {
-                    done(err);
-                }
-                done(null);
             });
+            done();
         },
 
         initialize: function() {

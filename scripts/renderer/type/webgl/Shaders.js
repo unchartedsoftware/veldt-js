@@ -2,12 +2,12 @@
 
     'use strict';
 
-    let ColorRamp = require('../../mixin/ColorRamp');
+    const ColorRamp = require('../../mixin/ColorRamp');
 
     /**
      * precision
      */
-    let precision =
+    const precision =
         `
         precision highp float;
         precision highp int;
@@ -16,7 +16,7 @@
     /**
      * decode float
      */
-    let decodeRGBAToFloat =
+    const decodeRGBAToFloat =
         `
         float decodeRGBAToFloat(vec4 v) {
             return (v.x * 255.0 * 16777216.0) +
@@ -31,7 +31,7 @@
      */
 
     // log10
-    let log10Transform =
+    const log10Transform =
         `
         float log10(float val) {
             return log(val) / log(10.0);
@@ -50,7 +50,7 @@
         `;
 
     // sigmoid
-    let sigmoidTransform =
+    const sigmoidTransform =
         `
         float sigmoidTransform(float val, float minVal, float maxVal) {
             minVal = abs(minVal);
@@ -63,7 +63,7 @@
         `;
 
     // linear
-    let linearTransform =
+    const linearTransform =
         `
         float linearTransform(float val, float minVal, float maxVal) {
             float range = maxVal - minVal;
@@ -72,7 +72,7 @@
         }
         `;
 
-    let transform =
+    const transform =
         log10Transform +
         sigmoidTransform +
         linearTransform +
@@ -98,7 +98,7 @@
     /**
      * Color ramp
      */
-    let colorRamp =
+    const colorRamp =
         `
         #define RAMP_VALUES ${ColorRamp.NUM_GRADIENT_STEPS}
         uniform vec4 uRamp[RAMP_VALUES];
@@ -119,7 +119,7 @@
     /**
      * Value Range
      */
-    let valueRange =
+    const valueRange =
         `
         uniform float uRangeMin;
         uniform float uRangeMax;
@@ -137,7 +137,7 @@
     /**
      * heatmap shader
      */
-    let heatmap = {
+    const heatmap = {
         vert:
             precision +
             `
@@ -183,7 +183,7 @@
     /**
      * instanced point shader
      */
-    let instancedPoint = {
+    const instancedPoint = {
         vert:
             precision +
             `
@@ -209,7 +209,7 @@
             `
     };
 
-    let point = {
+    const point = {
         vert:
             precision +
             `
@@ -237,7 +237,7 @@
     /**
      * instanced ring shader
      */
-    let instancedRing = {
+    const instancedRing = {
         vert:
             precision +
             `
@@ -275,7 +275,7 @@
             `
     };
 
-    let ring = {
+    const ring = {
         vert:
             precision +
             `
@@ -312,6 +312,36 @@
             `
     };
 
+    /**
+     * instanced ring shader
+     */
+    const instancedTick = {
+        vert:
+            precision +
+            `
+            attribute vec2 aPosition;
+            attribute vec2 aOffset;
+            attribute float aRadius;
+            uniform ivec2 uTileOffset;
+            uniform float uRadiusOffset;
+            uniform mat4 uProjectionMatrix;
+            void main() {
+                ivec2 iOffset = ivec2(aOffset);
+                vec2 mPosition = (aPosition + (vec2(0, 1) * aRadius)) + vec2(iOffset + uTileOffset);
+                gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
+            }
+            `,
+        frag:
+            precision +
+            `
+            uniform float uOpacity;
+            uniform vec4 uColor;
+            void main() {
+                gl_FragColor = vec4(uColor.rgb, uColor.a * uOpacity);
+            }
+            `
+    };
+
     module.exports = {
 
         /**
@@ -337,7 +367,12 @@
         /**
          * ring shader
          */
-        ring: ring
+        ring: ring,
+
+        /**
+         * instanced tick shader
+         */
+        instancedTick: instancedTick
 
     };
 
