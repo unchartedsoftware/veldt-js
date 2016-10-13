@@ -2,20 +2,20 @@
 
     'use strict';
 
-    var gulp = require('gulp');
-    var runSequence = require('run-sequence');
-    var source = require('vinyl-source-stream');
-    var buffer = require('vinyl-buffer');
-    var uglify = require('gulp-uglify');
-    var browserify = require('browserify');
-    var del = require('del');
-    var jshint = require('gulp-jshint');
-    var csso = require('gulp-csso');
-    var concat = require('gulp-concat');
-    var babel = require('babelify');
+    const gulp = require('gulp');
+    const runSequence = require('run-sequence');
+    const source = require('vinyl-source-stream');
+    const buffer = require('vinyl-buffer');
+    const uglify = require('gulp-uglify');
+    const browserify = require('browserify');
+    const del = require('del');
+    const jshint = require('gulp-jshint');
+    const csso = require('gulp-csso');
+    const concat = require('gulp-concat');
+    const babel = require('babelify');
 
-    var name = 'prism';
-    var paths = {
+    const name = 'prism';
+    const paths = {
         root: 'scripts/exports.js',
         styles: [
             'styles/main.css',
@@ -49,7 +49,7 @@
     }
 
     function build(root, output, minify) {
-        var b = browserify(root, {
+        const b = browserify(root, {
                 debug: !minify,
                 standalone: name
             }).transform(babel, {
