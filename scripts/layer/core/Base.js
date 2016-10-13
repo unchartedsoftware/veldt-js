@@ -6,7 +6,7 @@
         return ((n % m) + m) % m;
     }
 
-    let Base = L.GridLayer.extend({
+    const Base = L.GridLayer.extend({
 
         options: {
             tms: false
@@ -47,9 +47,9 @@
 
         _getLayerPointFromLonLat: function(lonlatPoint, zoom) {
             zoom = (zoom !== undefined) ? zoom : this._map.getZoom();
-            let pixel = this._map.project(lonlatPoint, zoom);
-            let pow = Math.pow(2, zoom);
-            let tileSize = this.options.tileSize;
+            const pixel = this._map.project(lonlatPoint, zoom);
+            const pow = Math.pow(2, zoom);
+            const tileSize = this.options.tileSize;
             return {
                 x: mod(pixel.x, pow * tileSize),
                 y: mod(pixel.y, pow * tileSize)
@@ -57,12 +57,12 @@
         },
 
         getLayerPointFromEvent: function(e) {
-            let lonlat = this._map.mouseEventToLatLng(e);
+            const lonlat = this._map.mouseEventToLatLng(e);
             return this._getLayerPointFromLonLat(lonlat);
         },
 
         getTileCoordFromLayerPoint: function(layerPoint) {
-            let tileSize = this.options.tileSize;
+            const tileSize = this.options.tileSize;
             return {
                 x: Math.floor(layerPoint.x / tileSize),
                 y: Math.floor(layerPoint.y / tileSize),
@@ -71,14 +71,14 @@
         },
 
         getBinCoordFromLayerPoint: function(layerPoint, res) {
-            let tileSize = this.options.tileSize;
-            let resolution = res || this.getResolution() || tileSize;
-            let tx = mod(layerPoint.x, tileSize);
-            let y = this.options.tms ? resolution - layerPoint.y : layerPoint.y;
-            let ty = mod(y, tileSize);
-            let pixelSize = tileSize / resolution;
-            let bx = Math.floor(tx / pixelSize);
-            let by = Math.floor(ty / pixelSize);
+            const tileSize = this.options.tileSize;
+            const resolution = res || this.getResolution() || tileSize;
+            const tx = mod(layerPoint.x, tileSize);
+            const y = this.options.tms ? resolution - layerPoint.y : layerPoint.y;
+            const ty = mod(y, tileSize);
+            const pixelSize = tileSize / resolution;
+            const bx = Math.floor(tx / pixelSize);
+            const by = Math.floor(ty / pixelSize);
             return {
                 x: bx,
                 y: by,
@@ -88,10 +88,10 @@
         },
 
         _addTile: function(coords, container) {
-            let tilePos = this._getTilePos(coords);
-            let key = this._tileCoordsToKey(coords);
+            const tilePos = this._getTilePos(coords);
+            const key = this._tileCoordsToKey(coords);
             // Override so that we don't pass in wrapped coords here
-            let tile = this.createTile(coords, L.bind(this._tileReady, this, coords));
+            const tile = this.createTile(coords, L.bind(this._tileReady, this, coords));
             this._initTile(tile);
             // if createTile is defined with a second argument ("done" callback),
             // we know that tile is async and will be ready later; otherwise

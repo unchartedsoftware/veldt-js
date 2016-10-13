@@ -2,24 +2,24 @@
 
     'use strict';
 
-    let HTML = require('../../core/HTML');
-    let ValueTransform = require('../../mixin/ValueTransform');
-    let sentiment = require('../../sentiment/Sentiment');
-    let sentimentFunc = sentiment.getClassFunc(-1, 1);
+    const HTML = require('../../core/HTML');
+    const ValueTransform = require('../../mixin/ValueTransform');
+    const sentiment = require('../../sentiment/Sentiment');
+    const sentimentFunc = sentiment.getClassFunc(-1, 1);
 
-    let VERTICAL_OFFSET = 24;
-    let HORIZONTAL_OFFSET = 10;
-    let NUM_ATTEMPTS = 1;
+    const VERTICAL_OFFSET = 24;
+    const HORIZONTAL_OFFSET = 10;
+    const NUM_ATTEMPTS = 1;
 
     /**
      * Given an initial position, return a new position, incrementally spiralled
      * outwards.
      */
-    let spiralPosition = function(pos) {
-        let pi2 = 2 * Math.PI;
-        let circ = pi2 * pos.radius;
-        let inc = (pos.arcLength > circ / 10) ? circ / 10 : pos.arcLength;
-        let da = inc / pos.radius;
+    const spiralPosition = function(pos) {
+        const pi2 = 2 * Math.PI;
+        const circ = pi2 * pos.radius;
+        const inc = (pos.arcLength > circ / 10) ? circ / 10 : pos.arcLength;
+        const da = inc / pos.radius;
         let nt = (pos.t + da);
         if (nt > pi2) {
             nt = nt % pi2;
@@ -34,7 +34,7 @@
     /**
      *  Returns true if bounding box a intersects bounding box b
      */
-    let intersectTest = function(a, b) {
+    const intersectTest = function(a, b) {
         return (Math.abs(a.x - b.x) * 2 < (a.width + b.width)) &&
             (Math.abs(a.y - b.y) * 2 < (a.height + b.height));
     };
@@ -42,7 +42,7 @@
     /**
      *  Returns true if bounding box a is not fully contained inside bounding box b
      */
-    let overlapTest = function(a, b) {
+    const overlapTest = function(a, b) {
         return (a.x + a.width / 2 > b.x + b.width / 2 ||
             a.x - a.width / 2 < b.x - b.width / 2 ||
             a.y + a.height / 2 > b.y + b.height / 2 ||
@@ -53,15 +53,14 @@
      * Check if a word intersects another word, or is not fully contained in the
      * tile bounding box
      */
-    let intersectWord = function(position, word, cloud, bb) {
-        let box = {
+    const intersectWord = function(position, word, cloud, bb) {
+        const box = {
             x: position.x,
             y: position.y,
             height: word.height,
             width: word.width
         };
-        let i;
-        for (i = 0; i < cloud.length; i++) {
+        for (let i = 0; i < cloud.length; i++) {
             if (intersectTest(box, cloud[i])) {
                 return true;
             }
@@ -77,7 +76,7 @@
         return false;
     };
 
-    let WordCloud = HTML.extend({
+    const WordCloud = HTML.extend({
 
         includes: [
             // mixins
@@ -108,20 +107,20 @@
         },
 
         onMouseOver: function(e) {
-            let target = $(e.originalEvent.target);
+            const target = $(e.originalEvent.target);
             $('.word-cloud-label').removeClass('hover');
-            let word = target.attr('data-word');
+            const word = target.attr('data-word');
             if (word) {
                 // highlight all instances of the word
                 $(`.word-cloud-label[data-word="${word}"]`).addClass('hover');
                 // get layer coord
-                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                const layerPoint = this.getLayerPointFromEvent(e.originalEvent);
                 // get tile coord
-                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                const coord = this.getTileCoordFromLayerPoint(layerPoint);
                 // get cache key
-                let nkey = this.cacheKeyFromCoord(coord, true);
+                const nkey = this.cacheKeyFromCoord(coord, true);
                 // get cache entry
-                let cached = this._cache[nkey];
+                const cached = this._cache[nkey];
                 if (cached && cached.data) {
                     this.fire('mouseover', {
                         elem: e.originalEvent.target,
@@ -138,18 +137,18 @@
         },
 
         onMouseOut: function(e) {
-            let target = $(e.originalEvent.target);
+            const target = $(e.originalEvent.target);
             $('.word-cloud-label').removeClass('hover');
-            let word = target.attr('data-word');
+            const word = target.attr('data-word');
             if (word) {
                 // get layer coord
-                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                const layerPoint = this.getLayerPointFromEvent(e.originalEvent);
                 // get tile coord
-                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                const coord = this.getTileCoordFromLayerPoint(layerPoint);
                 // get cache key
-                let nkey = this.cacheKeyFromCoord(coord, true);
+                const nkey = this.cacheKeyFromCoord(coord, true);
                 // get cache entry
-                let cached = this._cache[nkey];
+                const cached = this._cache[nkey];
                 if (cached && cached.data) {
                     this.fire('mouseout', {
                         elem: e.originalEvent.target,
@@ -170,22 +169,22 @@
             $('.word-cloud-label').removeClass('highlight');
             $(this._container).removeClass('highlight');
             // get target
-            let target = $(e.originalEvent.target);
+            const target = $(e.originalEvent.target);
             if (!this.isTargetLayer(e.originalEvent.target)) {
                 // this layer is not the target
                 return;
             }
-            let word = target.attr('data-word');
+            const word = target.attr('data-word');
             if (word) {
                 this.setHighlight(word);
                 // get layer coord
-                let layerPoint = this.getLayerPointFromEvent(e.originalEvent);
+                const layerPoint = this.getLayerPointFromEvent(e.originalEvent);
                 // get tile coord
-                let coord = this.getTileCoordFromLayerPoint(layerPoint);
+                const coord = this.getTileCoordFromLayerPoint(layerPoint);
                 // get cache key
-                let nkey = this.cacheKeyFromCoord(coord, true);
+                const nkey = this.cacheKeyFromCoord(coord, true);
                 // get cache entry
-                let cached = this._cache[nkey];
+                const cached = this._cache[nkey];
                 if (cached && cached.data) {
                     this.fire('click', {
                         elem: e.originalEvent.target,
@@ -209,9 +208,9 @@
                 return b.count - a.count;
             }).slice(0, this.options.maxNumWords);
             // build measurement html
-            let $html = $('<div style="height:256px; width:256px;"></div>');
-            let minFontSize = this.options.minFontSize;
-            let maxFontSize = this.options.maxFontSize;
+            const $html = $('<div style="height:256px; width:256px;"></div>');
+            const minFontSize = this.options.minFontSize;
+            const maxFontSize = this.options.maxFontSize;
             wordCounts.forEach(word => {
                 word.percent = this.transformValue(word.count);
                 word.fontSize = minFontSize + word.percent * (maxFontSize - minFontSize);
@@ -233,14 +232,14 @@
         },
 
         _createWordCloud: function(wordCounts) {
-            let tileSize = this.options.tileSize;
-            let boundingBox = {
+            const tileSize = this.options.tileSize;
+            const boundingBox = {
                 width: tileSize - HORIZONTAL_OFFSET * 2,
                 height: tileSize - VERTICAL_OFFSET * 2,
                 x: 0,
                 y: 0
             };
-            let cloud = [];
+            const cloud = [];
             // sort words by frequency
             wordCounts = this._measureWords(wordCounts);
             // assemble word cloud
@@ -281,7 +280,7 @@
         },
 
         extractExtrema: function(data) {
-            let sums = _.map(data, function(count) {
+            const sums = _.map(data, function(count) {
                 count = count.counts || count;
                 if (_.isNumber(count)) {
                     return count;
@@ -302,10 +301,10 @@
             if (!data || _.isEmpty(data)) {
                 return;
             }
-            let highlight = this.highlight;
-            let wordCounts = _.map(data, (keyData, key) => {
-                let count = keyData.counts || keyData;
-                let text = this.getText(keyData, key);
+            const highlight = this.highlight;
+            const wordCounts = _.map(data, (keyData, key) => {
+                const count = keyData.counts || keyData;
+                const text = this.getText(keyData, key);
                 if (_.isNumber(count)) {
                     return {
                         key: key,
@@ -313,8 +312,8 @@
                         count: count
                     };
                 }
-                let total = sentiment.getTotal(count);
-                let avg = sentiment.getAvg(count);
+                const total = sentiment.getTotal(count);
+                const avg = sentiment.getAvg(count);
                 return {
                     key: key,
                     text: text,
@@ -328,20 +327,20 @@
                 return;
             }
             // genereate the cloud
-            let cloud = this._createWordCloud(wordCounts);
+            const cloud = this._createWordCloud(wordCounts);
             // build html elements
-            let halfSize = this.options.tileSize / 2;
+            const halfSize = this.options.tileSize / 2;
             let html = '';
             cloud.forEach(function(word) {
                 // create classes
-                let classNames = [
+                const classNames = [
                         'word-cloud-label',
                         `word-cloud-label-${word.percent}`,
                         word.text === highlight ? 'highlight' : '',
                         word.sentiment ? word.sentiment : ''
                     ].join(' ');
                 // create styles
-                let styles = [
+                const styles = [
                         `font-size: ${word.fontSize}px`,
                         `left: ${(halfSize + word.x) - (word.width / 2)}px`,
                         `top: ${(halfSize + word.y) - (word.height / 2)}px`,

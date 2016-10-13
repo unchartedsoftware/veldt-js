@@ -2,7 +2,7 @@
 
     'use strict';
 
-    let setDateHistogram = function(field, from, to, interval) {
+    const setDateHistogram = function(field, from, to, interval) {
         if (!field) {
             throw 'DateHistogram `field` is missing from argument';
         }
@@ -22,7 +22,7 @@
         return this;
     };
 
-    let getDateHistogram = function() {
+    const getDateHistogram = function() {
         return this._params.date_histogram;
     };
 

@@ -2,14 +2,14 @@
 
     'use strict';
 
-    let checkField = function(meta, field) {
+    const checkField = function(meta, field) {
         if (meta) {
             if (!meta.extrema) {
                 throw 'Range `field` ' + field + ' is not ordinal in meta data.';
             }
         } else {
             throw 'Range `field` ' + field + ' is not recognized in meta data.';
-        }        
+        }
     };
 
     module.exports = function(meta, query) {

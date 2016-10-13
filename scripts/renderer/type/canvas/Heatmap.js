@@ -2,11 +2,11 @@
 
     'use strict';
 
-    let Canvas = require('../../core/Canvas');
-    let ColorRamp = require('../../mixin/ColorRamp');
-    let ValueTransform = require('../../mixin/ValueTransform');
+    const Canvas = require('../../core/Canvas');
+    const ColorRamp = require('../../mixin/ColorRamp');
+    const ValueTransform = require('../../mixin/ValueTransform');
 
-    let Heatmap = Canvas.extend({
+    const Heatmap = Canvas.extend({
 
         includes: [
             // mixins
@@ -20,15 +20,17 @@
         },
 
         renderCanvas: function(bins, resolution, ramp) {
-            let canvas = document.createElement('canvas');
+            const canvas = document.createElement('canvas');
             canvas.height = resolution;
             canvas.width = resolution;
-            let ctx = canvas.getContext('2d');
-            let imageData = ctx.getImageData(0, 0, resolution, resolution);
-            let data = imageData.data;
-            let color = [0, 0, 0, 0];
-            let nval, rval, bin, i;
-            for (i=0; i<bins.length; i++) {
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, resolution, resolution);
+            const data = imageData.data;
+            const color = [0, 0, 0, 0];
+            let nval = 0;
+            let rval = 0;
+            let bin = 0;
+            for (let i=0; i<bins.length; i++) {
                 bin = bins[i];
                 if (bin === 0) {
                     color[0] = 0;
@@ -53,11 +55,11 @@
             if (!data) {
                 return;
             }
-            let bins = new Float64Array(data);
-            let resolution = Math.sqrt(bins.length);
-            let ramp = this.getColorRamp();
-            let tileCanvas = this.renderCanvas(bins, resolution, ramp);
-            let ctx = canvas.getContext('2d');
+            const bins = new Float64Array(data);
+            const resolution = Math.sqrt(bins.length);
+            const ramp = this.getColorRamp();
+            const tileCanvas = this.renderCanvas(bins, resolution, ramp);
+            const ctx = canvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(
                 tileCanvas,

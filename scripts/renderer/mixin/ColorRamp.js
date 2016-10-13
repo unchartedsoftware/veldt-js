@@ -2,12 +2,12 @@
 
     'use strict';
 
-    let NUM_GRADIENT_STEPS = 100;
+    const NUM_GRADIENT_STEPS = 100;
 
     function rgb2lab(rgb) {
-        let r = rgb[0] > 0.04045 ? Math.pow((rgb[0] + 0.055) / 1.055, 2.4) : rgb[0] / 12.92;
-        let g = rgb[1] > 0.04045 ? Math.pow((rgb[1] + 0.055) / 1.055, 2.4) : rgb[1] / 12.92;
-        let b = rgb[2] > 0.04045 ? Math.pow((rgb[2] + 0.055) / 1.055, 2.4) : rgb[2] / 12.92;
+        const r = rgb[0] > 0.04045 ? Math.pow((rgb[0] + 0.055) / 1.055, 2.4) : rgb[0] / 12.92;
+        const g = rgb[1] > 0.04045 ? Math.pow((rgb[1] + 0.055) / 1.055, 2.4) : rgb[1] / 12.92;
+        const b = rgb[2] > 0.04045 ? Math.pow((rgb[2] + 0.055) / 1.055, 2.4) : rgb[2] / 12.92;
         //Observer. = 2°, Illuminant = D65
         let x = r * 0.4124564 + g * 0.3575761 + b * 0.1804375;
         let y = r * 0.2126729 + g * 0.7151522 + b * 0.0721750;
@@ -51,8 +51,8 @@
             (c1[3] - c2[3]) * (c1[3] - c2[3]));
     }
 
-    let buildFlatLookupTable = function(color) {
-        let output = [];
+    const buildFlatLookupTable = function(color) {
+        const output = [];
         for (let i = 0; i < NUM_GRADIENT_STEPS; i++) {
             output.push(color[0]);
             output.push(color[1]);
@@ -63,18 +63,18 @@
     };
 
     // Interpolate between a set of colors using even perceptual distance and interpolation in CIE L*a*b* space
-    let buildPerceptualLookupTable = function(baseColors) {
-        let buffer = new ArrayBuffer(NUM_GRADIENT_STEPS * 4 * 4);
-        let outputGradient = new Float32Array(buffer);
+    const buildPerceptualLookupTable = function(baseColors) {
+        const buffer = new ArrayBuffer(NUM_GRADIENT_STEPS * 4 * 4);
+        const outputGradient = new Float32Array(buffer);
         // Calculate perceptual spread in L*a*b* space
-        let labs = _.map(baseColors, color => {
+        const labs = _.map(baseColors, color => {
             return rgb2lab([color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 255]);
         });
         let distances = _.map(labs, (color, index, colors) => {
             return index > 0 ? distance(color, colors[index - 1]) : 0;
         });
         // Calculate cumulative distances in [0,1]
-        let totalDistance = _.reduce(distances, (a, b) => {
+        const totalDistance = _.reduce(distances, (a, b) => {
             return a + b;
         }, 0);
         distances = _.map(distances, d => {
@@ -106,7 +106,7 @@
         return outputGradient;
     };
 
-    let COOL = buildPerceptualLookupTable([
+    const COOL = buildPerceptualLookupTable([
         [0x04, 0x20, 0x40, 0x50],
         [0x08, 0x40, 0x81, 0x7f],
         [0x08, 0x68, 0xac, 0xff],
@@ -119,7 +119,7 @@
         [0xf7, 0xfc, 0xf0, 0xff]
     ]);
 
-    let HOT = buildPerceptualLookupTable([
+    const HOT = buildPerceptualLookupTable([
         [0x40, 0x00, 0x13, 0x50],
         [0x80, 0x00, 0x26, 0x7f],
         [0xbd, 0x00, 0x26, 0xff],
@@ -131,7 +131,7 @@
         [0xff, 0xed, 0xa0, 0xff]
     ]);
 
-    let VERDANT = buildPerceptualLookupTable([
+    const VERDANT = buildPerceptualLookupTable([
         [0x00, 0x40, 0x26, 0x50],
         [0x00, 0x5a, 0x32, 0x7f],
         [0x23, 0x84, 0x43, 0xff],
@@ -143,7 +143,7 @@
         [0xff, 0xff, 0xe5, 0xff]
     ]);
 
-    let SPECTRAL = buildPerceptualLookupTable([
+    const SPECTRAL = buildPerceptualLookupTable([
         [0x26, 0x1a, 0x40, 0x50],
         [0x44, 0x2f, 0x72, 0x7f],
         [0xe1, 0x2b, 0x02, 0xff],
@@ -152,7 +152,7 @@
         [0xff, 0xff, 0xff, 0xff]
     ]);
 
-    let TEMPERATURE = buildPerceptualLookupTable([
+    const TEMPERATURE = buildPerceptualLookupTable([
         [0x00, 0x16, 0x40, 0x50],
         [0x00, 0x39, 0x66, 0x7f],
         [0x31, 0x3d, 0x66, 0xff],
@@ -161,32 +161,32 @@
         [0xff, 0xff, 0xff, 0xff]
     ]);
 
-    let GREYSCALE = buildPerceptualLookupTable([
+    const GREYSCALE = buildPerceptualLookupTable([
         [0x00, 0x00, 0x00, 0x7f],
         [0x40, 0x40, 0x40, 0xff],
         [0xff, 0xff, 0xff, 0xff]
     ]);
 
-    let POLAR_HOT = buildPerceptualLookupTable([
+    const POLAR_HOT = buildPerceptualLookupTable([
         [ 0xff, 0x44, 0x00, 0xff ],
         [ 0xbd, 0xbd, 0xbd, 0xb0 ]
     ]);
 
-    let POLAR_COLD = buildPerceptualLookupTable([
+    const POLAR_COLD = buildPerceptualLookupTable([
         [ 0xbd, 0xbd, 0xbd, 0xb0 ],
         [ 0x32, 0xa5, 0xf9, 0xff ]
     ]);
 
-    let FIRE = buildPerceptualLookupTable([
+    const FIRE = buildPerceptualLookupTable([
         [0x96, 0x00, 0x00, 0x96],
         [0xff, 0xff, 0x32, 0xff]
     ]);
 
-    let FLAT = buildFlatLookupTable([0xff, 0xff, 0xff, 0xff]);
+    const FLAT = buildFlatLookupTable([0xff, 0xff, 0xff, 0xff]);
 
-    let buildLookupFunction = function(RAMP) {
+    const buildLookupFunction = function(RAMP) {
         return function(scaledValue, inColor) {
-            let index = Math.floor(scaledValue * (RAMP.length / 4 - 1));
+            const index = Math.floor(scaledValue * (RAMP.length / 4 - 1));
             inColor[0] = RAMP[index * 4];
             inColor[1] = RAMP[index * 4 + 1];
             inColor[2] = RAMP[index * 4 + 2];
@@ -195,14 +195,14 @@
         };
     };
 
-    let concat = function(a, b) {
-        let combined = new Float32Array(a.length + b.length);
+    const concat = function(a, b) {
+        const combined = new Float32Array(a.length + b.length);
         combined.set(a, 0);
         combined.set(b, a.length);
         return combined;
     };
 
-    let ColorTables = {
+    const ColorTables = {
         cool: COOL,
         hot: HOT,
         verdant: VERDANT,
@@ -213,7 +213,7 @@
         flat: FLAT
     };
 
-    let ColorRamp = {
+    const ColorRamp = {
         cool: buildLookupFunction(COOL),
         hot: buildLookupFunction(HOT),
         verdant: buildLookupFunction(VERDANT),
@@ -225,8 +225,8 @@
         flat: buildLookupFunction(FLAT)
     };
 
-    let setColorRamp = function(type, baseColors) {
-        let func = ColorRamp[type.toLowerCase()];
+    const setColorRamp = function(type, baseColors) {
+        const func = ColorRamp[type.toLowerCase()];
         if (func) {
             this._colorRamp = func;
         } else if (baseColors) {
@@ -237,15 +237,15 @@
         return this;
     };
 
-    let getColorRamp = function(type) {
+    const getColorRamp = function(type) {
         return this._colorRamp || ColorRamp[type.toLowerCase()];
     };
 
-    let getColorRampTable = function() {
+    const getColorRampTable = function() {
         return ColorTables[this._colorRampType];
     };
 
-    let initialize = function() {
+    const initialize = function() {
         this._colorRamp = ColorRamp.verdant;
         this._colorRampType = 'verdant';
     };

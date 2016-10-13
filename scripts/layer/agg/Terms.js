@@ -2,7 +2,7 @@
 
     'use strict';
 
-    let checkField = function(meta, field) {
+    const checkField = function(meta, field) {
         if (meta) {
             if (meta.type !== 'string') {
                 throw 'Terms `field` ' + field + ' is not of type `string` in meta data';
@@ -12,7 +12,7 @@
         }
     };
 
-    let setTerms = function(field, size) {
+    const setTerms = function(field, size) {
         if (!field) {
             throw 'Terms `field` is missing from argument';
         }
@@ -25,7 +25,7 @@
         return this;
     };
 
-    let getTerms = function() {
+    const getTerms = function() {
         return this._params.terms;
     };
 

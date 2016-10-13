@@ -22,6 +22,7 @@
     let TopTrails = require('./type/TopTrails');
     let TopCount = require('./type/TopCount');
     let TopFrequency = require('./type/TopFrequency');
+    let Frequency = require('./type/Frequency');
     let TopicCount = require('./type/TopicCount');
     let TopicFrequency = require('./type/TopicFrequency');
     let Preview = require('./type/Preview');
@@ -41,6 +42,7 @@
         TopCount: TopCount,
         TopTrails: TopTrails,
         TopFrequency: TopFrequency,
+        Frequency: Frequency,
         TopicCount: TopicCount,
         TopicFrequency: TopicFrequency,
         Preview: Preview,

@@ -2,16 +2,11 @@
 
     'use strict';
 
-    let RETRY_INTERVAL = 5000;
+    const RETRY_INTERVAL = 5000;
 
     function getHost() {
-        let loc = window.location;
-        let new_uri;
-        if (loc.protocol === 'https:') {
-            new_uri = 'wss:';
-        } else {
-            new_uri = 'ws:';
-        }
+        const loc = window.location;
+        const new_uri = (loc.protocol === 'https:') ? 'wss:' : 'ws:';
         return `${new_uri}//${loc.host}${loc.pathname}`;
     }
 
@@ -25,9 +20,9 @@
         };
         // on message
         requestor.socket.onmessage = function(event) {
-            let res = JSON.parse(event.data);
-            let hash = requestor.getHash(res);
-            let request = requestor.requests[hash];
+            const res = JSON.parse(event.data);
+            const hash = requestor.getHash(res);
+            const request = requestor.requests[hash];
             delete requestor.requests[hash];
             if (res.success) {
                 request.resolve(requestor.getURL(res), res);
@@ -82,7 +77,7 @@
                 this.pending.push(req);
                 return;
             }
-            let hash = this.getHash(req);
+            const hash = this.getHash(req);
             let request = this.requests[hash];
             if (request) {
                 return request.promise();

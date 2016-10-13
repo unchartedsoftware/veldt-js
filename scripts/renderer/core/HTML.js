@@ -2,9 +2,9 @@
 
     'use strict';
 
-    let DOM = require('./DOM');
+    const DOM = require('./DOM');
 
-    let HTML = DOM.extend({
+    const HTML = DOM.extend({
 
         options: {
             zoomAnimation: false
@@ -44,7 +44,7 @@
         },
 
         createTile: function(coords, done) {
-            let tile = L.DomUtil.create('div', 'leaflet-tile leaflet-html-tile');
+            const tile = L.DomUtil.create('div', 'leaflet-tile leaflet-html-tile');
             tile.width = this.options.tileSize;
             tile.height = this.options.tileSize;
             this._requestTile(coords, tile, () => {

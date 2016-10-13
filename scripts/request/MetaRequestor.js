@@ -2,7 +2,7 @@
 
     'use strict';
 
-    let Requestor = require('./Requestor');
+    const Requestor = require('./Requestor');
 
     class MetaRequestor extends Requestor {
         constructor(url, callback) {

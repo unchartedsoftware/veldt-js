@@ -2,9 +2,9 @@
 
     'use strict';
 
-    let DOM = require('./DOM');
+    const DOM = require('./DOM');
 
-    let Canvas = DOM.extend({
+    const Canvas = DOM.extend({
 
         onAdd: function(map) {
             DOM.prototype.onAdd.call(this, map);
@@ -21,7 +21,7 @@
         },
 
         createTile: function(coords, done) {
-            let tile = L.DomUtil.create('canvas', 'leaflet-tile');
+            const tile = L.DomUtil.create('canvas', 'leaflet-tile');
             tile.style['pointer-events'] = 'all';
             tile.width = this.options.tileSize;
             tile.height = this.options.tileSize;
@@ -32,9 +32,9 @@
         },
 
         clearTiles: function() {
-            let tileSize = this.options.tileSize;
+            const tileSize = this.options.tileSize;
             _.forIn(this._tiles, tile => {
-                let ctx = tile.el.getContext('2d');
+                const ctx = tile.el.getContext('2d');
                 ctx.clearRect(0, 0, tileSize, tileSize);
             });
         },

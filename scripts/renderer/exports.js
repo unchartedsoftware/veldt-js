@@ -22,7 +22,6 @@
         Ring: require('./type/html/Ring'),
         WordCloud: require('./type/html/WordCloud'),
         WordHistogram: require('./type/html/WordHistogram'),
-        Community: require('./type/html/Community'),
         CommunityLabel: require('./type/html/CommunityLabel')
     };
 
@@ -30,7 +29,8 @@
     let WebGL = {
         Heatmap: require('./type/webgl/Heatmap'),
         Point: require('./type/webgl/Point'),
-        Cluster: require('./type/webgl/Cluster')
+        Cluster: require('./type/webgl/Cluster'),
+        Community: require('./type/webgl/Community')
     };
 
     // pending layer renderers

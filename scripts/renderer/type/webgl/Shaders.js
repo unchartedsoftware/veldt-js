@@ -26,13 +26,6 @@
         }
         `;
 
-    let decodeUint16ToUint32 =
-        `
-        int decodeUint16ToUint32(float a, float b) {
-            return int(a * 65536.0) + int(b);
-        }
-        `;
-
     /**
      * transforms
      */
@@ -151,7 +144,6 @@
             attribute vec2 aPosition;
             attribute vec2 aTextureCoord;
             uniform mat4 uProjectionMatrix;
-            uniform ivec2 uViewOffset;
             uniform ivec2 uTileOffset;
             uniform vec2 uTextureCoordOffset;
             uniform vec2 uTextureCoordExtent;
@@ -160,8 +152,8 @@
                 vTextureCoord = vec2(
                     uTextureCoordOffset.x + (aTextureCoord.x * uTextureCoordExtent.x),
                     uTextureCoordOffset.y + (aTextureCoord.y * uTextureCoordExtent.y));
-                ivec2 mPosition = ivec2(aPosition) - uViewOffset + uTileOffset;
-                gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
+                ivec2 wPosition = ivec2(aPosition) + uTileOffset;
+                gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
             }
             `,
         frag:
@@ -194,18 +186,15 @@
     let instancedPoint = {
         vert:
             precision +
-            decodeUint16ToUint32 +
             `
             attribute vec2 aPosition;
-            attribute vec4 aOffset;
-            uniform ivec2 uViewOffset;
-            uniform float uScale;
+            attribute vec2 aOffset;
+            uniform ivec2 uTileOffset;
+            uniform float uRadius;
             uniform mat4 uProjectionMatrix;
             void main() {
-                ivec2 iOffset = ivec2(
-                    decodeUint16ToUint32(aOffset.x, aOffset.y),
-                    decodeUint16ToUint32(aOffset.z, aOffset.w));
-                vec2 mPosition = uScale * aPosition + vec2(iOffset - uViewOffset);
+                ivec2 iOffset = ivec2(aOffset);
+                vec2 mPosition = (uRadius * aPosition) + vec2(iOffset + uTileOffset);
                 gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
             }
             `,
@@ -226,11 +215,11 @@
             `
             attribute vec2 aPosition;
             uniform ivec2 uOffset;
-            uniform ivec2 uViewOffset;
-            uniform float uScale;
+            uniform ivec2 uTileOffset;
+            uniform float uRadius;
             uniform mat4 uProjectionMatrix;
             void main() {
-                vec2 mPosition = uScale * aPosition + vec2(uOffset - uViewOffset);
+                vec2 mPosition = uRadius * aPosition + vec2(uOffset + uTileOffset);
                 gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
             }
             `,
@@ -241,6 +230,84 @@
             uniform vec4 uColor;
             void main() {
                 gl_FragColor = vec4(uColor.rgb, uColor.a * uOpacity);
+            }
+            `
+    };
+
+    /**
+     * instanced ring shader
+     */
+    let instancedRing = {
+        vert:
+            precision +
+            `
+            attribute vec3 aPosition;
+            attribute vec2 aOffset;
+            attribute float aRadius;
+            uniform ivec2 uTileOffset;
+            uniform float uDegrees;
+            uniform float uRadiusOffset;
+            uniform mat4 uProjectionMatrix;
+            uniform vec4 uColor;
+            varying vec4 vColor;
+            void main() {
+                ivec2 iOffset = ivec2(aOffset);
+                vec2 mPosition = (aPosition.xy + (normalize(aPosition.xy) * (aRadius - uRadiusOffset))) + vec2(iOffset + uTileOffset);
+                if (aPosition.z > uDegrees) {
+                    vColor = vec4(0.0, 0.0, 0.0, 0.0);
+                } else {
+                    vColor = uColor;
+                }
+                gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
+            }
+            `,
+        frag:
+            precision +
+            `
+            uniform float uOpacity;
+            varying vec4 vColor;
+            void main() {
+                if (vColor.a == 0.0) {
+                    discard;
+                }
+                gl_FragColor = vec4(vColor.rgb, vColor.a * uOpacity);
+            }
+            `
+    };
+
+    let ring = {
+        vert:
+            precision +
+            `
+            attribute vec3 aPosition;
+            uniform ivec2 uOffset;
+            uniform float uRadius;
+            uniform float uDegrees;
+            uniform float uRadiusOffset;
+            uniform ivec2 uTileOffset;
+            uniform mat4 uProjectionMatrix;
+            uniform vec4 uColor;
+            varying vec4 vColor;
+            void main() {
+                vec2 mPosition = (aPosition.xy + (normalize(aPosition.xy) * (uRadius - uRadiusOffset))) + vec2(uOffset + uTileOffset);
+                if (aPosition.z > uDegrees) {
+                    vColor = vec4(0.0, 0.0, 0.0, 0.0);
+                } else {
+                    vColor = uColor;
+                }
+                gl_Position = uProjectionMatrix * vec4(mPosition, 0.0, 1.0);
+            }
+            `,
+        frag:
+            precision +
+            `
+            uniform float uOpacity;
+            varying vec4 vColor;
+            void main() {
+                if (vColor.a == 0.0) {
+                    discard;
+                }
+                gl_FragColor = vec4(vColor.rgb, vColor.a * uOpacity);
             }
             `
     };
@@ -260,7 +327,17 @@
         /**
          * point shader
          */
-        point: point
+        point: point,
+
+        /**
+         * instanced ring shader
+         */
+        instancedRing: instancedRing,
+
+        /**
+         * ring shader
+         */
+        ring: ring
 
     };
 
