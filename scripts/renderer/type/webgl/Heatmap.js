@@ -60,7 +60,8 @@
         onCacheUnload: function(event) {
             const cached = event.entry;
             const coords = event.coords;
-            if (cached.data && cached.data.byteLength > 0) {
+            if (cached.sum > 0) {
+                cached.sum = 0;
                 // remove from atlas
                 const ncoords = this.getNormalizedCoords(coords);
                 const hash = this.cacheKeyFromCoord(ncoords);
@@ -84,6 +85,7 @@
                 bins[i * 4 + 3] = enc[3];
             }
             if (sum > 0) {
+                cached.sum = sum;
                 const ncoords = this.getNormalizedCoords(coords);
                 const hash = this.cacheKeyFromCoord(ncoords);
                 this._atlas.addTile(hash, bins);
