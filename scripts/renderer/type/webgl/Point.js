@@ -4,7 +4,6 @@
 
     const esper = require('esper');
     const rbush = require('rbush');
-    const parallel = require('async/parallel');
     const WebGL = require('../../core/WebGL');
     const VertexAtlas = require('./VertexAtlas');
     const Shaders = require('./Shaders');
@@ -61,37 +60,15 @@
             // create spatial index
             this._rtree = new rbush();
             // load shaders
-            parallel({
-                instanced: (done) => {
-                    const shader = new esper.Shader({
-                        vert: Shaders.instancedPoint.vert,
-                        frag: Shaders.instancedPoint.frag
-                    }, err => {
-                        if (err) {
-                            done(err, null);
-                        }
-                        done(null, shader);
-                    });
-                },
-                individual: (done) => {
-                    const shader = new esper.Shader({
-                        vert: Shaders.point.vert,
-                        frag: Shaders.point.frag
-                    }, err => {
-                        if (err) {
-                            done(err, null);
-                        }
-                        done(null, shader);
-                    });
-                }
-            }, (err, shaders) => {
-                if (err) {
-                    done(err);
-                }
-                this._instancedShader = shaders.instanced;
-                this._individualShader = shaders.individual;
-                done(null);
+            this._instancedShader = new esper.Shader({
+                vert: Shaders.instancedPoint.vert,
+                frag: Shaders.instancedPoint.frag
             });
+            this._individualShader = new esper.Shader({
+                vert: Shaders.point.vert,
+                frag: Shaders.point.frag
+            });
+            done();
         },
 
         getCollisionRadius: function() {

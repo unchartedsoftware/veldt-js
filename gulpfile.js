@@ -34,8 +34,8 @@
 
     gulp.task('copy-build', [ 'build' ], function() {
         return gulp.src([
-            paths.build + '/' + name + '.js',
-            paths.build + '/' + name + '.css'
+            `${paths.build}/${name}.js`,
+            `${paths.build}/${name}.css`
         ]).pipe(gulp.dest(COPY_PATH));
     });
 
@@ -81,13 +81,13 @@
     });
 
     gulp.task('build-scripts', function() {
-        return build(paths.root, name + '.js', false);
+        return build(paths.root, `${name}.js`, false);
     });
 
     gulp.task('build-styles', function () {
         return gulp.src(paths.styles)
             .pipe(csso())
-            .pipe(concat(name + '.css'))
+            .pipe(concat(`${name}.css`))
             .pipe(gulp.dest(paths.build));
     });
 

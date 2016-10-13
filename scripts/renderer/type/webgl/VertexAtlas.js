@@ -3,7 +3,6 @@
     'use strict';
 
     const esper = require('esper');
-    const forIn = require('lodash/forIn');
 
     const TILE_SIZE = 256;
     const MAX_TILES = 128;
@@ -48,7 +47,7 @@
             this.chunkSize = MAX_POINTS_PER_TILE;
             // set the pointers of the atlas
             this.pointers = new Map();
-            forIn(pointers, (pointer, index) => {
+            _.forIn(pointers, (pointer, index) => {
                 this.pointers.set(index, pointer);
             });
             // create available chunks

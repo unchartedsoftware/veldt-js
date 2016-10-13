@@ -39,12 +39,8 @@
             this._shader = new esper.Shader({
                 vert: Shaders.instancedPoint.vert,
                 frag: Shaders.instancedPoint.frag
-            }, err => {
-                if (err) {
-                    done(err);
-                }
-                done(null);
             });
+            done();
         },
 
         onCacheLoad: function(event) {

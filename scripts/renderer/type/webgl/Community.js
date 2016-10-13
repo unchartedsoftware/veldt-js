@@ -4,7 +4,6 @@
 
     const esper = require('esper');
     const rbush = require('rbush');
-    const parallel = require('async/parallel');
     const ValueTransform = require('../../mixin/ValueTransform');
     const WebGL = require('../../core/WebGL');
     const VertexAtlas = require('./VertexAtlas');
@@ -27,7 +26,9 @@
             outlineColor: [0.0, 0.0, 0.0, 1.0],
             ringWidth: 3,
             ringOffset: 0,
-            radiusField: 'node.radius'
+            radiusField: 'node.radius',
+            tickWidth: 2,
+            tickHeight: 8
         },
 
         highlighted: null,
@@ -36,13 +37,22 @@
         onWebGLInit: function(done) {
             // ensure we use the correct context
             esper.WebGLContext.bind(this._container);
-            // create the ring vertexbuffer
+            // ring vertexbuffers
+            const fullWidth = this.options.ringWidth + this.options.outlineWidth;
             this._ringFillBuffer = Shapes.ring.fill(
-                NUM_SLICES, RADIUS,
+                NUM_SLICES,
+                RADIUS,
                 this.options.ringWidth);
             this._ringOutlineBuffer = Shapes.ring.fill(
-                NUM_SLICES, RADIUS,
-                this.options.ringWidth + this.options.outlineWidth);
+                NUM_SLICES,
+                RADIUS,
+                fullWidth);
+            // quad vertexbuffer
+            this._quadBuffer = Shapes.quad.fill(
+                -this.options.tickWidth/2,
+                this.options.tickWidth/2,
+                -fullWidth/2,
+                this.options.tickHeight);
             // vertex atlas for all tiles
             this._atlas = new VertexAtlas({
                 1: {
@@ -56,39 +66,20 @@
             });
             // create spatial index
             this._rtree = new rbush();
-            // load shader
             // load shaders
-            parallel({
-                instanced: (done) => {
-                    const shader = new esper.Shader({
-                        vert: Shaders.instancedRing.vert,
-                        frag: Shaders.instancedRing.frag
-                    }, err => {
-                        if (err) {
-                            done(err, null);
-                        }
-                        done(null, shader);
-                    });
-                },
-                individual: (done) => {
-                    const shader = new esper.Shader({
-                        vert: Shaders.ring.vert,
-                        frag: Shaders.ring.frag
-                    }, err => {
-                        if (err) {
-                            done(err, null);
-                        }
-                        done(null, shader);
-                    });
-                }
-            }, (err, shaders) => {
-                if (err) {
-                    done(err);
-                }
-                this._instancedShader = shaders.instanced;
-                this._individualShader = shaders.individual;
-                done(null);
+            this._instancedShader = new esper.Shader({
+                vert: Shaders.instancedRing.vert,
+                frag: Shaders.instancedRing.frag
             });
+            this._individualShader = new esper.Shader({
+                vert: Shaders.ring.vert,
+                frag: Shaders.ring.frag
+            });
+            this._instancedTickShader = new esper.Shader({
+                vert: Shaders.instancedTick.vert,
+                frag: Shaders.instancedTick.frag
+            });
+            done();
         },
 
         onCacheLoad: function(event) {
@@ -266,8 +257,9 @@
             }
         },
 
-        drawInstancedOutline: function(ring, color) {
+        drawInstancedOutline: function(color) {
             const shader = this._instancedShader;
+            const ring = this._ringOutlineBuffer;
             const cache = this._cache;
             const zoom = this._map.getZoom();
             const atlas = this._atlas;
@@ -318,8 +310,9 @@
             ring.unbind();
         },
 
-        drawInstancedFill: function(ring, segments) {
+        drawInstancedFill: function(segments) {
             const shader = this._instancedShader;
+            const ring = this._ringFillBuffer;
             const cache = this._cache;
             const zoom = this._map.getZoom();
             const atlas = this._atlas;
@@ -372,9 +365,61 @@
             ring.unbind();
         },
 
-        drawIndividualFill: function(ring, segments, tiles, point, radius) {
+        drawInstancedTick: function(color) {
+            const shader = this._instancedTickShader;
+            const quad = this._quadBuffer;
+            const cache = this._cache;
+            const zoom = this._map.getZoom();
+            const atlas = this._atlas;
+            // use shader
+            shader.use();
+            // set uniforms
+            shader.setUniform('uProjectionMatrix', this.getProjectionMatrix());
+            shader.setUniform('uColor', color);
+            shader.setUniform('uOpacity', this.getOpacity());
+            // calc view offset
+            const viewOffset = this.getViewOffset();
+            // bind the circle to instance
+            quad.bind();
+            // bind offsets and enable instancing
+            atlas.bind();
+            // for each allocated chunk
+            atlas.forEach((chunk, hash) => {
+                // for each tile referring to the data
+                const cached = cache[hash];
+                if (cached) {
+                    // render for each tile
+                    _.keys(cached.tiles).forEach(hash => {
+                        const coords = this.coordFromCacheKey(hash);
+                        if (coords.z !== zoom) {
+                            // NOTE: we have to check here if the tiles are stale or not
+                            return;
+                        }
+                        // get wrap offset
+                        const wrapOffset = this.getWrapAroundOffset(coords);
+                        // get tile offset
+                        const tileOffset = this.getTileOffset(coords);
+                        // calculate the total tile offset
+                        const totalOffset = [
+                            tileOffset[0] + wrapOffset[0] - viewOffset[0],
+                            tileOffset[1] + wrapOffset[1] - viewOffset[1]
+                        ];
+                        shader.setUniform('uTileOffset', totalOffset);
+                        // draw the instances
+                        atlas.draw(hash, quad.mode, quad.count);
+                    });
+                }
+            });
+            // disable instancing
+            atlas.unbind();
+            // unbind buffer
+            quad.unbind();
+        },
+
+        drawIndividualFill: function(segments, tiles, point, radius) {
             // draw selected points
             const shader = this._individualShader;
+            const ring = this._ringFillBuffer;
             const zoom = this._map.getZoom();
             // bind the buffer
             ring.bind();
@@ -455,18 +500,13 @@
             gl.disable(gl.BLEND);
 
             // draw instanced outlines
-            this.drawInstancedOutline(
-                this._ringOutlineBuffer,
-                this.options.outlineColor);
+            this.drawInstancedOutline(this.options.outlineColor);
             // draw instanced fill
-            this.drawInstancedFill(
-                this._ringFillBuffer,
-                segments);
+            this.drawInstancedFill(segments);
 
             if (this.highlighted) {
                 // draw individual fill
                 this.drawIndividualFill(
-                    this._ringFillBuffer,
                     selectedSegments,
                     this.highlighted.tiles,
                     this.highlighted.point,
@@ -476,12 +516,14 @@
             if (this.selected) {
                 // draw individual fill
                 this.drawIndividualFill(
-                    this._ringFillBuffer,
                     selectedSegments,
                     this.selected.tiles,
                     this.selected.point,
                     this.selected.radius);
             }
+            
+            // draw instanced tick
+            this.drawInstancedTick(this.options.outlineColor);
 
             // teardown
             viewport.pop();
