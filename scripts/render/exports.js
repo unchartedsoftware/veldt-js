@@ -20,7 +20,8 @@ const HTML = {
 // webgl renderers
 const WebGL = {
 	Heatmap: require('./webgl/Heatmap'),
-	Point: require('./webgl/Point'),
+	Micro: require('./webgl/Micro'),
+	Macro: require('./webgl/Macro')
 	//Community: require('./webgl/Community')
 };
 

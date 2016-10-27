@@ -214,81 +214,10 @@ const renderFill = function(gl, point, shader, proj, plot, target, segments, rad
 	point.unbind();
 };
 
-const addTile = function(renderer, event) {
-	const tile = event.tile;
-	const coord = tile.coord;
-	const data = tile.data;
-
-	const tileSize = renderer.layer.plot.tileSize;
-	const xOffset = coord.x * tileSize;
-	const yOffset = coord.y * tileSize;
-	const scale = Math.pow(2, coord.z);
-	const tileSpan = Math.pow(2, 32) / scale;
-
-	const xField = renderer.xField;
-	const yField = renderer.yField;
-	const radiusField = renderer.radiusField;
-	const radiusOffset = renderer.ringOffset + renderer.ringWidth + renderer.outlineWidth;
-	const params = renderer.layer.getParams().top_hits;
-	const sortField = params.top_hits.sort ? params.top_hits.sort : null;
-
-	const points = new Array(data.length);
-	const vertices = new Float32Array(data.length * 3);
-
-	for (let i=0; i<data.length; i++) {
-		const community = data[i];
-
-		const val = get(community, sortField);
-		const nval = Transform.transform(val);
-
-		if (nval < this.threshold) {
-			continue;
-		}
-
-		const radius = get(community, radiusField);
-		const scaledRadius = Math.max(MIN_RADIUS, (radius * scale) + radiusOffset);
-
-		const xVal = get(community, xField);
-		const yVal = get(community, yField);
-		const x = ((xVal % tileSpan) / tileSpan) * tileSize;
-		const y = ((yVal % tileSpan) / tileSpan) * tileSize;
-
-		const plotX = x + xOffset;
-		const plotY = y + yOffset;
-
-		// add point to buffer
-		vertices[i * 3] = x;
-		vertices[i * 3 + 1] = y;
-		vertices[i * 3 + 2] = scaledRadius;
-
-		points[i] = {
-			x: x,
-			y: y,
-			minX: plotX - scaledRadius,
-			maxX: plotX + scaledRadius,
-			minY: plotY - scaledRadius,
-			maxY: plotY + scaledRadius,
-			tile: tile,
-			data: community
-		};
-	}
-
-	renderer.addPoints(coord, points);
-	renderer.atlas.set(coord.hash, vertices, points.length);
-};
-
-const removeTile = function(renderer, event) {
-	const tile = event.tile;
-	const coord = tile.coord;
-	renderer.atlas.delete(coord.hash);
-	renderer.removePoints(coord);
-};
-
-
-class Community extends lumo.WebGLIneractiveRenderer {
+class Community extends lumo.WebGLInteractiveRenderer {
 
 	constructor(options = {}) {
-		super();
+		super(options);
 		this.shader = null;
 		this.point = null;
 		this.atlas = null;
@@ -301,6 +230,74 @@ class Community extends lumo.WebGLIneractiveRenderer {
 		this.ringOffset = defaultTo(options.ringOffset, 0);
 		this.tickWidth = defaultTo(options.tickWidth, 2);
 		this.tickHeight = defaultTo(options.tickHeight, 8);
+	}
+
+	addTile(atlas, tile) {
+		const coord = tile.coord;
+		const data = tile.data;
+
+		const tileSize = this.layer.plot.tileSize;
+		const xOffset = coord.x * tileSize;
+		const yOffset = coord.y * tileSize;
+		const scale = Math.pow(2, coord.z);
+		const tileSpan = Math.pow(2, 32) / scale;
+
+		const xField = this.xField;
+		const yField = this.yField;
+		const radiusField = this.radiusField;
+		const radiusOffset = this.ringOffset + this.ringWidth + this.outlineWidth;
+		const params = this.layer.getParams().top_hits;
+		const sortField = params.top_hits.sort ? params.top_hits.sort : null;
+
+		const points = new Array(data.length);
+		const vertices = new Float32Array(data.length * 3);
+
+		for (let i=0; i<data.length; i++) {
+			const community = data[i];
+
+			const val = get(community, sortField);
+			const nval = Transform.transform(val);
+
+			if (nval < this.threshold) {
+				continue;
+			}
+
+			const radius = get(community, radiusField);
+			const scaledRadius = Math.max(MIN_RADIUS, (radius * scale) + radiusOffset);
+
+			const xVal = get(community, xField);
+			const yVal = get(community, yField);
+			const x = ((xVal % tileSpan) / tileSpan) * tileSize;
+			const y = ((yVal % tileSpan) / tileSpan) * tileSize;
+
+			const plotX = x + xOffset;
+			const plotY = y + yOffset;
+
+			// add point to buffer
+			vertices[i * 3] = x;
+			vertices[i * 3 + 1] = y;
+			vertices[i * 3 + 2] = scaledRadius;
+
+			points[i] = {
+				x: x,
+				y: y,
+				minX: plotX - scaledRadius,
+				maxX: plotX + scaledRadius,
+				minY: plotY - scaledRadius,
+				maxY: plotY + scaledRadius,
+				tile: tile,
+				data: community
+			};
+		}
+
+		this.addPoints(coord, points);
+		atlas.set(coord.hash, vertices, points.length);
+	}
+
+	removeTile(atlas, tile) {
+		const coord = tile.coord;
+		atlas.delete(coord.hash);
+		this.removePoints(coord);
 	}
 
 	onAdd(layer) {
@@ -320,51 +317,29 @@ class Community extends lumo.WebGLIneractiveRenderer {
 			this.tickHeight);
 
 		this.shaders = new Map();
-		this.shaders.set('individualRing', new lumo.Shader(Shaders.ring));
-		this.shaders.set('instancedRing', new lumo.Shader(Shaders.instancedRing));
-		this.shaders.set('instancedTick', new lumo.Shader(Shaders.instancedTick));
+		this.shaders.set('individualRing', this.createShader(Shaders.ring));
+		this.shaders.set('instancedRing', this.createShader(Shaders.instancedRing));
+		this.shaders.set('instancedTick', this.createShader(Shaders.instancedTick));
 
-		this.atlas = new lumo.VertexAtlas(
-			this.gl,
-			{
-				1: {
-					size: 2,
-					type: 'FLOAT'
-				},
-				2: {
-					size: 1,
-					type: 'FLOAT'
-				}
-			}, {
-				// set num chunks to be able to fit the capacity of the pyramid
-				numChunks: layer.pyramid.totalCapacity
-			});
-
-		this.tileAdd = event => {
-			addTile(this, event);
-		};
-
-		this.tileRemove = event => {
-			removeTile(this, event);
-		};
-
-		layer.on(lumo.TILE_ADD, this.tileAdd);
-		layer.on(lumo.TILE_REMOVE, this.tileRemove);
+		this.atlas = this.createVertexAtlas({
+			1: {
+				size: 2,
+				type: 'FLOAT'
+			},
+			2: {
+				size: 1,
+				type: 'FLOAT'
+			}
+		});
 
 		return this;
 	}
 
 	onRemove(layer) {
-		this.layer.removeListener(this.tileAdd);
-		this.layer.removeListener(this.tileRemove);
-		this.tileAdd = null;
-		this.tileRemove = null;
-
-		this.shader = null;
-
+		this.destroyVertexAtlas(this.atlas);
 		this.atlas = null;
+		this.shaders = null;
 		this.point = null;
-
 		super.onRemove(layer);
 		return this;
 	}

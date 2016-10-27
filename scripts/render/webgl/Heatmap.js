@@ -58,10 +58,10 @@ const createQuad = function(gl, size) {
 		});
 };
 
-class Heatmap extends lumo.WebGLRenderer {
+class Heatmap extends lumo.WebGLTextureRenderer {
 
 	constructor(options = {}) {
-		super();
+		super(options);
 		this.transform = _.defaultTo(options.transform, 'log10');
 		this.colorRamp = _.defaultTo(options.colorRamp, 'verdant');
 		this.quad = null;

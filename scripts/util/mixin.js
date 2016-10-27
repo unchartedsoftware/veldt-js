@@ -1,7 +1,5 @@
 'use strict';
 
-const mix = (superclass) => new MixinBuilder(superclass);
-
 class MixinBuilder {
 	constructor(superclass) {
 		this.superclass = superclass;
@@ -11,4 +9,6 @@ class MixinBuilder {
 	}
 }
 
-module.exports = mix;
+module.exports = function(superclass) {
+	return new MixinBuilder(superclass);
+};

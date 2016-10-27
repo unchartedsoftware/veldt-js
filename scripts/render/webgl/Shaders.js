@@ -178,10 +178,13 @@ const heatmap = {
 		`
 };
 
-const point = {
+/**
+ * micro shader
+ */
+const micro = {
 	vert:
+		precision +
 		`
-		precision highp float;
 		attribute vec2 aPosition;
 		uniform float uRadius;
 		uniform float uRadiusOffset;
@@ -196,11 +199,52 @@ const point = {
 		}
 		`,
 	frag:
+		precision +
 		`
 		#ifdef GL_OES_standard_derivatives
 			#extension GL_OES_standard_derivatives : enable
 		#endif
-		precision highp float;
+		uniform vec4 uColor;
+		void main() {
+			vec2 cxy = 2.0 * gl_PointCoord - 1.0;
+			float radius = dot(cxy, cxy);
+			float alpha = 1.0;
+			#ifdef GL_OES_standard_derivatives
+				float delta = fwidth(radius);
+				alpha = 1.0 - smoothstep(1.0 - delta, 1.0 + delta, radius);
+			#else
+				if (radius > 1.0) {
+				   discard;
+				}
+			#endif
+			gl_FragColor = vec4(uColor.rgb, uColor.a * alpha);
+		}
+		`
+};
+
+// macro renderer
+const macro = {
+	vert:
+		precision +
+		`
+		attribute vec2 aPosition;
+		uniform float uRadius;
+		uniform vec2 uTileOffset;
+		uniform float uTileScale;
+		uniform float uPixelRatio;
+		uniform mat4 uProjectionMatrix;
+		void main() {
+			vec2 wPosition = (aPosition * uTileScale) + uTileOffset;
+			gl_PointSize = uRadius * 2.0 * uPixelRatio;
+			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
+		}
+		`,
+	frag:
+		precision +
+		`
+		#ifdef GL_OES_standard_derivatives
+			#extension GL_OES_standard_derivatives : enable
+		#endif
 		uniform vec4 uColor;
 		void main() {
 			vec2 cxy = 2.0 * gl_PointCoord - 1.0;
@@ -335,9 +379,14 @@ module.exports = {
 	heatmap: heatmap,
 
 	/**
-	 * point shader
+	 * micro shader
 	 */
-	point: point,
+	micro: micro,
+
+	/**
+	 * macro shader
+	 */
+	macro: macro,
 
 	/**
 	 * instanced ring shader

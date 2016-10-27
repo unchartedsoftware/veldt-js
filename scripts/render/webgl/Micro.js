@@ -86,76 +86,11 @@ const applyJitter = function(point, maxDist) {
 	point.y += Math.floor(Math.sin(angle) * dist);
 };
 
-const addTile = function(renderer, event) {
-	const tile = event.tile;
-	const coord = tile.coord;
-	const data = tile.data;
 
-	const tileSize = renderer.layer.plot.tileSize;
-	const xOffset = coord.x * tileSize;
-	const yOffset = coord.y * tileSize;
-
-	const xField = renderer.xField;
-	const yField = renderer.yField;
-	const radius = renderer.radius;
-
-	const points = new Array(data.length);
-	const vertices = new Float32Array(data.length * 2);
-
-	const collisions = {};
-
-	for (let i=0; i<data.length; i++) {
-		const datum = data[i];
-
-		const px = {
-			x: get(datum, xField),
-			y: get(datum, yField)
-		};
-
-		// add jitter if specified
-		if (renderer.jitter) {
-			const hash = `${px.x}:${px.y}`;
-			if (collisions[hash]) {
-				applyJitter(px, renderer.jitterDistance);
-			}
-			collisions[hash] = true;
-		}
-
-		const plotPx = {
-			x: px.x + xOffset,
-			y: px.y + yOffset
-		};
-
-		vertices[i*2] = px.x;
-		vertices[i*2+1] = px.y;
-
-		points[i] = {
-			x: px.x,
-			y: px.y,
-			minX: plotPx.x - radius,
-			maxX: plotPx.x + radius,
-			minY: plotPx.y - radius,
-			maxY: plotPx.y + radius,
-			tile: tile,
-			data: datum
-		};
-	}
-
-	renderer.addPoints(coord, points);
-	renderer.atlas.set(coord.hash, vertices, points.length);
-};
-
-const removeTile = function(renderer, event) {
-	const tile = event.tile;
-	const coord = tile.coord;
-	renderer.atlas.delete(coord.hash);
-	renderer.removePoints(coord);
-};
-
-class Point extends lumo.WebGLIneractiveRenderer {
+class Micro extends lumo.WebGLInteractiveRenderer {
 
 	constructor(options = {}) {
-		super();
+		super(options);
 		this.shader = null;
 		this.point = null;
 		this.atlas = null;
@@ -167,56 +102,91 @@ class Point extends lumo.WebGLIneractiveRenderer {
 		this.jitterDistance = defaultTo(options.jitterDistance, 10);
 	}
 
+	addTile(atlas, tile) {
+		const coord = tile.coord;
+		const data = tile.data;
+
+		const tileSize = this.layer.plot.tileSize;
+		const xOffset = coord.x * tileSize;
+		const yOffset = coord.y * tileSize;
+
+		const xField = this.xField;
+		const yField = this.yField;
+		const radius = this.radius;
+
+		const points = new Array(data.length);
+		const vertices = new Float32Array(data.length * 2);
+
+		const collisions = {};
+
+		for (let i=0; i<data.length; i++) {
+			const datum = data[i];
+
+			const px = {
+				x: get(datum, xField),
+				y: get(datum, yField)
+			};
+
+			// add jitter if specified
+			if (this.jitter) {
+				const hash = `${px.x}:${px.y}`;
+				if (collisions[hash]) {
+					applyJitter(px, this.jitterDistance);
+				}
+				collisions[hash] = true;
+			}
+
+			const plotPx = {
+				x: px.x + xOffset,
+				y: px.y + yOffset
+			};
+
+			vertices[i*2] = px.x;
+			vertices[i*2+1] = px.y;
+
+			points[i] = {
+				x: px.x,
+				y: px.y,
+				minX: plotPx.x - radius,
+				maxX: plotPx.x + radius,
+				minY: plotPx.y - radius,
+				maxY: plotPx.y + radius,
+				tile: tile,
+				data: datum
+			};
+		}
+
+		this.addPoints(coord, points);
+		atlas.set(coord.hash, vertices, points.length);
+	}
+
+	removeTile(atlas, tile) {
+		const coord = tile.coord;
+		atlas.delete(coord.hash);
+		this.removePoints(coord);
+	}
+
 	onAdd(layer) {
 		super.onAdd(layer);
-
 		// get the extension for standard derivatives
 		this.ext = this.gl.getExtension('OES_standard_derivatives');
-
-		this.shader = new lumo.Shader(this.gl, Shaders.Point);
-
 		this.point = createPoint(this.gl);
-		this.atlas = new lumo.VertexAtlas(
-			this.gl,
-			{
-				0: {
-					size: 2,
-					type: 'FLOAT'
-				},
-				1: {
-					size: 1,
-					type: 'FLOAT'
-				}
-			}, {
-				// set num chunks to be able to fit the capacity of the pyramid
-				numChunks: layer.pyramid.totalCapacity
-			});
-
-		this.tileAdd = event => {
-			addTile(this, event);
-		};
-
-		this.tileRemove = event => {
-			removeTile(this, event);
-		};
-
-		layer.on(lumo.TILE_ADD, this.tileAdd);
-		layer.on(lumo.TILE_REMOVE, this.tileRemove);
-
+		this.shader = this.createShader(Shaders.micro);
+		this.atlas = this.createVertexAtlas({
+			// position
+			0: {
+				size: 2,
+				type: 'FLOAT'
+			}
+		});
 		return this;
 	}
 
 	onRemove(layer) {
-		this.layer.removeListener(this.tileAdd);
-		this.layer.removeListener(this.tileRemove);
-		this.tileAdd = null;
-		this.tileRemove = null;
-
+		this.destroyVertexAtlas(this.atlas);
 		this.shader = null;
-
 		this.atlas = null;
 		this.point = null;
-
 		super.onRemove(layer);
 		return this;
 	}
@@ -282,4 +252,4 @@ class Point extends lumo.WebGLIneractiveRenderer {
 
 }
 
-module.exports = Point;
+module.exports = Micro;
