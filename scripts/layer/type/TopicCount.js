@@ -1,28 +1,26 @@
-(function() {
+'use strict';
 
-    'use strict';
+const _ = require('lodash');
+const Live = require('../core/Live');
+const Elastic = require('../param/Elastic');
+const Tiling = require('../param/Tiling');
+const TermsFilter = require('../agg/TermsFilter');
+const Histogram = require('../agg/Histogram');
+const mixin = require('../../util/mixin');
 
-    const Live = require('../core/Live');
-    const Elastic = require('../param/Elastic');
-    const Tiling = require('../param/Tiling');
-    const TermsFilter = require('../agg/TermsFilter');
-    const Histogram = require('../agg/Histogram');
+class TopicCount extends mixin(Live).with(Elastic, Tiling, TermsFilter, Histogram) {
 
-    const TopicCount = Live.extend({
+	constructor(meta, options = {}) {
+		super(meta, options);
+		this.type = 'topic_count';
+	}
 
-        includes: [
-            // params
-            Elastic,
-            Tiling,
-            // aggs
-            TermsFilter,
-            Histogram,
-        ],
+	extractExtrema(data) {
+		return {
+			min: _.min(data),
+			max: _.max(data)
+		};
+	}
+}
 
-        type: 'topic_count',
-
-    });
-
-    module.exports = TopicCount;
-
-}());
+module.exports = TopicCount;

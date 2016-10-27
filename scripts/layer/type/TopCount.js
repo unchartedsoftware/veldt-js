@@ -1,30 +1,27 @@
-(function() {
+'use strict';
 
-    'use strict';
+const _ = require('lodash');
+const Live = require('../core/Live');
+const Elastic = require('../param/Elastic');
+const Tiling = require('../param/Tiling');
+const TopTerms = require('../agg/TopTerms');
+const Histogram = require('../agg/Histogram');
+const TopHits = require('../agg/TopHits');
+const mixin = require('../../util/mixin');
 
-    const Live = require('../core/Live');
-    const Elastic = require('../param/Elastic');
-    const Tiling = require('../param/Tiling');
-    const TopTerms = require('../agg/TopTerms');
-    const Histogram = require('../agg/Histogram');
-    const TopHits = require('../agg/TopHits');
+class TopCount extends mixin(Live).with(Elastic, Tiling, TopTerms, Histogram, TopHits) {
 
-    const TopCount = Live.extend({
+	constructor(meta, options = {}) {
+		super(meta, options);
+		this.type = 'top_count';
+	}
 
-        includes: [
-            // params
-            Elastic,
-            Tiling,
-            TopTerms,
-            // aggs
-            Histogram,
-            TopHits
-        ],
+	extractExtrema(data) {
+		return {
+			min: _.min(data),
+			max: _.max(data)
+		};
+	}
+}
 
-        type: 'top_count'
-
-    });
-
-    module.exports = TopCount;
-
-}());
+module.exports = TopCount;

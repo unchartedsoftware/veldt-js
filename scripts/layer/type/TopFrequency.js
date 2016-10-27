@@ -1,32 +1,28 @@
-(function() {
+'use strict';
 
-    'use strict';
+const _ = require('lodash');
+const Live = require('../core/Live');
+const Elastic = require('../param/Elastic');
+const Tiling = require('../param/Tiling');
+const TopTerms = require('../agg/TopTerms');
+const DateHistogram = require('../agg/DateHistogram');
+const Histogram = require('../agg/Histogram');
+const TopHits = require('../agg/TopHits');
+const mixin = require('../../util/mixin');
 
-    const Live = require('../core/Live');
-    const Elastic = require('../param/Elastic');
-    const Tiling = require('../param/Tiling');
-    const TopTerms = require('../agg/TopTerms');
-    const DateHistogram = require('../agg/DateHistogram');
-    const Histogram = require('../agg/Histogram');
-    const TopHits = require('../agg/TopHits');
+class TopFrequency extends mixin(Live).with(Elastic, Tiling, TopTerms, DateHistogram, Histogram, TopHits) {
 
-    const TopFrequency = Live.extend({
+	constructor(meta, options = {}) {
+		super(meta, options);
+		this.type = 'top_frequency';
+	}
 
-        includes: [
-            // params
-            Elastic,
-            Tiling,
-            // aggs
-            TopTerms,
-            DateHistogram,
-            Histogram,
-            TopHits
-        ],
+	extractExtrema(data) {
+		return {
+			min: _.min(data),
+			max: _.max(data)
+		};
+	}
+}
 
-        type: 'top_frequency',
-
-    });
-
-    module.exports = TopFrequency;
-
-}());
+module.exports = TopFrequency;

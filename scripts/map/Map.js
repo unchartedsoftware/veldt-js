@@ -1,21 +1,24 @@
-(function() {
+'use strict';
 
-    'use strict';
+const $ = require('jquery');
+const lumo = require('lumo');
 
-    const resetMouseCursorStyle = function() {
-        // we only want this bound ONCE per map
-        $(this._container).css('cursor', '');
-    };
+class Map extends lumo.Plot {
 
-    const Map = L.Map.extend({
+	constructor(selector, options) {
+		super(selector, options);
+		this.mousemove = () => {
+			$(this.container).css('cursor', '');
+		};
+		this.on('mousemove', this.mousemove);
+	}
 
-        initialize: function() {
-            L.Map.prototype.initialize.apply(this, arguments);
-            this.on('mousemove', resetMouseCursorStyle, this);
-        }
+	destroy() {
+		super.destroy();
+		this.removeEventListener('mousemove', this.mousemove);
+		this.mousemove = null;
+	}
 
-    });
+}
 
-    module.exports = Map;
-
-}());
+module.exports = Map;

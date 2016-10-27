@@ -1,26 +1,17 @@
-(function() {
+'use strict';
 
-    'use strict';
+const Live = require('../core/Live');
+const Elastic = require('../param/Elastic');
+const Tiling = require('../param/Tiling');
+const CustomAggs = require('../agg/CustomAggs');
+const mixin = require('../../util/mixin');
 
-    let Live = require('../core/Live');
-    let Elastic = require('../param/Elastic');
-    let Tiling = require('../param/Tiling');
-    let CustomAggs = require('../agg/CustomAggs');
+class Custom extends mixin(Live).with(Elastic, Tiling, CustomAggs) {
 
-    let Custom = Live.extend({
+	constructor(meta, options = {}) {
+		super(meta, options);
+		this.type = 'custom';
+	}
+}
 
-        includes: [
-            // params
-            Elastic,
-            Tiling,
-            // aggs
-            CustomAggs
-        ],
-
-        type: 'custom_tile'
-
-    });
-
-    module.exports = Custom;
-
-}());
+module.exports = Custom;

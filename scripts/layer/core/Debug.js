@@ -1,43 +1,16 @@
-(function() {
+'use strict';
 
-    'use strict';
+const lumo = require('lumo');
 
-    const Base = require('./Base');
+class Debug extends lumo.Layer {
 
-    const Debug = Base.extend({
+	constructor(options) {
+		super(options);
+	}
 
-        options: {
-            unloadInvisibleTiles: true,
-            zIndex: 5000
-        },
+	requestTile(coord, done) {
+		done(coord);
+	}
+}
 
-        initialize: function(options) {
-            // set renderer
-            if (!options.rendererClass) {
-                throw 'No `rendererClass` option found.';
-            } else {
-                // recursively extend
-                $.extend(true, this, options.rendererClass);
-            }
-            // set options
-            L.setOptions(this, options);
-        },
-
-        createTile: function(coord) {
-            // create a <div> element for drawing
-            const tile = L.DomUtil.create('div', 'leaflet-tile');
-            // draw to it
-            this.renderTile(tile, coord);
-            // pass tile to callback
-            return tile;
-        },
-
-        renderTile: function() {
-            // override
-        }
-
-    });
-
-    module.exports = Debug;
-
-}());
+module.exports = Debug;

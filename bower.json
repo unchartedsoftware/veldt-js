@@ -3,19 +3,19 @@
   "version": "0.10.10",
   "author": "Kevin Birk <kbirk@uncharted.software>",
   "main": [
-    "build/prism.js",
-    "build/prism.css"
+	"build/prism.js",
+	"build/prism.css"
   ],
   "moduleType": [
-    "globals"
+	"globals"
   ],
   "license": "MIT",
   "ignore": [
-    "**/.*",
-    "node_modules",
-    "scripts",
-    "styles",
-    "gulpfile.js",
-    "package.json"
+	"**/.*",
+	"node_modules",
+	"scripts",
+	"styles",
+	"gulpfile.js",
+	"package.json"
   ]
 }

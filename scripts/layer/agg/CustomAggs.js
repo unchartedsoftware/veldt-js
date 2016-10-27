@@ -1,15 +1,11 @@
-(function() {
+'use strict';
 
-    'use strict';
+let setCustomAggs = function(aggs) {
+	this._params.custom_aggs = {
+		aggs: aggs
+	};
+};
 
-    let setCustomAggs = function(aggs) {
-        this._params.custom_aggs = {
-            aggs: aggs
-        };
-    };
-
-    module.exports = {
-        setCustomAggs: setCustomAggs
-    };
-
-}());
+module.exports = {
+	setCustomAggs: setCustomAggs
+};

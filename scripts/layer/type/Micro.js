@@ -1,33 +1,17 @@
-(function() {
+'use strict';
 
-    'use strict';
+const Live = require('../core/Live');
+const Elastic = require('../param/Elastic');
+const Tiling = require('../param/Tiling');
+const TopHits = require('../agg/TopHits');
+const mixin = require('../../util/mixin');
 
-    const Live = require('../core/Live');
-    const Elastic = require('../param/Elastic');
-    const Tiling = require('../param/Tiling');
-    const TopHits = require('../agg/TopHits');
+class Micro extends mixin(Live).with(Elastic, Tiling, TopHits) {
 
-    const Micro = Live.extend({
+	constructor(meta, options = {}) {
+		super(meta, options);
+		this.type = 'micro';
+	}
+}
 
-        includes: [
-            // params
-            Elastic,
-            Tiling,
-            // aggs
-            TopHits
-        ],
-
-        type: 'micro',
-
-        // extreme not relevant for micro
-        extractExtrema: function() {
-            return {
-                min: Infinity,
-                max: -Infinity
-            };
-        }
-    });
-
-    module.exports = Micro;
-
-}());
+module.exports = Micro;

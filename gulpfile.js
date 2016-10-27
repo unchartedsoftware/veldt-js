@@ -1,92 +1,69 @@
-(function() {
+'use strict';
 
-    'use strict';
+const babel = require('babelify');
+const browserify = require('browserify');
+const concat = require('gulp-concat');
+const csso = require('gulp-csso');
+const del = require('del');
+const gulp = require('gulp');
+const eslint = require('gulp-eslint');
+const runSequence = require('run-sequence');
+const source = require('vinyl-source-stream');
 
-    const gulp = require('gulp');
-    const runSequence = require('run-sequence');
-    const source = require('vinyl-source-stream');
-    const buffer = require('vinyl-buffer');
-    const uglify = require('gulp-uglify');
-    const browserify = require('browserify');
-    const del = require('del');
-    const jshint = require('gulp-jshint');
-    const csso = require('gulp-csso');
-    const concat = require('gulp-concat');
-    const babel = require('babelify');
+const name = 'prism';
+const paths = {
+	root: 'scripts/exports.js',
+	scripts: [
+		'scripts/**/*.js'
+	],
+	styles: [
+		'styles/main.css',
+		'styles/**/*.css'
+	],
+	build: 'build'
+};
 
-    const name = 'prism';
-    const paths = {
-        root: 'scripts/exports.js',
-        styles: [
-            'styles/main.css',
-            'styles/**/*.css'
-        ],
-        scripts: [
-            'scripts/**/*.js'
-        ],
-        build: 'build'
-    };
+gulp.task('clean', () => {
+	del.sync(paths.build);
+});
 
-    function handleError(err) {
-        console.error(err);
-        this.emit('end');
-    }
+gulp.task('lint', () => {
+	return gulp.src(paths.scripts)
+		.pipe(eslint())
+		.pipe(eslint.format());
+});
 
-    function bundle(b, output) {
-        return b.bundle()
-            .on('error', handleError)
-            .pipe(source(output))
-            .pipe(gulp.dest(paths.build));
-    }
+gulp.task('build-scripts', () => {
+	return browserify(paths.root, {
+			debug: true,
+			standalone: name
+		}).transform(babel, {
+			global: true,
+			compact: true,
+			presets: [ 'es2015' ]
+		})
+		.bundle()
+		.on('error', function(err) {
+			console.error(err);
+			this.emit('end');
+		})
+		.pipe(source(`${name}.js`))
+		.pipe(gulp.dest(paths.build));
+});
 
-    function bundleMin(b, output) {
-        return b.bundle()
-            .on('error', handleError)
-            .pipe(source(output))
-            .pipe(buffer())
-            .pipe(uglify())
-            .pipe(gulp.dest(paths.build));
-    }
+gulp.task('build-styles', () => {
+	return gulp.src(paths.styles)
+		.pipe(csso())
+		.pipe(concat(`${name}.css`))
+		.pipe(gulp.dest(paths.build));
+});
 
-    function build(root, output, minify) {
-        const b = browserify(root, {
-                debug: !minify,
-                standalone: name
-            }).transform(babel, {
-                presets: [ 'es2015' ]
-            });
-        return (minify) ? bundleMin(b, output) : bundle(b, output);
-    }
+gulp.task('build', done => {
+	runSequence(
+		[ 'clean', 'lint' ],
+		[ 'build-scripts', 'build-styles' ],
+		done);
+});
 
-    gulp.task('clean', function () {
-        del([ paths.build ]);
-    });
-
-    gulp.task('lint', function() {
-        return gulp.src(paths.scripts)
-            .pipe(jshint('.jshintrc'))
-            .pipe(jshint.reporter('jshint-stylish'));
-    });
-
-    gulp.task('build-scripts', function() {
-        return build(paths.root, `${name}.js`, false);
-    });
-
-    gulp.task('build-styles', function () {
-        return gulp.src(paths.styles)
-            .pipe(csso())
-            .pipe(concat(`${name}.css`))
-            .pipe(gulp.dest(paths.build));
-    });
-
-    gulp.task('build', function(done) {
-        runSequence(
-            [ 'clean', 'lint' ],
-            [ 'build-scripts', 'build-styles' ],
-            done);
-    });
-
-    gulp.task('default', [ 'build' ], function() {
-    });
-
-}());
+gulp.task('default', [ 'build' ], () => {
+});

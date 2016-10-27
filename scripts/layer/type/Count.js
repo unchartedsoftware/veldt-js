@@ -1,30 +1,16 @@
-(function() {
+'use strict';
 
-    'use strict';
+const Live = require('../core/Live');
+const Elastic = require('../param/Elastic');
+const Tiling = require('../param/Tiling');
+const mixin = require('../../util/mixin');
 
-    const Live = require('../core/Live');
-    const Elastic = require('../param/Elastic');
-    const Tiling = require('../param/Tiling');
+class Count extends mixin(Live).with(Elastic, Tiling) {
 
-    const Count = Live.extend({
+	constructor(meta, options = {}) {
+		super(meta, options);
+		this.type = 'count';
+	}
+}
 
-        includes: [
-            // params
-            Elastic,
-            Tiling
-        ],
-
-        type: 'count',
-
-        // extreme not relevant for count tile
-        extractExtrema: function() {
-            return {
-                min: Infinity,
-                max: -Infinity
-            };
-        }
-    });
-
-    module.exports = Count;
-
-}());
+module.exports = Count;

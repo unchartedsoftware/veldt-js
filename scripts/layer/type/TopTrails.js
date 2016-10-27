@@ -1,33 +1,17 @@
-(function() {
+'use strict';
 
-    'use strict';
+const Live = require('../core/Live');
+const Elastic = require('../param/Elastic');
+const Binning = require('../param/Binning');
+const Terms = require('../agg/Terms');
+const mixin = require('../../util/mixin');
 
-    const Live = require('../core/Live');
-    const Elastic = require('../param/Elastic');
-    const Binning = require('../param/Binning');
-    const Terms = require('../agg/Terms');
+class TopTrails extends mixin(Live).with(Elastic, Binning, Terms) {
 
-    const TopTrails = Live.extend({
+	constructor(meta, options = {}) {
+		super(meta, options);
+		this.type = 'top_trails';
+	}
+}
 
-        includes: [
-            // params
-            Elastic,
-            Binning,
-            // aggs
-            Terms
-        ],
-
-        type: 'top_trails',
-
-        extractExtrema: function() {
-            return {
-                min: Infinity,
-                max: -Infinity
-            };
-        }
-
-    });
-
-    module.exports = TopTrails;
-
-}());
+module.exports = TopTrails;

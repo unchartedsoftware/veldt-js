@@ -1,28 +1,25 @@
-(function() {
+'use strict';
 
-    'use strict';
+const _ = require('lodash');
+const Live = require('../core/Live');
+const Elastic = require('../param/Elastic');
+const Tiling = require('../param/Tiling');
+const DateHistogram = require('../agg/DateHistogram');
+const mixin = require('../../util/mixin');
 
-    const Live = require('../core/Live');
-    const Elastic = require('../param/Elastic');
-    const Tiling = require('../param/Tiling');
-    const DateHistogram = require('../agg/DateHistogram');
-    const Histogram = require('../agg/Histogram');
+class Frequency extends mixin(Live).with(Elastic, Tiling, DateHistogram) {
 
-    const Frequency = Live.extend({
+	constructor(meta, options = {}) {
+		super(meta, options);
+		this.type = 'frequency';
+	}
 
-        includes: [
-            // params
-            Elastic,
-            Tiling,
-            // aggs
-            DateHistogram,
-            Histogram
-        ],
+	extractExtrema(data) {
+		return {
+			min: _.min(data),
+			max: _.max(data)
+		};
+	}
+}
 
-        type: 'frequency',
-
-    });
-
-    module.exports = Frequency;
-
-}());
+module.exports = Frequency;

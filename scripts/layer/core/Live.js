@@ -1,268 +1,173 @@
-(function() {
+'use strict';
 
-    'use strict';
+const lumo = require('lumo');
+const defaultTo = require('lodash/defaultTo');
+const boolQueryCheck = require('../query/Bool');
 
-    const boolQueryCheck = require('../query/Bool');
+class Live extends lumo.Layer {
 
-    function mod(n, m) {
-        return ((n % m) + m) % m;
-    }
+	constructor(meta, options = {}) {
+		super(options);
+		this._meta = meta;
+		this._params = {
+			binning: {}
+		};
+		this._transform = defaultTo(options.transform, x => x);
+		// set extrema / cache
+		this.clearExtrema();
+	}
 
-    const Live = L.Class.extend({
+	clearExtrema() {
+		this._extrema = {
+			min: Number.MAX_VALUE,
+			max: 0
+		};
+	}
 
-        options: {
-            transform: val => { return val; }
-        },
+	getExtrema() {
+		return this._extrema;
+	}
 
-        initialize: function(meta, options = {}) {
-            // set renderer
-            if (options.rendererClass) {
-                let renderer;
-                // recursively extend and initialize
-                if (options.rendererClass.prototype) {
-                    renderer = new options.rendererClass();
-                } else {
-                    renderer = options.rendererClass;
-                }
-                // extend this object
-                $.extend(true, this, renderer);
-                // copy prototype options property by value, this is important
-                this.options = $.extend(true, {}, this.options);
-                delete options.rendererClass;
-            }
-            // set options
-            L.setOptions(this, options);
-            // set meta
-            this._meta = meta;
-            // set params
-            this._params = {
-                binning: {}
-            };
-            // set extrema / cache
-            this._cache = {};
-            this.clearExtrema();
-        },
+	updateExtrema(data) {
+		const extrema = this.extractExtrema(data);
+		let changed = false;
+		if (extrema.min < this._extrema.min) {
+			changed = true;
+			this._extrema.min = extrema.min;
+		}
+		if (extrema.max > this._extrema.max) {
+			changed = true;
+			this._extrema.max = extrema.max;
+		}
+		return changed;
+	}
 
-        clearExtrema: function() {
-            this._extrema = {
-                min: Number.MAX_VALUE,
-                max: 0
-            };
-        },
+	extractExtrema() {
+		return {
+			min: Infinity,
+			max: -Infinity
+		};
+	}
 
-        getExtrema: function() {
-            return this._extrema;
-        },
+	setQuery(query) {
+		if (!query.must && !query.must_not && !query.should) {
+			throw 'Root query must have at least one `must`, `must_not`, or `should` argument.';
+		}
+		// check that the query is valid
+		boolQueryCheck(this._meta, query);
+		// set query
+		this._params.must = query.must;
+		this._params.must_not = query.must_not;
+		this._params.should = query.should;
+		// cleat extrema
+		this.clearExtrema();
+	}
 
-        updateExtrema: function(data) {
-            const extrema = this.extractExtrema(data);
-            let changed = false;
-            if (extrema.min < this._extrema.min) {
-                changed = true;
-                this._extrema.min = extrema.min;
-            }
-            if (extrema.max > this._extrema.max) {
-                changed = true;
-                this._extrema.max = extrema.max;
-            }
-            return changed;
-        },
+	getQuery() {
+		return {
+			must: this._params.must,
+			must_not: this._params.must_not,
+			should: this._params.should,
+		};
+	}
 
-        extractExtrema: function(data) {
-            return {
-                min: _.min(data),
-                max: _.max(data)
-            };
-        },
+	clearQuery() {
+		// clear query
+		this._params.must = undefined;
+		this._params.must_not = undefined;
+		this._params.should = undefined;
+		// cleat extrema
+		this.clearExtrema();
+	}
 
-        setQuery: function(query) {
-            if (!query.must && !query.must_not && !query.should) {
-                throw 'Root query must have at least one `must`, `must_not`, or `should` argument.';
-            }
-            // check that the query is valid
-            boolQueryCheck(this._meta, query);
-            // set query
-            this._params.must = query.must;
-            this._params.must_not = query.must_not;
-            this._params.should = query.should;
-            // cleat extrema
-            this.clearExtrema();
-        },
+	getMeta() {
+		return this._meta;
+	}
 
-        getQuery: function() {
-            return {
-                must: this._params.must,
-                must_not: this._params.must_not,
-                should: this._params.should,
-            };
-        },
+	getParams() {
+		return this._params;
+	}
 
-        clearQuery: function() {
-            // clear query
-            this._params.must = undefined;
-            this._params.must_not = undefined;
-            this._params.should = undefined;
-            // cleat extrema
-            this.clearExtrema();
-        },
+	setDateHistogram(field, fromTimestamp, toTimestamp, interval) {
+		if (!field) {
+			throw 'DateHistogram `field` is missing from argument';
+		}
+		this._params.date_histogram = {
+			field: field,
+			from: fromTimestamp,
+			to: toTimestamp,
+			interval: interval
+		};
+		this.clearExtrema();
+		return this;
+	}
 
-        getMeta: function() {
-            return this._meta;
-        },
+	getDateHistogram() {
+		return this._params.date_histogram;
+	}
 
-        getParams: function() {
-            return this._params;
-        },
+	setHistogram(field, interval) {
+		if (!field) {
+			throw 'Histogram `field` is missing from argument';
+		}
+		if (!interval) {
+			throw 'Histogram `interval` are missing from argument';
+		}
+		const meta = this._meta[field];
+		if (meta) {
+			if (!meta.extrema) {
+				throw 'Histogram `field` ' + field + ' is not ordinal in meta data';
+			}
+		} else {
+			throw 'Histogram `field` ' + field + ' is not recognized in meta data';
+		}
+		this._params.histogram = {
+			field: field,
+			interval: interval
+		};
+		this.clearExtrema();
+		return this;
+	}
 
-        getNormalizedCoords: function(coords) {
-            const pow = Math.pow(2, coords.z);
-            return {
-                x: mod(coords.x, pow),
-                y: mod(coords.y, pow),
-                z: coords.z
-            };
-        },
+	getHistogram () {
+		return this._params.histogram;
+	}
 
-        cacheKeyFromCoord: function(coords, normalize) {
-            if (normalize) {
-                // leaflet layer x and y may be > n^2, and < 0 in the case
-                // of a wraparound. If normalize is true, mod the coords
-                coords = this.getNormalizedCoords(coords);
-            }
-            return coords.z + ':' + coords.x + ':' + coords.y;
-        },
+	setMetric(field, type) {
+		if (!field) {
+			throw 'Metric `field` is missing from argument';
+		}
+		if (!type) {
+			throw 'Metric `type` is missing from argument';
+		}
+		const meta = this._meta[field];
+		if (meta) {
+			if (!meta.extrema) {
+				throw 'Metric `field` ' + field + ' is not ordinal in meta data';
+			}
+		} else {
+			throw 'Metric `field` ' + field + ' is not recognized in meta data';
+		}
+		const METRICS = {
+			'min': true,
+			'max': true,
+			'sum': true,
+			'avg': true
+		};
+		if (!METRICS[type]) {
+			throw 'Metric type `' + type + '` is not supported';
+		}
+		this._params.metric = {
+			field: field,
+			type: type
+		};
+		this.clearExtrema();
+		return this;
+	}
 
-        coordFromCacheKey: function(key) {
-            const arr = key.split(':');
-            return {
-                x: parseInt(arr[1], 10),
-                y: parseInt(arr[2], 10),
-                z: parseInt(arr[0], 10)
-            };
-        },
+	getMetric() {
+		return this._params.metric;
+	}
+}
 
-        onTileUnload: function(event) {
-            let coords = event.coords;
-            // respect the TMS setting in the options
-            if (this.options.tms) {
-                coords = {
-                    x: event.coords.x,
-                    y: Math.pow(2, event.coords.z) - 1 - event.coords.y,
-                    z: event.coords.z
-                };
-            }
-            // cache key from coords
-            const key = this.cacheKeyFromCoord(coords);
-            // cache key from normalized coords
-            const nkey = this.cacheKeyFromCoord(coords, true);
-            // get cache entry
-            const cached = this._cache[nkey];
-            // could the be case where the cache is cleared before tiles are
-            // unloaded
-            if (!cached) {
-                return;
-            }
-            // remove the tile from the cache
-            delete cached.tiles[key];
-            // don't remove cache entry unless to tiles use it anymore
-            if (_.keys(cached.tiles).length === 0) {
-                // get the tile being deleted
-                const tile = cached.tiles[key];
-                // no more tiles use this cached data, so delete it
-                this.fire('cacheunload', {
-                    tile: tile,
-                    coords: coords,
-                    entry: cached
-                });
-                delete this._cache[nkey];
-            }
-        },
-
-        _requestTile: function(coords, tile, callback) {
-            // respect the TMS setting in the options
-            if (this.options.tms) {
-                coords = {
-                    x: coords.x,
-                    y: Math.pow(2, coords.z) - 1 - coords.y,
-                    z: coords.z
-                };
-            }
-            const ncoords = this.getNormalizedCoords(coords);
-            // cache key from coords
-            const key = this.cacheKeyFromCoord(coords);
-            // cache key from normalized coords
-            const nkey = this.cacheKeyFromCoord(coords, true);
-            // check cache
-            const cached = this._cache[nkey];
-            if (cached) {
-                // add tile under normalize coords
-                cached.tiles[key] = tile;
-                if (!cached.isPending) {
-                    // cache entry already exists
-                    this.fire('cachehit', {
-                        tile: tile,
-                        coords: coords,
-                        entry: cached
-                    });
-                    // execute callback
-                    window.requestAnimationFrame(callback);
-                } else {
-                    // tile is already pending, add callback
-                    cached.callbacks.push(callback);
-                }
-            } else {
-                // create a cache entry
-                this._cache[nkey] = {
-                    isPending: true,
-                    tiles: {},
-                    data: null,
-                    callbacks: [ callback ]
-                };
-                // add tile to the cache entry
-                this._cache[nkey].tiles[key] = tile;
-                // request the tile
-                this.requestTile(ncoords, data => {
-                    const cached = this._cache[nkey];
-                    if (!cached) {
-                        // tile is no longer being tracked, ignore
-                        return;
-                    }
-                    // flag as no longer pending
-                    cached.isPending = false;
-                    // transform and store tile data in cache
-                    cached.data = this.options.transform(data);
-                    // execute pending callbacks
-                    cached.callbacks.forEach(callback => {
-                        callback();
-                    });
-                    cached.callbacks = [];
-                    // data is loaded into cache
-                    this.fire('cacheload', {
-                        tile: tile,
-                        coords: coords,
-                        entry: cached
-                    });
-                    if (cached.data) {
-                        // update the extrema
-                        if (this.updateExtrema(cached.data)) {
-                            // if extrema changed, fire event
-                            this.fire('extremachange', {
-                                tile: tile,
-                                coords: coords,
-                                entry: cached
-                            });
-                        }
-                    }
-                });
-            }
-        },
-
-        requestTile: function() {
-            // override
-        }
-
-    });
-
-    module.exports = Live;
-
-}());
+module.exports = Live;

@@ -1,56 +1,22 @@
-(function() {
+'use strict';
 
-    'use strict';
-
-    // debug tile layer
-    let Debug = require('./core/Debug');
-
-    // pending tile layer
-    let Pending = require('./core/Pending');
-
-    // image layer
-    let Image = require('./core/Image');
-
-    // composite layer
-    let Composite = require('./core/Composite');
-
-    // live layer - base type for extension
-    let Live = require('./core/Live');
-
-    // live tile layers
-    let Heatmap = require('./type/Heatmap');
-    let TopTrails = require('./type/TopTrails');
-    let TopCount = require('./type/TopCount');
-    let TopFrequency = require('./type/TopFrequency');
-    let Frequency = require('./type/Frequency');
-    let TopicCount = require('./type/TopicCount');
-    let TopicFrequency = require('./type/TopicFrequency');
-    let Preview = require('./type/Preview');
-    let Macro = require('./type/Macro');
-    let Micro = require('./type/Micro');
-    let Count = require('./type/Count');
-    let Community = require('./type/Community');
-    let Custom = require('./type/Custom');
-
-    module.exports = {
-        Debug: Debug,
-        Pending: Pending,
-        Image: Image,
-        Composite: Composite,
-        Live: Live,
-        Heatmap: Heatmap,
-        TopCount: TopCount,
-        TopTrails: TopTrails,
-        TopFrequency: TopFrequency,
-        Frequency: Frequency,
-        TopicCount: TopicCount,
-        TopicFrequency: TopicFrequency,
-        Preview: Preview,
-        Macro: Macro,
-        Micro: Micro,
-        Count: Count,
-        Community: Community,
-        Custom: Custom
-    };
-
-}());
+module.exports = {
+	// debug
+	Debug: require('./core/Debug'),
+	// live
+	Live: require('./core/Live'),
+	// types
+	Count: require('./type/Count'),
+	Custom: require('./type/Custom'),
+	Frequency: require('./type/Frequency'),
+	Heatmap: require('./type/Heatmap'),
+	Macro: require('./type/Macro'),
+	Micro: require('./type/Micro'),
+	Preview: require('./type/Preview'),
+	TopCount: require('./type/TopCount'),
+	TopFrequency: require('./type/TopFrequency'),
+	TopHits: require('./type/TopHits'),
+	TopTrails: require('./type/TopTrails'),
+	TopicCount: require('./type/TopicCount'),
+	TopicFrequency: require('./type/TopicFrequency')
+};

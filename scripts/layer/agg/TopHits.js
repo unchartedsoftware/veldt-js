@@ -1,62 +1,34 @@
-// Provides top hits query functionality. 'size' indicates the number of top
-// hits to return, 'include' is the list of fields to include in the returned
-// data, 'sort' is the field to use for sort critera, and 'order' is value of
-// 'asc' or 'desc' to indicate sort ordering.
-(function() {
+'use strict';
 
-    'use strict';
+const checkField = function(meta, field) {
+	if (meta) {
+		if (!meta.extrema) {
+			throw 'TopHits `field` ' + field + ' is not ordinal in meta data.';
+		}
+	} else {
+		throw 'TopHits `field` ' + field + ' is not recognized in meta data';
+	}
+};
 
-    const checkField = function(meta, field) {
-        if (meta) {
-            if (!meta.extrema) {
-                throw 'Range `field` ' + field + ' is not ordinal in meta data.';
-            }
-        } else {
-            throw 'TopTerms `field` ' + field + ' is not recognized in meta data';
-        }
-    };
+const setTopHits = function(size, include, sort, order) {
+	if (sort) {
+		checkField(this._meta[sort], sort);
+	}
+	this._params.top_hits = {
+		size: size,
+		include: include,
+		sort: sort,
+		order: order
+	};
+	this.clearExtrema();
+	return this;
+};
 
-    const setTopHits = function(size, include, sort, order) {
-        if (sort) {
-            checkField(this._meta[sort], sort);
-        }
-        this._params.top_hits = {
-            size: size,
-            include: include,
-            sort: sort,
-            order: order
-        };
-        this.clearExtrema();
-        return this;
-    };
+const getTopHits = function() {
+	return this._params.top_hits;
+};
 
-    const getTopHits = function() {
-        return this._params.top_hits;
-    };
-
-    // bind point for external controls
-    const setSortField = function(sort) {
-        if (!sort) {
-            throw 'TopHits `sort` argument is missing';
-        }
-        checkField(this._meta[sort], sort);
-        if (sort !== this._params.top_hits.sort) {
-            this._params.top_hits.sort = sort;
-            this.clearExtrema();
-        }
-        return this;
-    };
-
-    // bind point for external controls
-    const getSortField = function() {
-        return this._params.top_hits.sort;
-    };
-
-    module.exports = {
-        setTopHits: setTopHits,
-        getTopHits: getTopHits,
-        setSortField: setSortField,
-        getSortField: getSortField
-    };
-
-}());
+module.exports = {
+	setTopHits: setTopHits,
+	getTopHits: getTopHits
+};

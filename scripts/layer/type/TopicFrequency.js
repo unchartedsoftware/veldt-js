@@ -1,30 +1,27 @@
-(function() {
+'use strict';
 
-    'use strict';
+const _ = require('lodash');
+const Live = require('../core/Live');
+const Elastic = require('../param/Elastic');
+const Tiling = require('../param/Tiling');
+const TermsFilter = require('../agg/TermsFilter');
+const DateHistogram = require('../agg/DateHistogram');
+const Histogram = require('../agg/Histogram');
+const mixin = require('../../util/mixin');
 
-    const Live = require('../core/Live');
-    const Elastic = require('../param/Elastic');
-    const Tiling = require('../param/Tiling');
-    const TermsFilter = require('../agg/TermsFilter');
-    const DateHistogram = require('../agg/DateHistogram');
-    const Histogram = require('../agg/Histogram');
+class TopicFrequency extends mixin(Live).with(Elastic, Tiling, TermsFilter, DateHistogram, Histogram) {
 
-    const TopicFrequency = Live.extend({
+	constructor(meta, options = {}) {
+		super(meta, options);
+		this.type = 'topic_frequency';
+	}
 
-        includes: [
-            // params
-            Elastic,
-            Tiling,
-            // aggs
-            TermsFilter,
-            DateHistogram,
-            Histogram
-        ],
+	extractExtrema(data) {
+		return {
+			min: _.min(data),
+			max: _.max(data)
+		};
+	}
+}
 
-        type: 'topic_frequency'
-
-    });
-
-    module.exports = TopicFrequency;
-
-}());
+module.exports = TopicFrequency;

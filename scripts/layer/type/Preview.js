@@ -1,33 +1,17 @@
-(function() {
+'use strict';
 
-    'use strict';
+const Live = require('../core/Live');
+const Elastic = require('../param/Elastic');
+const Binning = require('../param/Binning');
+const TopHits = require('../agg/TopHits');
+const mixin = require('../../util/mixin');
 
-    const Live = require('../core/Live');
-    const Elastic = require('../param/Elastic');
-    const Binning = require('../param/Binning');
-    const TopHits = require('../agg/TopHits');
+class Preview extends mixin(Live).with(Elastic, Binning, TopHits) {
 
-    const Preview = Live.extend({
+	constructor(meta, options = {}) {
+		super(meta, options);
+		this.type = 'preview';
+	}
+}
 
-        includes: [
-            // params
-            Elastic,
-            Binning,
-            // aggs
-            TopHits
-        ],
-
-        type: 'preview',
-
-        // extreme not relevant for preview
-        extractExtrema: function() {
-            return {
-                min: Infinity,
-                max: -Infinity
-            };
-        }
-    });
-
-    module.exports = Preview;
-
-}());
+module.exports = Preview;
