@@ -9,7 +9,7 @@ const Histogram = require('../agg/Histogram');
 const TopHits = require('../agg/TopHits');
 const mixin = require('../../util/mixin');
 
-class TopCount extends mixin(Live).with(Elastic, Tiling, TopTerms, Histogram, TopHits) {
+class TopCount extends Bivariate {
 
 	constructor(meta, options = {}) {
 		super(meta, options);

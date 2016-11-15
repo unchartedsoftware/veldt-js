@@ -1,17 +1,12 @@
 'use strict';
 
 const _ = require('lodash');
-const Live = require('../core/Live');
-const Elastic = require('../param/Elastic');
-const Binning = require('../param/Binning');
-const Metric = require('../agg/Metric');
-const mixin = require('../../util/mixin');
+const Bivariate = require('./Bivariate');
 
-class Heatmap extends mixin(Live).with(Elastic, Binning, Metric) {
+class Heatmap extends Bivariate {
 
 	constructor(meta, options = {}) {
 		super(meta, options);
-		this.type = 'heatmap';
 	}
 
 	extractExtrema(data) {
