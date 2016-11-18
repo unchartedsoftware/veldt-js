@@ -100,33 +100,26 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 	}
 
 	draw() {
-		// update projection
 		const gl = this.gl;
-		const layer = this.layer;
-		const plot = layer.plot;
-		const quad = this.quad;
-		const array = this.array;
 		const shader = this.shader;
-		const opacity = layer.opacity;
-
-		// get projection matrix
-		const proj = plot.viewport.getOrthoMatrix();
+		const array = this.array;
+		const quad = this.quad;
+		const renderables = this.getRenderablesLOD();
+		const proj = this.getOrthoMatrix();
 
 		// bind shader
 		shader.use();
-		// set projection
-		shader.setUniform('uProjectionMatrix', proj);
-		// set texture sampler unit
-		shader.setUniform('uTextureSampler', 0);
-		// set opacity
-		shader.setUniform('uOpacity', opacity);
 
-		shader.setUniform('uRangeMin', this.getValueRange().min);
-		shader.setUniform('uRangeMax', this.getValueRange().max);
-		shader.setUniform('uMin', this.getExtrema().min);
-		shader.setUniform('uMax', this.getExtrema().max);
-		shader.setUniform('uTransformType', this.getTransformEnum(this.transform));
-		shader.setUniform('uColorRamp', ColorRamp.getTable(this.colorRamp));
+		// set uniforms
+		shader.setUniform('uProjectionMatrix', proj);
+		shader.setUniform('uTextureSampler', 0);
+		shader.setUniform('uOpacity', this.layer.opacity);
+		shader.setUniform('uRangeMin', 0); //this.getValueRange().min);
+		shader.setUniform('uRangeMax', 1); //this.getValueRange().max);
+		shader.setUniform('uMin', this.layer.getExtrema().min);
+		shader.setUniform('uMax', this.layer.getExtrema().max);
+		shader.setUniform('uTransformType', 0); //this.getTransformEnum(this.transform));
+		shader.setUniform('uColorRamp', ColorRamp.colorTables(this.colorRamp));
 
 		// set blending func
 		gl.enable(gl.BLEND);
@@ -137,15 +130,16 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 
 		let last;
 		// for each renderable
-		this.getRenderablesLOD().forEach(renderable => {
+		renderables.forEach(renderable => {
 			const hash = renderable.hash;
 			if (last !== hash) {
 				// bind texture
 				array.bind(hash, 0);
 				last = hash;
 			}
+			// set tile uniforms
 			shader.setUniform('uTextureCoordOffset', renderable.uvOffset);
-			shader.setUniform('uTileScale', renderable.scale);
+			shader.setUniform('uScale', renderable.scale);
 			shader.setUniform('uTileOffset', renderable.tileOffset);
 			// draw
 			quad.draw();
@@ -154,7 +148,6 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 
 		// unbind quad
 		quad.unbind();
-
 		return this;
 	}
 }

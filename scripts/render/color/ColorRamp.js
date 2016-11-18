@@ -232,8 +232,8 @@ const createColorRamp = function(type, baseColors) {
 };
 
 module.exports = {
-	ColorTables: ColorTables,
-	ColorRamps: ColorRamps,
+	colorTables: ColorTables,
+	colorRamps: ColorRamps,
 	createColorRamp: createColorRamp,
 	NUM_GRADIENT_STEPS: NUM_GRADIENT_STEPS
 };
