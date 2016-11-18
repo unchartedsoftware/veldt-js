@@ -1,10 +1,9 @@
 {
   "name": "prism-client",
-  "version": "0.10.10",
+  "version": "0.11.0",
   "author": "Kevin Birk <kbirk@uncharted.software>",
   "description": "Leaflet layer plugins for prism applications",
-  "main": "build/prism.js",
-  "style": "build/prism.css",
+  "main": "scripts/exports.js",
   "license": "MIT",
   "registry": "github",
   "repository": {
@@ -17,8 +16,8 @@
     "build"
   ],
   "dependencies": {
-    "jquery": "^3.1.1",
-    "lodash": "^4.16.4"
+    "jquery": "3.1.1",
+    "lodash": "4.16.4"
   },
   "devDependencies": {
     "async": "2.1.1",
@@ -32,7 +31,6 @@
     "gulp-csso": "2.0.0",
     "gulp-eslint": "3.0.1",
     "gulp-uglify": "2.0.0",
-    "jquery": "^3.1.1",
     "json-stable-stringify": "1.0.1",
     "lumo": "0.1.3",
     "moment": "2.15.1",

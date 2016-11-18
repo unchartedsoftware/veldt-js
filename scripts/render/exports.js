@@ -2,12 +2,12 @@
 
 const lumo = require('lumo');
 
+// core renderers
 const Core = {
 	HTML: lumo.HTMLRenderer,
 	SVG: lumo.SVGRenderer,
 	WebGL: lumo.HTMLRenderer
 };
-
 
 // html renderers
 const HTML = {

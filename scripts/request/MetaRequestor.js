@@ -3,14 +3,12 @@
 const Requestor = require('./Requestor');
 
 class MetaRequestor extends Requestor {
-	constructor(url, callback) {
-		super(url, callback);
+	constructor(pipeline, callback) {
+		super(`ws/meta/${pipeline}`, callback);
+		this.pipeline = pipeline;
 	}
-	getHash(req) {
-		return `${req.type}-${req.uri}-${req.store}`;
-	}
-	getURL(res) {
-		return `meta/${res.type}/${res.endpoint}/${res.uri}/${res.store}`;
+	getURL() {
+		return `meta/${this.pipeline}`;
 	}
 }
 

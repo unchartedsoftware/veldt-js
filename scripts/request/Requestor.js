@@ -1,6 +1,8 @@
 'use strict';
 
+const _ = require('lodash');
 const $ = require('jquery');
+const stringify = require('json-stable-stringify');
 
 const RETRY_INTERVAL = 5000;
 
@@ -57,6 +59,31 @@ function establishConnection(requestor, callback) {
 	};
 }
 
+function prune(current) {
+	_.forOwn(current, (value, key) => {
+	  if (_.isUndefined(value) || _.isNull(value) || _.isNaN(value) ||
+		(_.isString(value) && _.isEmpty(value)) ||
+		(_.isObject(value) && _.isEmpty(prune(value)))) {
+		delete current[key];
+	  }
+	});
+	// remove any leftover undefined values from the delete
+	// operation on an array
+	if (_.isArray(current)) {
+		_.pull(current, undefined);
+	}
+	return current;
+}
+
+function pruneEmpty(obj) {
+	// do not modify the original object, create a clone instead
+	prune(_.cloneDeep(obj));
+}
+
+function hashReq(req) {
+	return stringify(pruneEmpty(req));
+}
+
 class Requestor {
 	constructor(url, callback) {
 		this.url = url;
@@ -65,8 +92,8 @@ class Requestor {
 		this.isOpen = false;
 		establishConnection(this, callback);
 	}
-	getHash() {
-		// override
+	getHash(req) {
+		return hashReq(req);
 	}
 	getURL() {
 		// override

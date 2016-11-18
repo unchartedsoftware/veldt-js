@@ -61,18 +61,6 @@ class Bivariate extends Live {
 		}
 		this.resolution = resolution;
 	}
-
-	getParams() {
-		return {
-			xField: this.xField,
-			yField: this.yField,
-			left: this.left,
-			right: this.right,
-			bottom: this.bottom,
-			top: this.top,
-			resolution: this.resolution
-		};
-	}
 }
 
 module.exports = Bivariate;
