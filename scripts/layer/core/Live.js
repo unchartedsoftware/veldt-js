@@ -10,7 +10,7 @@ class Live extends lumo.Layer {
 		super(options);
 		this.meta = meta;
 		this.params = {};
-		this.query = {};
+		this.query = null;
 		this.transform = defaultTo(options.transform, x => x);
 		// set extrema / cache
 		this.clearExtrema();
@@ -57,6 +57,9 @@ class Live extends lumo.Layer {
 	}
 
 	getQuery() {
+		if (isEmpty(this.query)) {
+			return null;
+		}
 		return this.query;
 	}
 
