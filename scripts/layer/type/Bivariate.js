@@ -26,10 +26,10 @@ class Bivariate extends Live {
 		if (!isString(field)) {
 			throw `field argument ${field} must be of type String`;
 		}
-		if (!isNil(left)) {
+		if (isNil(left)) {
 			throw `left argument ${left} is invalid`;
 		}
-		if (!isNil(left)) {
+		if (isNil(right)) {
 			throw `right argument ${right} is invalid`;
 		}
 		this.xField = field;
@@ -41,10 +41,10 @@ class Bivariate extends Live {
 		if (!isString(field)) {
 			throw `field argument ${field} must be of type String`;
 		}
-		if (!isNil(bottom)) {
+		if (isNil(bottom)) {
 			throw `bottom argument ${bottom} is invalid`;
 		}
-		if (!isNil(top)) {
+		if (isNil(top)) {
 			throw `top argument ${top} is invalid`;
 		}
 		this.yField = field;
