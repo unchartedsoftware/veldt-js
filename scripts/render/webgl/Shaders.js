@@ -139,18 +139,19 @@ const heatmap = {
 	vert:
 		precision +
 		`
+		precision highp float;
 		attribute vec2 aPosition;
 		attribute vec2 aTextureCoord;
+		uniform vec4 uTextureCoordOffset;
+		uniform vec2 uTileOffset;
+		uniform float uScale;
 		uniform mat4 uProjectionMatrix;
-		uniform ivec2 uTileOffset;
-		uniform vec2 uTextureCoordOffset;
-		uniform vec2 uTextureCoordExtent;
 		varying vec2 vTextureCoord;
 		void main() {
 			vTextureCoord = vec2(
-				uTextureCoordOffset.x + (aTextureCoord.x * uTextureCoordExtent.x),
-				uTextureCoordOffset.y + (aTextureCoord.y * uTextureCoordExtent.y));
-			ivec2 wPosition = ivec2(aPosition) + uTileOffset;
+				uTextureCoordOffset.x + (aTextureCoord.x * uTextureCoordOffset.z),
+				uTextureCoordOffset.y + (aTextureCoord.y * uTextureCoordOffset.w));
+			vec2 wPosition = (aPosition * uScale) + uTileOffset;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 		}
 		`,
@@ -165,15 +166,16 @@ const heatmap = {
 		uniform float uOpacity;
 		varying vec2 vTextureCoord;
 		void main() {
-			vec4 enc = texture2D(uTextureSampler, vTextureCoord);
-			float count = decodeRGBAToFloat(enc);
-			if (count == 0.0) {
-				discard;
-			}
-			float nval = transform(count);
-			float rval = interpolateToRange(nval);
-			vec4 color = colorRamp(rval);
-			gl_FragColor = vec4(color.rgb, color.a * uOpacity);
+			gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+			// vec4 enc = texture2D(uTextureSampler, vTextureCoord);
+			// float count = decodeRGBAToFloat(enc);
+			// if (count == 0.0) {
+			// 	discard;
+			// }
+			// float nval = transform(count);
+			// float rval = interpolateToRange(nval);
+			// vec4 color = colorRamp(rval);
+			// gl_FragColor = vec4(color.rgb, color.a * uOpacity);
 		}
 		`
 };
@@ -214,7 +216,7 @@ const micro = {
 				alpha = 1.0 - smoothstep(1.0 - delta, 1.0 + delta, radius);
 			#else
 				if (radius > 1.0) {
-				   discard;
+					discard;
 				}
 			#endif
 			gl_FragColor = vec4(uColor.rgb, uColor.a * alpha);
@@ -227,14 +229,15 @@ const macro = {
 	vert:
 		precision +
 		`
+		precision highp float;
 		attribute vec2 aPosition;
 		uniform float uRadius;
 		uniform vec2 uTileOffset;
-		uniform float uTileScale;
+		uniform float uScale;
 		uniform float uPixelRatio;
 		uniform mat4 uProjectionMatrix;
 		void main() {
-			vec2 wPosition = (aPosition * uTileScale) + uTileOffset;
+			vec2 wPosition = (aPosition * uScale) + uTileOffset;
 			gl_PointSize = uRadius * 2.0 * uPixelRatio;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 		}
@@ -245,6 +248,7 @@ const macro = {
 		#ifdef GL_OES_standard_derivatives
 			#extension GL_OES_standard_derivatives : enable
 		#endif
+		precision highp float;
 		uniform vec4 uColor;
 		void main() {
 			vec2 cxy = 2.0 * gl_PointCoord - 1.0;
@@ -255,7 +259,7 @@ const macro = {
 				alpha = 1.0 - smoothstep(1.0 - delta, 1.0 + delta, radius);
 			#else
 				if (radius > 1.0) {
-				   discard;
+					discard;
 				}
 			#endif
 			gl_FragColor = vec4(uColor.rgb, uColor.a * alpha);

@@ -202,7 +202,7 @@ const concat = function(a, b) {
 	return combined;
 };
 
-const ColorTables = {
+const colorTables = {
 	cool: COOL,
 	hot: HOT,
 	verdant: VERDANT,
@@ -213,7 +213,7 @@ const ColorTables = {
 	flat: FLAT
 };
 
-const ColorRamps = {
+const colorRamps = {
 	cool: buildLookupFunction(COOL),
 	hot: buildLookupFunction(HOT),
 	verdant: buildLookupFunction(VERDANT),
@@ -225,15 +225,29 @@ const ColorRamps = {
 	flat: buildLookupFunction(FLAT)
 };
 
-const createColorRamp = function(type, baseColors) {
-	ColorTables[type] = buildPerceptualLookupTable(baseColors);
-	ColorRamps[type] = buildLookupFunction(ColorTables[type]);
-	return ColorRamps[type];
+const getTable = function(type) {
+	if (!colorTables[type]) {
+		throw `Color table ${type} does not exist`;
+	}
+	return colorTables[type];
+};
+
+const getRamp = function(type) {
+	if (!colorRamps[type]) {
+		throw `Color table ${type} does not exist`;
+	}
+	return colorRamps[type];
+};
+
+const createRamp = function(type, baseColors) {
+	colorTables[type] = buildPerceptualLookupTable(baseColors);
+	colorRamps[type] = buildLookupFunction(colorTables[type]);
+	return colorRamps[type];
 };
 
 module.exports = {
-	colorTables: ColorTables,
-	colorRamps: ColorRamps,
-	createColorRamp: createColorRamp,
+	getTable: getTable,
+	getRamp: getRamp,
+	createRamp: createRamp,
 	NUM_GRADIENT_STEPS: NUM_GRADIENT_STEPS
 };

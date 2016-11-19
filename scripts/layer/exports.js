@@ -9,7 +9,7 @@ module.exports = {
 	// Count: require('./type/Count'),
 	// Frequency: require('./type/Frequency'),
 	Heatmap: require('./type/Heatmap'),
-	// Macro: require('./type/Macro'),
+	Macro: require('./type/Macro'),
 	// Micro: require('./type/Micro'),
 	// Preview: require('./type/Preview'),
 	// TopCount: require('./type/TopCount'),

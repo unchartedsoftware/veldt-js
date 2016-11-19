@@ -8,17 +8,15 @@ const Shaders = require('./Shaders');
 function encodeTexture(data) {
 	const counts = new Float64Array(data);
 	const bins = new Uint8Array(counts.length * 4);
-	let sum = 0;
 	let bin = 0;
 	for (let i=0; i<counts.length; i++) {
-		bin = data[i];
+		bin = counts[i];
 		bins[i * 4] = (bin / 16777216.0) & 0xFF;
 		bins[i * 4 + 1] = (bin / 65536.0) & 0xFF;
 		bins[i * 4 + 2] = (bin / 256.0) & 0xFF;
 		bins[i * 4 + 3] = bin & 0xFF;
-		sum += bin;
 	}
-	return sum > 0 ? bins : null;
+	return bins;
 }
 
 const createQuad = function(gl, size) {
@@ -71,22 +69,18 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 
 	addTile(array, tile) {
 		const encoded = encodeTexture(tile.data);
-		if (encoded) {
-			array.set(tile.coord.hash, encoded);
-		}
+		array.set(tile.coord.hash, encoded);
 	}
 
 	removeTile(array, tile) {
-		if (array.has(tile.coord.hash)) {
-			array.delete(tile.coord.hash);
-		}
+		array.delete(tile.coord.hash);
 	}
 
 	onAdd(layer) {
 		super.onAdd(layer);
 		this.quad = createQuad(this.gl, 0, layer.plot.tileSize);
 		this.shader = this.createShader(Shaders.heatmap);
-		this.array = this.createTextureArray(layer.plot.tileSize);
+		this.array = this.createTextureArray(layer.resolution);
 		return this;
 	}
 
@@ -112,14 +106,14 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 
 		// set uniforms
 		shader.setUniform('uProjectionMatrix', proj);
-		shader.setUniform('uTextureSampler', 0);
-		shader.setUniform('uOpacity', this.layer.opacity);
-		shader.setUniform('uRangeMin', 0); //this.getValueRange().min);
-		shader.setUniform('uRangeMax', 1); //this.getValueRange().max);
-		shader.setUniform('uMin', this.layer.getExtrema().min);
-		shader.setUniform('uMax', this.layer.getExtrema().max);
-		shader.setUniform('uTransformType', 0); //this.getTransformEnum(this.transform));
-		shader.setUniform('uColorRamp', ColorRamp.colorTables(this.colorRamp));
+		//shader.setUniform('uTextureSampler', 0);
+		//shader.setUniform('uOpacity', this.layer.opacity);
+		//shader.setUniform('uRangeMin', 0); //this.getValueRange().min);
+		//shader.setUniform('uRangeMax', 1); //this.getValueRange().max);
+		//shader.setUniform('uMin', this.layer.getExtrema().min);
+		//shader.setUniform('uMax', this.layer.getExtrema().max);
+		//shader.setUniform('uTransformType', 0); //this.getTransformEnum(this.transform));
+		//shader.setUniform('uColorRamp', ColorRamp.getTable(this.colorRamp));
 
 		// set blending func
 		gl.enable(gl.BLEND);
