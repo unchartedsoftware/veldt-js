@@ -19,15 +19,15 @@ function encodeTexture(data) {
 	return bins;
 }
 
-const createQuad = function(gl, size) {
+const createQuad = function(gl, min, max) {
 	const vertices = new Float32Array(24);
 	// positions
-	vertices[0] = 0;	   vertices[1] = 0;
-	vertices[2] = size;	   vertices[3] = 0;
-	vertices[4] = size;	   vertices[5] = size;
-	vertices[6] = 0;	   vertices[7] = 0;
-	vertices[8] = size;	   vertices[9] = size;
-	vertices[10] = 0;	   vertices[11] = size;
+	vertices[0] = min;	   vertices[1] = min;
+	vertices[2] = max;	   vertices[3] = min;
+	vertices[4] = max;	   vertices[5] = max;
+	vertices[6] = min;	   vertices[7] = min;
+	vertices[8] = max;	   vertices[9] = max;
+	vertices[10] = min;	   vertices[11] = max;
 	// uvs
 	vertices[12] = 0;	   vertices[13] = 0;
 	vertices[14] = 1;	   vertices[15] = 0;
@@ -62,9 +62,11 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 		super(options);
 		this.transform = _.defaultTo(options.transform, 'log10');
 		this.colorRamp = _.defaultTo(options.colorRamp, 'verdant');
+		this.filter = 'NEAREST';
 		this.quad = null;
 		this.shader = null;
 		this.array = null;
+		this.ramp = null;
 	}
 
 	addTile(array, tile) {
@@ -81,6 +83,7 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 		this.quad = createQuad(this.gl, 0, layer.plot.tileSize);
 		this.shader = this.createShader(Shaders.heatmap);
 		this.array = this.createTextureArray(layer.resolution);
+		this.ramp = this.createRampTexture(this.colorRamp);
 		return this;
 	}
 
@@ -93,12 +96,23 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 		return this;
 	}
 
+	createRampTexture(type) {
+		const table = ColorRamp.getTable(type);
+		const size = Math.sqrt(table.length / 4);
+		const texture = new lumo.Texture(this.gl, null, {
+			filter: 'NEAREST'
+		});
+		texture.bufferData(table, size, size);
+		return texture;
+	}
+
 	draw() {
 		const gl = this.gl;
 		const shader = this.shader;
 		const array = this.array;
 		const quad = this.quad;
-		const renderables = this.getRenderablesLOD();
+		const ramp = this.ramp;
+		const renderables = this.getRenderables(); //LOD();
 		const proj = this.getOrthoMatrix();
 
 		// bind shader
@@ -106,14 +120,16 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 
 		// set uniforms
 		shader.setUniform('uProjectionMatrix', proj);
-		//shader.setUniform('uTextureSampler', 0);
-		//shader.setUniform('uOpacity', this.layer.opacity);
-		//shader.setUniform('uRangeMin', 0); //this.getValueRange().min);
-		//shader.setUniform('uRangeMax', 1); //this.getValueRange().max);
-		//shader.setUniform('uMin', this.layer.getExtrema().min);
-		//shader.setUniform('uMax', this.layer.getExtrema().max);
-		//shader.setUniform('uTransformType', 0); //this.getTransformEnum(this.transform));
-		//shader.setUniform('uColorRamp', ColorRamp.getTable(this.colorRamp));
+		shader.setUniform('uTextureSampler', 0);
+		shader.setUniform('uColorRampSampler', 1);
+		shader.setUniform('uColorRampSize', ramp.width);
+
+		shader.setUniform('uOpacity', this.layer.opacity);
+		shader.setUniform('uRangeMin', 0); //this.getValueRange().min);
+		shader.setUniform('uRangeMax', 1); //this.getValueRange().max);
+		shader.setUniform('uMin', 0); //this.layer.getExtrema().min);
+		shader.setUniform('uMax', 10000); //this.layer.getExtrema().max);
+		shader.setUniform('uTransformType', 0); //this.getTransformEnum(this.transform));
 
 		// set blending func
 		gl.enable(gl.BLEND);
@@ -121,6 +137,9 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 
 		// bind quad
 		quad.bind();
+
+		// bind colo ramp
+		ramp.bind(1);
 
 		let last;
 		// for each renderable
@@ -132,7 +151,7 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 				last = hash;
 			}
 			// set tile uniforms
-			shader.setUniform('uTextureCoordOffset', renderable.uvOffset);
+			// shader.setUniform('uTextureCoordOffset', renderable.uvOffset);
 			shader.setUniform('uScale', renderable.scale);
 			shader.setUniform('uTileOffset', renderable.tileOffset);
 			// draw

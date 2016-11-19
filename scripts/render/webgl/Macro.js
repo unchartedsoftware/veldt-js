@@ -20,31 +20,6 @@ class Macro extends lumo.WebGLVertexRenderer {
 			tile.coord.hash,
 			bins,
 			bins.length / atlas.stride);
-		/*
-		const counts = new Float64Array(tile.data);
-		const points = new Float32Array(counts.length * 2);
-		const resolution = this.layer.resolution;
-		const tileSize = this.layer.plot.tileSize;
-		const pointWidth = tileSize / resolution;
-		const halfWidth = pointWidth / 2;
-		let numPoints = 0;
-		for (let i=0; i<counts.length; i++) {
-			const bin = counts[i];
-			if (bin > 0) {
-				const x = (i % resolution) * pointWidth + halfWidth;
-				const y = Math.floor(i / resolution) * pointWidth + halfWidth;
-				// add point to buffer
-				points[numPoints * 2] = x;
-				points[numPoints * 2 + 1] = y;
-				// increment point count
-				numPoints++;
-			}
-		}
-		atlas.set(
-			tile.coord.hash,
-			points,
-			numPoints);
-		*/
 	}
 
 	onAdd(layer) {
@@ -58,11 +33,7 @@ class Macro extends lumo.WebGLVertexRenderer {
 				size: 2,
 				type: 'FLOAT'
 			}
-		},
-		{
-
-		}
-		);
+		});
 		return this;
 	}
 

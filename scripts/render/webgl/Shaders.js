@@ -1,7 +1,5 @@
 'use strict';
 
-const ColorRamp = require('../color/ColorRamp');
-
 /**
  * precision
  */
@@ -98,19 +96,17 @@ const transform =
  */
 const colorRamp =
 	`
-	#define RAMP_VALUES ${ColorRamp.NUM_GRADIENT_STEPS}
-	uniform vec4 uColorRamp[RAMP_VALUES];
+	uniform sampler2D uColorRampSampler;
+	uniform float uColorRampSize;
 	vec4 colorRamp(float value) {
-		float maxIndex = float(RAMP_VALUES - 1);
-		int index = int(value * maxIndex);
-		// NOTE: I REALLY don't like this, but it seems to be the only way
-		// to index the uColorRamp array
-		for (int i=0; i<RAMP_VALUES; i++) {
-			if (i == index) {
-				return uColorRamp[i];
-			}
-		}
-		return vec4(1.0, 0.0, 1.0, 1.0);
+		float maxIndex = uColorRampSize * uColorRampSize - 1.0;
+		float lookup = value * maxIndex;
+		float x = mod(lookup, uColorRampSize);
+		float y = floor(lookup / uColorRampSize);
+		float pixel = 1.0 / uColorRampSize;
+		float tx = (x / uColorRampSize) + (pixel * 0.5);
+		float ty = (y / uColorRampSize) + (pixel * 0.5);
+		return texture2D(uColorRampSampler, vec2(tx, 1.0 - ty));
 	}
 	`;
 
@@ -123,12 +119,7 @@ const valueRange =
 	uniform float uRangeMax;
 	float interpolateToRange(float nval) {
 		float rval = (nval - uRangeMin) / (uRangeMax - uRangeMin);
-		if (rval > 1.0) {
-			rval = 1.0;
-		} else if (rval < 0.0) {
-			rval = 0.0;
-		}
-		return rval;
+		return clamp(rval, 0.0, 1.0);
 	}
 	`;
 
@@ -139,7 +130,6 @@ const heatmap = {
 	vert:
 		precision +
 		`
-		precision highp float;
 		attribute vec2 aPosition;
 		attribute vec2 aTextureCoord;
 		uniform vec4 uTextureCoordOffset;
@@ -148,9 +138,10 @@ const heatmap = {
 		uniform mat4 uProjectionMatrix;
 		varying vec2 vTextureCoord;
 		void main() {
-			vTextureCoord = vec2(
-				uTextureCoordOffset.x + (aTextureCoord.x * uTextureCoordOffset.z),
-				uTextureCoordOffset.y + (aTextureCoord.y * uTextureCoordOffset.w));
+			vTextureCoord = aTextureCoord;
+			// vTextureCoord = vec2(
+			// 	uTextureCoordOffset.x + (aTextureCoord.x * uTextureCoordOffset.z),
+			// 	uTextureCoordOffset.y + (aTextureCoord.y * uTextureCoordOffset.w));
 			vec2 wPosition = (aPosition * uScale) + uTileOffset;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 		}
@@ -166,16 +157,15 @@ const heatmap = {
 		uniform float uOpacity;
 		varying vec2 vTextureCoord;
 		void main() {
-			gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-			// vec4 enc = texture2D(uTextureSampler, vTextureCoord);
-			// float count = decodeRGBAToFloat(enc);
-			// if (count == 0.0) {
-			// 	discard;
-			// }
-			// float nval = transform(count);
-			// float rval = interpolateToRange(nval);
-			// vec4 color = colorRamp(rval);
-			// gl_FragColor = vec4(color.rgb, color.a * uOpacity);
+			vec4 enc = texture2D(uTextureSampler, vTextureCoord);
+			float count = decodeRGBAToFloat(enc);
+			if (count == 0.0) {
+				discard;
+			}
+			float nval = transform(count);
+			float rval = interpolateToRange(nval);
+			vec4 color = colorRamp(rval);
+			gl_FragColor = vec4(color.rgb, color.a * uOpacity);
 		}
 		`
 };
@@ -191,11 +181,11 @@ const micro = {
 		uniform float uRadius;
 		uniform float uRadiusOffset;
 		uniform vec2 uTileOffset;
-		uniform float uTileScale;
+		uniform float uScale;
 		uniform float uPixelRatio;
 		uniform mat4 uProjectionMatrix;
 		void main() {
-			vec2 wPosition = (aPosition * uTileScale) + uTileOffset;
+			vec2 wPosition = (aPosition * uScale) + uTileOffset;
 			gl_PointSize = (uRadius + uRadiusOffset) * 2.0 * uPixelRatio;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 		}

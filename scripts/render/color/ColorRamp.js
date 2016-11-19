@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-const NUM_GRADIENT_STEPS = 100;
+const NUM_GRADIENT_STEPS = 256;
 
 function rgb2lab(rgb) {
 	const r = rgb[0] > 0.04045 ? Math.pow((rgb[0] + 0.055) / 1.055, 2.4) : rgb[0] / 12.92;
@@ -64,8 +64,7 @@ const buildFlatLookupTable = function(color) {
 
 // Interpolate between a set of colors using even perceptual distance and interpolation in CIE L*a*b* space
 const buildPerceptualLookupTable = function(baseColors) {
-	const buffer = new ArrayBuffer(NUM_GRADIENT_STEPS * 4 * 4);
-	const outputGradient = new Float32Array(buffer);
+	const outputGradient = new Uint8Array(NUM_GRADIENT_STEPS*4);
 	// Calculate perceptual spread in L*a*b* space
 	const labs = _.map(baseColors, color => {
 		return rgb2lab([color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 255]);
@@ -98,10 +97,10 @@ const buildPerceptualLookupTable = function(baseColors) {
 			labs[key][2] + (labs[key + 1][2] - labs[key][2]) * stepProgress,
 			labs[key][3] + (labs[key + 1][3] - labs[key][3]) * stepProgress
 		]);
-		outputGradient[i * 4] = rgb[0];
-		outputGradient[i * 4 + 1] = rgb[1];
-		outputGradient[i * 4 + 2] = rgb[2];
-		outputGradient[i * 4 + 3] = rgb[3];
+		outputGradient[i * 4] = rgb[0] * 255;
+		outputGradient[i * 4 + 1] = rgb[1] * 255;
+		outputGradient[i * 4 + 2] = rgb[2] * 255;
+		outputGradient[i * 4 + 3] = rgb[3] * 255;
 	}
 	return outputGradient;
 };
@@ -167,21 +166,6 @@ const GREYSCALE = buildPerceptualLookupTable([
 	[0xff, 0xff, 0xff, 0xff]
 ]);
 
-const POLAR_HOT = buildPerceptualLookupTable([
-	[ 0xff, 0x44, 0x00, 0xff ],
-	[ 0xbd, 0xbd, 0xbd, 0xb0 ]
-]);
-
-const POLAR_COLD = buildPerceptualLookupTable([
-	[ 0xbd, 0xbd, 0xbd, 0xb0 ],
-	[ 0x32, 0xa5, 0xf9, 0xff ]
-]);
-
-const FIRE = buildPerceptualLookupTable([
-	[0x96, 0x00, 0x00, 0x96],
-	[0xff, 0xff, 0x32, 0xff]
-]);
-
 const FLAT = buildFlatLookupTable([0xff, 0xff, 0xff, 0xff]);
 
 const buildLookupFunction = function(RAMP) {
@@ -195,13 +179,6 @@ const buildLookupFunction = function(RAMP) {
 	};
 };
 
-const concat = function(a, b) {
-	const combined = new Float32Array(a.length + b.length);
-	combined.set(a, 0);
-	combined.set(b, a.length);
-	return combined;
-};
-
 const colorTables = {
 	cool: COOL,
 	hot: HOT,
@@ -209,7 +186,6 @@ const colorTables = {
 	spectral: SPECTRAL,
 	temperature: TEMPERATURE,
 	grey: GREYSCALE,
-	polar: concat(POLAR_HOT, POLAR_COLD),
 	flat: FLAT
 };
 
@@ -220,8 +196,6 @@ const colorRamps = {
 	spectral: buildLookupFunction(SPECTRAL),
 	temperature: buildLookupFunction(TEMPERATURE),
 	grey: buildLookupFunction(GREYSCALE),
-	fire: buildLookupFunction(FIRE),
-	polar: buildLookupFunction(concat(POLAR_HOT, POLAR_COLD)),
 	flat: buildLookupFunction(FLAT)
 };
 
