@@ -12,31 +12,42 @@ class Live extends lumo.Layer {
 		this.params = {};
 		this.query = null;
 		this.transform = defaultTo(options.transform, x => x);
+		this.on(lumo.TILE_ADD, event => {
+			this.updateExtrema(event.tile.coord, event.tile.data);
+		});
 		// set extrema / cache
 		this.clearExtrema();
 	}
 
 	clearExtrema() {
-		this.extrema = {
-			min: Number.MAX_VALUE,
-			max: 0
-		};
+		this.extremas = new Map();
 	}
 
-	getExtrema() {
-		return this.extrema;
+	getExtrema(level = Math.round(this.plot.zoom)) {
+		let extrema = null;
+		if (!this.extremas.has(level)) {
+			extrema = {
+				min: Infinity,
+				max: -Infinity
+			};
+			this.extremas.set(level, extrema);
+		} else {
+			extrema = this.extremas.get(level);
+		}
+		return extrema;
 	}
 
-	updateExtrema(data) {
+	updateExtrema(coord, data) {
+		const current = this.getExtrema(coord.z);
 		const extrema = this.extractExtrema(data);
 		let changed = false;
-		if (extrema.min < this.extrema.min) {
+		if (extrema.min < current.min) {
 			changed = true;
-			this.extrema.min = extrema.min;
+			current.min = extrema.min;
 		}
-		if (extrema.max > this.extrema.max) {
+		if (extrema.max > current.max) {
 			changed = true;
-			this.extrema.max = extrema.max;
+			current.max = extrema.max;
 		}
 		return changed;
 	}
