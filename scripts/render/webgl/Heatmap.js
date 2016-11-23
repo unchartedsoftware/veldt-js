@@ -5,20 +5,6 @@ const lumo = require('lumo');
 const ColorRamp = require('../color/ColorRamp');
 const Shaders = require('./Shaders');
 
-function encodeTexture(data) {
-	const counts = new Float64Array(data);
-	const bins = new Uint8Array(counts.length * 4);
-	let bin = 0;
-	for (let i=0; i<counts.length; i++) {
-		bin = counts[i];
-		bins[i * 4] = (bin / 16777216.0) & 0xFF;
-		bins[i * 4 + 1] = (bin / 65536.0) & 0xFF;
-		bins[i * 4 + 2] = (bin / 256.0) & 0xFF;
-		bins[i * 4 + 3] = bin & 0xFF;
-	}
-	return bins;
-}
-
 const createQuad = function(gl, min, max) {
 	const vertices = new Float32Array(24);
 	// positions
@@ -70,8 +56,7 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 	}
 
 	addTile(array, tile) {
-		const encoded = encodeTexture(tile.data);
-		array.set(tile.coord.hash, encoded);
+		array.set(tile.coord.hash, new Uint8Array(tile.data));
 	}
 
 	removeTile(array, tile) {
@@ -114,6 +99,7 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 		const ramp = this.ramp;
 		const renderables = this.getRenderables(); //LOD();
 		const proj = this.getOrthoMatrix();
+		const extrema = this.layer.getExtrema();
 
 		// bind shader
 		shader.use();
@@ -127,8 +113,8 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 		shader.setUniform('uOpacity', this.layer.opacity);
 		shader.setUniform('uRangeMin', 0); //this.getValueRange().min);
 		shader.setUniform('uRangeMax', 1); //this.getValueRange().max);
-		shader.setUniform('uMin', 0); //this.layer.getExtrema().min);
-		shader.setUniform('uMax', 10000); //this.layer.getExtrema().max);
+		shader.setUniform('uMin', extrema.min);
+		shader.setUniform('uMax', extrema.max);
 		shader.setUniform('uTransformType', 0); //this.getTransformEnum(this.transform));
 
 		// set blending func
@@ -151,7 +137,7 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 				last = hash;
 			}
 			// set tile uniforms
-			// shader.setUniform('uTextureCoordOffset', renderable.uvOffset);
+			//shader.setUniform('uTextureCoordOffset', renderable.uvOffset);
 			shader.setUniform('uScale', renderable.scale);
 			shader.setUniform('uTileOffset', renderable.tileOffset);
 			// draw

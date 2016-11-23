@@ -11,7 +11,7 @@ class Heatmap extends Bivariate {
 	}
 
 	extractExtrema(data) {
-		const bins = new Float64Array(data);
+		const bins = new Uint32Array(data);
 		return {
 			min: min(bins),
 			max: max(bins)

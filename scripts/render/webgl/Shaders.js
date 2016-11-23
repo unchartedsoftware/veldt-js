@@ -15,10 +15,11 @@ const precision =
 const decodeRGBAToFloat =
 	`
 	float decodeRGBAToFloat(vec4 v) {
-		return (v.x * 255.0 * 16777216.0) +
-			(v.y * 255.0 * 65536.0) +
-			(v.z * 255.0 * 256.0) +
-			v.w * 255.0;
+		return 
+			(v.x * 255.0) +
+			(v.y * 255.0 * 256.0) +
+			(v.z * 255.0 * 65536.0) +
+			(v.w * 255.0 * 16777216.0);
 	}
 	`;
 
@@ -106,7 +107,7 @@ const colorRamp =
 		float pixel = 1.0 / uColorRampSize;
 		float tx = (x / uColorRampSize) + (pixel * 0.5);
 		float ty = (y / uColorRampSize) + (pixel * 0.5);
-		return texture2D(uColorRampSampler, vec2(tx, 1.0 - ty));
+		return texture2D(uColorRampSampler, vec2(tx, ty));
 	}
 	`;
 
@@ -157,7 +158,7 @@ const heatmap = {
 		uniform float uOpacity;
 		varying vec2 vTextureCoord;
 		void main() {
-			vec4 enc = texture2D(uTextureSampler, vTextureCoord);
+			vec4 enc = texture2D(uTextureSampler, vTextureCoord); //vec2(vTextureCoord.x, 1.0 - vTextureCoord.y));
 			float count = decodeRGBAToFloat(enc);
 			if (count == 0.0) {
 				discard;
