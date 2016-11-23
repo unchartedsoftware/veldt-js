@@ -13,7 +13,7 @@ function getHost() {
 }
 
 function establishConnection(requestor, callback) {
-	requestor.socket = new WebSocket(getHost() + requestor.url);
+	requestor.socket = new WebSocket(`${getHost()}ws/${requestor.url}`);
 	// on open
 	requestor.socket.onopen = function() {
 		requestor.isOpen = true;
@@ -50,10 +50,14 @@ function establishConnection(requestor, callback) {
 		setTimeout(function() {
 			establishConnection(requestor, function() {
 				// once connection is re-established, send pending requests
-				requestor.pending.forEach(function(req) {
-					requestor.get(req);
+				Object.keys(requestor.pending).forEach(function(key, val) {
+					const req = val.req;
+					const p = val.p;
+					const hash = this.getHash(req);
+					requestor.requests[hash] = p;
+					requestor.socket.send(JSON.stringify(req));
 				});
-				requestor.pending = [];
+				requestor.pending = {};
 			});
 		}, RETRY_INTERVAL);
 	};
@@ -88,7 +92,7 @@ class Requestor {
 	constructor(url, callback) {
 		this.url = url;
 		this.requests = {};
-		this.pending = [];
+		this.pending = {};
 		this.isOpen = false;
 		establishConnection(this, callback);
 	}
@@ -96,15 +100,24 @@ class Requestor {
 		return hashReq(req);
 	}
 	getURL() {
-		// override
+		return this.url;
 	}
 	get(req) {
-		if (!this.isOpen) {
-			// if no connection, add request to pending queue
-			this.pending.push(req);
-			return;
-		}
 		const hash = this.getHash(req);
+		if (!this.isOpen) {
+			let pending = this.pending[hash];
+			if (pending) {
+				return pending.p.promise();
+			}
+			// if no connection, add request to pending queue
+			const p = new $.Deferred();
+			pending = {
+				req: req,
+				p: p
+			};
+			this.pending[hash] = pending;
+			return p;
+		}
 		let request = this.requests[hash];
 		if (request) {
 			return request.promise();
