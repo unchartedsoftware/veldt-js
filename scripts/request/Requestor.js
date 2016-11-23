@@ -23,13 +23,17 @@ function establishConnection(requestor, callback) {
 	// on message
 	requestor.socket.onmessage = function(event) {
 		const res = JSON.parse(event.data);
+		// save success and error here, as we need to remove them to hash
+		// correctly
+		const success = res.success;
+		const error = res.error;
 		const hash = requestor.getHash(res);
-		const request = requestor.requests[hash];
-		delete requestor.requests[hash];
-		if (res.success) {
-			request.resolve(requestor.getURL(res), res);
+		const request = requestor.requests.get(hash);
+		requestor.requests.delete(hash);
+		if (success) {
+			request.resolve(requestor.getURL());
 		} else {
-			request.reject(res);
+			request.reject(error);
 		}
 	};
 	// on close
@@ -40,24 +44,25 @@ function establishConnection(requestor, callback) {
 		}
 		requestor.socket = null;
 		requestor.isOpen = false;
-		// reject all pending requests
-		Object.keys(requestor.requests).forEach(function(key) {
-			requestor.requests[key].reject();
+		// reject all current requests
+		requestor.requests.forEach(function(key, request) {
+			request.reject();
 		});
 		// clear request map
-		requestor.requests = {};
+		requestor.requests = new Map();
 		// attempt to re-establish connection
 		setTimeout(function() {
 			establishConnection(requestor, function() {
 				// once connection is re-established, send pending requests
-				Object.keys(requestor.pending).forEach(function(key, val) {
-					const req = val.req;
-					const p = val.p;
-					const hash = this.getHash(req);
-					requestor.requests[hash] = p;
-					requestor.socket.send(JSON.stringify(req));
+				requestor.pending.forEach(function(key, pending) {
+					const request = pending.request;
+					const deferred = pending.deferred;
+					const hash = pending.hash;
+					requestor.requests.set(hash, deferred);
+					requestor.socket.send(JSON.stringify(request));
 				});
-				requestor.pending = {};
+				// clear pending map
+				requestor.pending = new Map();
 			});
 		}, RETRY_INTERVAL);
 	};
@@ -65,11 +70,13 @@ function establishConnection(requestor, callback) {
 
 function prune(current) {
 	_.forOwn(current, (value, key) => {
-	  if (_.isUndefined(value) || _.isNull(value) || _.isNaN(value) ||
-		(_.isString(value) && _.isEmpty(value)) ||
-		(_.isObject(value) && _.isEmpty(prune(value)))) {
-		delete current[key];
-	  }
+		if (_.isUndefined(value) ||
+			_.isNull(value) ||
+			_.isNaN(value) ||
+			(_.isString(value) && _.isEmpty(value)) ||
+			(_.isObject(value) && _.isEmpty(prune(value)))) {
+			delete current[key];
+		}
 	});
 	// remove any leftover undefined values from the delete
 	// operation on an array
@@ -81,18 +88,20 @@ function prune(current) {
 
 function pruneEmpty(obj) {
 	// do not modify the original object, create a clone instead
-	prune(_.cloneDeep(obj));
+	return prune(_.cloneDeep(obj));
 }
 
 function hashReq(req) {
+	req.error = undefined;
+	req.success = undefined;
 	return stringify(pruneEmpty(req));
 }
 
 class Requestor {
 	constructor(url, callback) {
 		this.url = url;
-		this.requests = {};
-		this.pending = {};
+		this.requests = new Map();
+		this.pending = new Map();
 		this.isOpen = false;
 		establishConnection(this, callback);
 	}
@@ -105,26 +114,28 @@ class Requestor {
 	get(req) {
 		const hash = this.getHash(req);
 		if (!this.isOpen) {
-			let pending = this.pending[hash];
+			let pending = this.pending.get(hash);
 			if (pending) {
-				return pending.p.promise();
+				return pending.deferred.promise();
 			}
 			// if no connection, add request to pending queue
-			const p = new $.Deferred();
+			const deferred = new $.Deferred();
 			pending = {
-				req: req,
-				p: p
+				hash: hash,
+				request: req,
+				deferred: deferred
 			};
-			this.pending[hash] = pending;
-			return p;
+			this.pending.set(hash, pending);
+			return deferred.promise();
 		}
-		let request = this.requests[hash];
-		if (request) {
-			return request.promise();
+		let deferred = this.requests.get(hash);
+		if (deferred) {
+			return deferred.promise();
 		}
-		request = this.requests[hash] = new $.Deferred();
+		deferred = new $.Deferred();
+		this.requests.set(hash, deferred);
 		this.socket.send(JSON.stringify(req));
-		return request.promise();
+		return deferred.promise();
 	}
 	close() {
 		this.socket.onclose = null;
