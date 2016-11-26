@@ -89,9 +89,9 @@ class WordCloud extends lumo.HTMLRenderer {
 	constructor(options = {}) {
 		super(options);
 		this.transform = _.defaultTo(options.transform, 'log10');
-		this.maxNumWords = _.defaultTo(options.maxNumWords, 15);
+		this.maxNumWords = _.defaultTo(options.maxNumWords, 10);
 		this.minFontSize = _.defaultTo(options.minFontSize, 10);
-		this.maxFontSize = _.defaultTo(options.maxFontSize, 20);
+		this.maxFontSize = _.defaultTo(options.maxFontSize, 24);
 	}
 
 	onAdd(layer) {
@@ -144,8 +144,8 @@ class WordCloud extends lumo.HTMLRenderer {
 			this.emit(lumo.MOUSE_OVER, new lumo.MouseEvent(
 				this.layer,
 				getMouseButton(event),
-				plot.mouseToViewPx(),
-				plot.mouseToPlotPx(),
+				plot.mouseToViewPx(event),
+				plot.mouseToPlotPx(event),
 				word
 			));
 		}
@@ -160,8 +160,8 @@ class WordCloud extends lumo.HTMLRenderer {
 			this.emit(lumo.MOUSE_OUT, new lumo.MouseEvent(
 				this.layer,
 				getMouseButton(event),
-				plot.mouseToViewPx(),
-				plot.mouseToPlotPx(),
+				plot.mouseToViewPx(event),
+				plot.mouseToPlotPx(event),
 				word
 			));
 		}
@@ -180,8 +180,8 @@ class WordCloud extends lumo.HTMLRenderer {
 			this.emit(lumo.CLICK, new lumo.ClickEvent(
 				this.layer,
 				getMouseButton(event),
-				plot.mouseToViewPx(),
-				plot.mouseToPlotPx(),
+				plot.mouseToViewPx(event),
+				plot.mouseToPlotPx(event),
 				word));
 		} else {
 			this.clearSelection();
@@ -197,8 +197,10 @@ class WordCloud extends lumo.HTMLRenderer {
 		const $html = $('<div style="height:256px; width:256px;"></div>');
 		const minFontSize = this.minFontSize;
 		const maxFontSize = this.maxFontSize;
+		const extrema = this.layer.getExtrema();
+		const transform = this.transform;
 		wordCounts.forEach(word => {
-			word.percent = Transform.transform(word.count, this.transform, this.getExtrema());
+			word.percent = Transform.transform(word.count, transform, extrema);
 			word.fontSize = minFontSize + word.percent * (maxFontSize - minFontSize);
 			$html.append(
 				`
@@ -263,9 +265,6 @@ class WordCloud extends lumo.HTMLRenderer {
 	}
 
 	drawTile(element, tile) {
-		if (_.isEmpty(tile.data)) {
-			return;
-		}
 		const wordCounts = _.map(tile.data, (count, text) => {
 			return {
 				text: text,
@@ -277,26 +276,26 @@ class WordCloud extends lumo.HTMLRenderer {
 		// half tile size
 		const halfSize = this.layer.plot.tileSize / 2;
 		// create html for tile
-		let html = $();
-		cloud.forEach(function(word) {
+		const divs = [];
+
+		cloud.forEach(word => {
+			const highlight = (word.text === this.highlight) ? 'highlight' : '';
 			// create element for word
-			const div = $(
-				`
+			divs.push(`
 				<div class="
 					word-cloud-label
 					word-cloud-label-${word.percent}
-					${word.text === this.highlight ? 'highlight' : ''}"
+					${highlight}"
 					style="
 						font-size: ${word.fontSize}px;
 						left: ${(halfSize + word.x) - (word.width / 2)}px;
 						top: ${(halfSize + word.y) - (word.height / 2)}px;
 						width: ${word.width}px;
 						height: ${word.height}px;"
-					data-word="${word.key}">${word.text}</div>
+					data-word="${word.text}">${word.text}</div>
 				`);
-			html = html.add(div);
 		});
-		$(element).empty().append(html);
+		element.innerHTML = divs.join('');
 	}
 }
 

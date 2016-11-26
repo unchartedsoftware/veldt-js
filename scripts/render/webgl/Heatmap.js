@@ -97,7 +97,7 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 		const array = this.array;
 		const quad = this.quad;
 		const ramp = this.ramp;
-		const renderables = this.getRenderables(); //LOD();
+		const renderables = this.getRenderables();
 		const proj = this.getOrthoMatrix();
 		const extrema = this.layer.getExtrema();
 
@@ -137,7 +137,6 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 				last = hash;
 			}
 			// set tile uniforms
-			//shader.setUniform('uTextureCoordOffset', renderable.uvOffset);
 			shader.setUniform('uScale', renderable.scale);
 			shader.setUniform('uTileOffset', renderable.tileOffset);
 			// draw

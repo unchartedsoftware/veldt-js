@@ -8,6 +8,15 @@
 	cursor: pointer;
 	pointer-events: all;
 	white-space: nowrap;
+	text-shadow:
+		-1px -1px 0 #000,
+		1px -1px 0 #000,
+		-1px 1px 0 #000,
+		1px 1px 0 #000,
+		1px 0 0 #000,
+		-1px 0 0 #000,
+		0 1px 0 #000,
+		0 -1px 0 #000;
 }
 
 .word-cloud-label-100{color:#F8D9AC;}

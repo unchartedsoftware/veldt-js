@@ -15,7 +15,7 @@ const precision =
 const decodeRGBAToFloat =
 	`
 	float decodeRGBAToFloat(vec4 v) {
-		return 
+		return
 			(v.x * 255.0) +
 			(v.y * 255.0 * 256.0) +
 			(v.z * 255.0 * 65536.0) +
@@ -133,16 +133,12 @@ const heatmap = {
 		`
 		attribute vec2 aPosition;
 		attribute vec2 aTextureCoord;
-		uniform vec4 uTextureCoordOffset;
 		uniform vec2 uTileOffset;
 		uniform float uScale;
 		uniform mat4 uProjectionMatrix;
 		varying vec2 vTextureCoord;
 		void main() {
 			vTextureCoord = aTextureCoord;
-			// vTextureCoord = vec2(
-			// 	uTextureCoordOffset.x + (aTextureCoord.x * uTextureCoordOffset.z),
-			// 	uTextureCoordOffset.y + (aTextureCoord.y * uTextureCoordOffset.w));
 			vec2 wPosition = (aPosition * uScale) + uTileOffset;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 		}
@@ -158,7 +154,7 @@ const heatmap = {
 		uniform float uOpacity;
 		varying vec2 vTextureCoord;
 		void main() {
-			vec4 enc = texture2D(uTextureSampler, vTextureCoord); //vec2(vTextureCoord.x, 1.0 - vTextureCoord.y));
+			vec4 enc = texture2D(uTextureSampler, vTextureCoord);
 			float count = decodeRGBAToFloat(enc);
 			if (count == 0.0) {
 				discard;
