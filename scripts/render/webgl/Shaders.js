@@ -221,10 +221,12 @@ const macro = {
 		uniform float uRadius;
 		uniform vec2 uTileOffset;
 		uniform float uScale;
+		uniform vec2 uLODOffset;
+		uniform float uLODScale;
 		uniform float uPixelRatio;
 		uniform mat4 uProjectionMatrix;
 		void main() {
-			vec2 wPosition = (aPosition * uScale) + uTileOffset;
+			vec2 wPosition = (aPosition * uScale * uLODScale) + (uTileOffset + (uScale * uLODOffset));
 			gl_PointSize = uRadius * 2.0 * uPixelRatio;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 		}

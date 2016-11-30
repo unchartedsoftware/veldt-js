@@ -11,8 +11,11 @@ class Live extends lumo.Layer {
 		this.meta = meta;
 		this.params = {};
 		this.query = null;
-		this.transform = defaultTo(options.transform, x => x);
+		this.transform = defaultTo(options.transform, null);
 		this.on(lumo.TILE_ADD, event => {
+			if (this.transform) {
+				event.tile.data = this.transform(event.tile.data);
+			}
 			this.updateExtrema(event.tile.coord, event.tile.data);
 		});
 		// set extrema / cache

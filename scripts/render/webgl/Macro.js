@@ -2,7 +2,68 @@
 
 const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
+const morton = require('../morton/Morton');
 const Shaders = require('./Shaders');
+
+const getOffsetIndices = function(x, y, extent, lod) {
+	const partitions = Math.pow(2, lod);
+	const xcell = x * partitions;
+	const ycell = y * partitions;
+	const stride = extent * partitions;
+	const start = morton(xcell, ycell);
+	const stop = start + (stride * stride) - 1;
+	return [ start, stop ];
+};
+
+const draw = function(gl, shader, atlas, plot, renderables) {
+	// for each renderable
+	renderables.forEach(renderable => {
+		// set tile uniforms
+		shader.setUniform('uScale', renderable.scale);
+		shader.setUniform('uTileOffset', renderable.tileOffset);
+		// draw the points
+		atlas.draw(renderable.hash, 'POINTS');
+	});
+};
+
+const drawLOD = function(gl, shader, atlas, plot, lod, renderables) {
+	const zoom = Math.round(plot.zoom);
+	// for each renderable
+	renderables.forEach(renderable => {
+		if (Math.abs(renderable.tile.coord.z - zoom) > lod) {
+			// not even lod to support it
+			return;
+		}
+
+		const xOffset = renderable.uvOffset[0];
+		const yOffset = renderable.uvOffset[1];
+		const extent = renderable.uvOffset[3];
+
+		// set tile uniforms
+		shader.setUniform('uScale', renderable.scale);
+		shader.setUniform('uTileOffset', renderable.tileOffset);
+
+		const lodScale = 1 / extent;
+
+		const lodOffset = [
+			-(xOffset * lodScale * plot.tileSize),
+			-(yOffset * lodScale * plot.tileSize)];
+
+		shader.setUniform('uLODOffset', lodOffset);
+		shader.setUniform('uLODScale', 1 / extent);
+		// get byte offset and count
+		const [ start, stop ] = getOffsetIndices(
+			xOffset,
+			yOffset,
+			extent,
+			lod);
+		const offsets = renderable.tile.data.offsets;
+		const offset = offsets[start] / (atlas.stride * 4);
+		const count = (offsets[stop] - offsets[start]) / (atlas.stride * 4);
+		// draw the points
+		atlas.draw(renderable.hash, 'POINTS', offset, count);
+	});
+};
 
 class Macro extends lumo.WebGLVertexRenderer {
 
@@ -15,7 +76,7 @@ class Macro extends lumo.WebGLVertexRenderer {
 	}
 
 	addTile(atlas, tile) {
-		const bins = new Float32Array(tile.data);
+		const bins = (this.layer.lod > 0) ? tile.data.points : tile.data;
 		atlas.set(
 			tile.coord.hash,
 			bins,
@@ -49,8 +110,8 @@ class Macro extends lumo.WebGLVertexRenderer {
 		const gl = this.gl;
 		const shader = this.shader;
 		const atlas = this.atlas;
-		const plot = this.layer.plot;
-		const renderables = this.getRenderables();
+		const layer = this.layer;
+		const plot = layer.plot;
 		const proj = this.getOrthoMatrix();
 
 		// bind render target
@@ -75,14 +136,20 @@ class Macro extends lumo.WebGLVertexRenderer {
 		// binds the vertex atlas
 		atlas.bind();
 
-		// for each renderable
-		renderables.forEach(renderable => {
-			// set tile uniforms
-			shader.setUniform('uScale', renderable.scale);
-			shader.setUniform('uTileOffset', renderable.tileOffset);
-			// draw the points
-			atlas.draw(renderable.hash, 'POINTS');
-		});
+		if (layer.lod > 0) {
+			drawLOD(gl, shader, atlas, plot, layer.lod, this.getRenderablesLOD());
+		} else {
+			draw(gl, shader, atlas, this.getRenderables());
+		}
+
+		// // for each renderable
+		// renderables.forEach(renderable => {
+		// 	// set tile uniforms
+		// 	shader.setUniform('uScale', renderable.scale);
+		// 	shader.setUniform('uTileOffset', renderable.tileOffset);
+		// 	// draw the points
+		// 	atlas.draw(renderable.hash, 'POINTS');
+		// });
 
 		// unbind
 		atlas.unbind();
