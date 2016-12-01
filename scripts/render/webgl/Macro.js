@@ -11,16 +11,18 @@ const getOffsetIndices = function(x, y, extent, lod) {
 	const ycell = y * partitions;
 	const stride = extent * partitions;
 	const start = morton(xcell, ycell);
-	const stop = start + (stride * stride) - 1;
+	const stop = start + (stride * stride);
 	return [ start, stop ];
 };
 
-const draw = function(gl, shader, atlas, plot, renderables) {
+const draw = function(gl, shader, atlas, renderables) {
 	// for each renderable
 	renderables.forEach(renderable => {
 		// set tile uniforms
 		shader.setUniform('uScale', renderable.scale);
 		shader.setUniform('uTileOffset', renderable.tileOffset);
+		shader.setUniform('uLODScale', 1);
+		shader.setUniform('uLODOffset', [0, 0]);
 		// draw the points
 		atlas.draw(renderable.hash, 'POINTS');
 	});
@@ -53,19 +55,27 @@ const drawLOD = function(gl, shader, atlas, plot, lod, renderables) {
 			-(xOffset * lodScale * plot.tileSize),
 			-(yOffset * lodScale * plot.tileSize)];
 
-		shader.setUniform('uLODOffset', lodOffset);
 		shader.setUniform('uLODScale', 1 / extent);
+		shader.setUniform('uLODOffset', lodOffset);
 		// get byte offset and count
 		const [ start, stop ] = getOffsetIndices(
 			xOffset,
 			yOffset,
 			extent,
 			lod);
+
+		const points = renderable.tile.data.points;
 		const offsets = renderable.tile.data.offsets;
-		const offset = offsets[start] / (atlas.stride * 4);
-		const count = (offsets[stop] - offsets[start]) / (atlas.stride * 4);
-		// draw the points
-		atlas.draw(renderable.hash, 'POINTS', offset, count);
+
+		const startByte = offsets[start];
+		const stopByte = (stop === offsets.length) ? points.byteLength : offsets[stop];
+
+		const offset = startByte / (atlas.stride * 4);
+		const count = (stopByte - startByte) / (atlas.stride * 4);
+		if (count > 0) {
+			// draw the points
+			atlas.draw(renderable.hash, 'POINTS', offset, count);
+		}
 	});
 };
 
