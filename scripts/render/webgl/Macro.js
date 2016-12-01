@@ -30,7 +30,11 @@ const drawLOD = function(gl, shader, atlas, plot, lod, renderables) {
 	const zoom = Math.round(plot.zoom);
 	// for each renderable
 	renderables.forEach(renderable => {
-		if (Math.abs(renderable.tile.coord.z - zoom) > lod) {
+
+		// distance between actual zoom and the LOD of tile
+		const dist = Math.abs(renderable.tile.coord.z - zoom);
+
+		if (dist > lod) {
 			// not even lod to support it
 			return;
 		}
