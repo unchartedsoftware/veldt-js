@@ -5,13 +5,15 @@ module.exports = {
 	Debug: require('./core/Debug'),
 	// live
 	Live: require('./core/Live'),
+	// group
+	Group: require('./core/Group'),
 	// types
-	// Count: require('./type/Count'),
+	Count: require('./type/Count'),
 	// Frequency: require('./type/Frequency'),
 	Heatmap: require('./type/Heatmap'),
 	Image: require('./type/Image'),
 	Macro: require('./type/Macro'),
-	// Micro: require('./type/Micro'),
+	Micro: require('./type/Micro'),
 	// Preview: require('./type/Preview'),
 	TopTermCount: require('./type/TopTermCount'),
 	// TopFrequency: require('./type/TopFrequency'),

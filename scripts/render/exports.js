@@ -6,14 +6,15 @@ const lumo = require('lumo');
 const Core = {
 	HTML: lumo.HTMLRenderer,
 	SVG: lumo.SVGRenderer,
-	WebGL: lumo.HTMLRenderer
+	WebGL: lumo.WebGLRenderer
 };
 
 // html renderers
 const HTML = {
-	Community: require('./html/Community'),
-	CommunityLabel: require('./html/CommunityLabel'),
-	Debug: require('./html/Debug'),
+	//Community: require('./html/Community'),
+	//CommunityLabel: require('./html/CommunityLabel'),
+	//Debug: require('./html/Debug'),
+	//TopTerms: require('./html/TopTerms'),
 	WordCloud: require('./html/WordCloud')
 };
 

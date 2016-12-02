@@ -156,15 +156,6 @@ class Macro extends lumo.WebGLVertexRenderer {
 			draw(gl, shader, atlas, this.getRenderables());
 		}
 
-		// // for each renderable
-		// renderables.forEach(renderable => {
-		// 	// set tile uniforms
-		// 	shader.setUniform('uScale', renderable.scale);
-		// 	shader.setUniform('uTileOffset', renderable.tileOffset);
-		// 	// draw the points
-		// 	atlas.draw(renderable.hash, 'POINTS');
-		// });
-
 		// unbind
 		atlas.unbind();
 

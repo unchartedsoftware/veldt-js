@@ -33,7 +33,7 @@ function establishConnection(requestor, callback) {
 		if (success) {
 			request.resolve(requestor.getURL());
 		} else {
-			request.reject(error);
+			request.reject(new Error(error));
 		}
 	};
 	// on close

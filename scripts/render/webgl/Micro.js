@@ -29,7 +29,7 @@ const createPoint = function(gl) {
 		});
 };
 
-const renderTiles = function(gl, atlas, shader, proj, renderables, color) {
+const renderTiles = function(gl, atlas, shader, proj, renderables, color, radius) {
 
 	// clear render target
 	gl.clear(gl.COLOR_BUFFER_BIT);
@@ -39,14 +39,14 @@ const renderTiles = function(gl, atlas, shader, proj, renderables, color) {
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
 	shader.setUniform('uColor', color);
-	shader.setUniform('uRadiusOffset', 0);
+	shader.setUniform('uRadius', radius);
 
 	// binds the buffer to instance
 	atlas.bind();
 
 	// for each renderable
 	renderables.forEach(renderable => {
-		shader.setUniform('uTileScale', renderable.scale);
+		shader.setUniform('uScale', renderable.scale);
 		shader.setUniform('uTileOffset', renderable.tileOffset);
 		atlas.draw(renderable.hash, 'POINTS');
 	});
@@ -65,9 +65,9 @@ const renderPoint = function(gl, point, shader, proj, plot, target, color, radiu
 		(coord.y * scale * plot.tileSize) + (scale * target.y) - plot.viewport.y
 	];
 	shader.setUniform('uTileOffset', tileOffset);
-	shader.setUniform('uTileScale', scale);
+	shader.setUniform('uScale', scale);
 	shader.setUniform('uColor', color);
-	shader.setUniform('uRadiusOffset', radiusOffset + target.radius);
+	shader.setUniform('uRadius', radiusOffset + target.radius);
 
 	// binds the buffer to instance
 	point.bind();
@@ -79,13 +79,12 @@ const renderPoint = function(gl, point, shader, proj, plot, target, color, radiu
 	point.unbind();
 };
 
-const applyJitter = function(point, maxDist) {
-	const angle = Math.random() * (Math.PI * 2);
-	const dist = Math.random() * maxDist;
-	point.x += Math.floor(Math.cos(angle) * dist);
-	point.y += Math.floor(Math.sin(angle) * dist);
-};
-
+// const applyJitter = function(point, maxDist) {
+// 	const angle = Math.random() * (Math.PI * 2);
+// 	const dist = Math.random() * maxDist;
+// 	point.x += Math.floor(Math.cos(angle) * dist);
+// 	point.y += Math.floor(Math.sin(angle) * dist);
+// };
 
 class Micro extends lumo.WebGLInteractiveRenderer {
 
@@ -94,12 +93,12 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 		this.shader = null;
 		this.point = null;
 		this.atlas = null;
-		this.xField = defaultTo(options.xField, 'x');
-		this.yField = defaultTo(options.yField, 'y');
+		this.xField = defaultTo(options.xField, 'pixel.x');
+		this.yField = defaultTo(options.yField, 'pixel.y');
 		this.color = defaultTo(options.color, [ 1.0, 0.4, 0.1, 0.8 ]);
 		this.radius = defaultTo(options.radius, POINT_RADIUS);
-		this.jitter = defaultTo(options.radius, true);
-		this.jitterDistance = defaultTo(options.jitterDistance, 10);
+		// this.jitter = defaultTo(options.radius, true);
+		// this.jitterDistance = defaultTo(options.jitterDistance, 10);
 	}
 
 	addTile(atlas, tile) {
@@ -107,50 +106,63 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 		const data = tile.data;
 
 		const tileSize = this.layer.plot.tileSize;
-		const xOffset = coord.x * tileSize;
-		const yOffset = coord.y * tileSize;
 
 		const xField = this.xField;
 		const yField = this.yField;
 		const radius = this.radius;
 
+		// const meta = this.layer.getMeta();
+		// const xExtrema = meta[xField].extrema;
+		// const yExtrema = meta[xField].extrema;
+
+		const size = Math.pow(2, coord.z);
+		const range = Math.pow(2, 32);
+
+		const tileSpan = range / size;
+
+		const xOffset = coord.x * tileSpan;
+		const yOffset = coord.y * tileSpan;
+
+
 		const points = new Array(data.length);
 		const vertices = new Float32Array(data.length * 2);
 
-		const collisions = {};
+		// const collisions = {};
 
 		for (let i=0; i<data.length; i++) {
 			const datum = data[i];
 
-			const px = {
-				x: get(datum, xField),
-				y: get(datum, yField)
-			};
+			const x = datum[xField];
+			const y = datum[yField];
 
 			// add jitter if specified
-			if (this.jitter) {
-				const hash = `${px.x}:${px.y}`;
-				if (collisions[hash]) {
-					applyJitter(px, this.jitterDistance);
-				}
-				collisions[hash] = true;
-			}
+			// if (this.jitter) {
+			// 	const hash = `${px.x}:${px.y}`;
+			// 	if (collisions[hash]) {
+			// 		applyJitter(px, this.jitterDistance);
+			// 	}
+			// 	collisions[hash] = true;
+			// }
 
-			const plotPx = {
-				x: px.x + xOffset,
-				y: px.y + yOffset
-			};
+			// tile pixel coords
+			const tx = (x - xOffset) / tileSpan * tileSize;
+			const ty = (y - yOffset) / tileSpan * tileSize;
 
-			vertices[i*2] = px.x;
-			vertices[i*2+1] = px.y;
+			// plot pixel coords
+			const px = (x / tileSpan) * tileSize;
+			const py = (y / tileSpan) * tileSize;
+
+			vertices[i*2] = tx;
+			vertices[i*2+1] = ty;
 
 			points[i] = {
-				x: px.x,
-				y: px.y,
-				minX: plotPx.x - radius,
-				maxX: plotPx.x + radius,
-				minY: plotPx.y - radius,
-				maxY: plotPx.y + radius,
+				x: tx,
+				y: ty,
+				radius: radius,
+				minX: px - radius,
+				maxX: px + radius,
+				minY: py - radius,
+				maxY: py + radius,
 				tile: tile,
 				data: datum
 			};
@@ -194,7 +206,7 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 	draw() {
 
 		const plot = this.layer.plot;
-		const projection = plot.viewport.getOrthoMatrix();
+		const proj = this.getOrthoMatrix();
 		const shader = this.shader;
 
 		// bind render target
@@ -204,17 +216,18 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 		shader.use();
 
 		// set uniforms
-		shader.setUniform('uProjectionMatrix', projection);
-		shader.setUniform('uPixelRatio', window.devicePixelRatio);
+		shader.setUniform('uProjectionMatrix', proj);
+		shader.setUniform('uPixelRatio', plot.pixelRatio);
 
 		// render the tiles
 		renderTiles(
 			this.gl,
 			this.atlas,
 			shader,
-			projection,
+			proj,
 			this.getRenderables(),
-			this.color);
+			this.color,
+			this.radius);
 
 		// render selected
 		if (this.selected) {
@@ -222,7 +235,7 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 				this.gl,
 				this.point,
 				shader,
-				projection,
+				proj,
 				plot,
 				this.selected,
 				this.color,
@@ -235,7 +248,7 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 				this.gl,
 				this.point,
 				shader,
-				projection,
+				proj,
 				plot,
 				this.highlighted,
 				this.color,
