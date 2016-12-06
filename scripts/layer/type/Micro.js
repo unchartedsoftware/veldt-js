@@ -7,10 +7,28 @@ class Micro extends Bivariate {
 
 	constructor(meta, options = {}) {
 		super(meta, options);
+		this.lod = defaultTo(options.lod, 4);
 		this.sortField = options.sortField;
 		this.sortOrder = defaultTo(options.sortOrder, 'desc');
 		this.hitsCount = defaultTo(options.hitsCount, 10);
 		this.includeFields = defaultTo(options.includeFields, null);
+		this.transform = data => {
+			if (this.lod > 0) {
+				return {
+					points: new Float32Array(data.points),
+					offsets: data.offsets,
+					hits: data.hits
+				};
+			}
+			return {
+				points: new Float32Array(data.points),
+				hits: data.hits
+			};
+		};
+	}
+
+	setLOD(lod) {
+		this.lod = lod;
 	}
 
 	setSortField(sortField) {
@@ -37,6 +55,7 @@ class Micro extends Bivariate {
 			right: this.right,
 			bottom: this.bottom,
 			top: this.top,
+			lod: this.lod,
 			resolution: this.resolution,
 			sortField: this.sortField,
 			sortOrder: this.sortOrder,

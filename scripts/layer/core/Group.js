@@ -41,6 +41,7 @@ class Group {
 		this.layers.push(layer);
 		if (this.plot) {
 			layer.onAdd(this.plot);
+			layer.refresh();
 		}
 		return this;
 	}
@@ -62,7 +63,7 @@ class Group {
 
 	has(layer) {
 		const index = this.layers.indexOf(layer);
-		return index === -1;
+		return index !== -1;
 	}
 
 	show() {
@@ -83,6 +84,18 @@ class Group {
 			layer.draw(timestamp);
 		});
 		return this;
+	}
+
+	refresh() {
+		this.layers.forEach(layer => {
+			layer.refresh();
+		});
+	}
+
+	requestTiles(coords) {
+		this.layers.forEach(layer => {
+			layer.requestTiles(coords);
+		});
 	}
 }
 

@@ -1,12 +1,12 @@
 'use strict';
 
-const get = require('lodash/get');
 const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
+const morton = require('../morton/Morton');
 const Shaders = require('./Shaders');
 
 const POINT_RADIUS = 8;
-const POINT_RADIUS_INC = 2;
+const POINT_RADIUS_INC = 4;
 
 const createPoint = function(gl) {
 	const vertices = new Float32Array(2);
@@ -29,7 +29,81 @@ const createPoint = function(gl) {
 		});
 };
 
-const renderTiles = function(gl, atlas, shader, proj, renderables, color, radius) {
+const getOffsetIndices = function(x, y, extent, lod) {
+	const partitions = Math.pow(2, lod);
+	const xcell = x * partitions;
+	const ycell = y * partitions;
+	const stride = extent * partitions;
+	const start = morton(xcell, ycell);
+	const stop = start + (stride * stride);
+	return [ start, stop ];
+};
+
+const draw = function(gl, shader, atlas, renderables) {
+	// for each renderable
+	renderables.forEach(renderable => {
+		// set tile uniforms
+		shader.setUniform('uScale', renderable.scale);
+		shader.setUniform('uTileOffset', renderable.tileOffset);
+		shader.setUniform('uLODScale', 1);
+		shader.setUniform('uLODOffset', [0, 0]);
+		// draw the points
+		atlas.draw(renderable.hash, 'POINTS');
+	});
+};
+
+const drawLOD = function(gl, shader, atlas, plot, lod, renderables) {
+	const zoom = Math.round(plot.zoom);
+	// for each renderable
+	renderables.forEach(renderable => {
+
+		// distance between actual zoom and the LOD of tile
+		const dist = Math.abs(renderable.tile.coord.z - zoom);
+
+		if (dist > lod) {
+			// not even lod to support it
+			return;
+		}
+
+		const xOffset = renderable.uvOffset[0];
+		const yOffset = renderable.uvOffset[1];
+		const extent = renderable.uvOffset[3];
+
+		// set tile uniforms
+		shader.setUniform('uScale', renderable.scale);
+		shader.setUniform('uTileOffset', renderable.tileOffset);
+
+		const lodScale = 1 / extent;
+
+		const lodOffset = [
+			-(xOffset * lodScale * plot.tileSize),
+			-(yOffset * lodScale * plot.tileSize)];
+
+		shader.setUniform('uLODScale', 1 / extent);
+		shader.setUniform('uLODOffset', lodOffset);
+		// get byte offset and count
+		const [ start, stop ] = getOffsetIndices(
+			xOffset,
+			yOffset,
+			extent,
+			lod);
+
+		const points = renderable.tile.data.points;
+		const offsets = renderable.tile.data.offsets;
+
+		const startByte = offsets[start];
+		const stopByte = (stop === offsets.length) ? points.byteLength : offsets[stop];
+
+		const offset = startByte / (atlas.stride * 4);
+		const count = (stopByte - startByte) / (atlas.stride * 4);
+		if (count > 0) {
+			// draw the points
+			atlas.draw(renderable.hash, 'POINTS', offset, count);
+		}
+	});
+};
+
+const renderTiles = function(gl, shader, atlas, plot, layer, proj, renderables, color, radius) {
 
 	// clear render target
 	gl.clear(gl.COLOR_BUFFER_BIT);
@@ -44,12 +118,11 @@ const renderTiles = function(gl, atlas, shader, proj, renderables, color, radius
 	// binds the buffer to instance
 	atlas.bind();
 
-	// for each renderable
-	renderables.forEach(renderable => {
-		shader.setUniform('uScale', renderable.scale);
-		shader.setUniform('uTileOffset', renderable.tileOffset);
-		atlas.draw(renderable.hash, 'POINTS');
-	});
+	if (layer.lod > 0) {
+		drawLOD(gl, shader, atlas, plot, layer.lod, renderables);
+	} else {
+		draw(gl, shader, atlas, renderables);
+	}
 
 	// unbind
 	atlas.unbind();
@@ -93,8 +166,6 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 		this.shader = null;
 		this.point = null;
 		this.atlas = null;
-		this.xField = defaultTo(options.xField, 'pixel.x');
-		this.yField = defaultTo(options.yField, 'pixel.y');
 		this.color = defaultTo(options.color, [ 1.0, 0.4, 0.1, 0.8 ]);
 		this.radius = defaultTo(options.radius, POINT_RADIUS);
 		// this.jitter = defaultTo(options.radius, true);
@@ -104,36 +175,22 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 	addTile(atlas, tile) {
 		const coord = tile.coord;
 		const data = tile.data;
+		const hits = data.hits;
+		const vertices = data.points;
 
 		const tileSize = this.layer.plot.tileSize;
-
-		const xField = this.xField;
-		const yField = this.yField;
+		const xOffset = coord.x * tileSize;
+		const yOffset = coord.y * tileSize;
 		const radius = this.radius;
 
-		// const meta = this.layer.getMeta();
-		// const xExtrema = meta[xField].extrema;
-		// const yExtrema = meta[xField].extrema;
-
-		const size = Math.pow(2, coord.z);
-		const range = Math.pow(2, 32);
-
-		const tileSpan = range / size;
-
-		const xOffset = coord.x * tileSpan;
-		const yOffset = coord.y * tileSpan;
-
-
 		const points = new Array(data.length);
-		const vertices = new Float32Array(data.length * 2);
 
 		// const collisions = {};
 
-		for (let i=0; i<data.length; i++) {
-			const datum = data[i];
+		for (let i=0; i<hits.length; i++) {
 
-			const x = datum[xField];
-			const y = datum[yField];
+			const x = vertices[i*2];
+			const y = vertices[i*2+1];
 
 			// add jitter if specified
 			// if (this.jitter) {
@@ -144,27 +201,20 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 			// 	collisions[hash] = true;
 			// }
 
-			// tile pixel coords
-			const tx = (x - xOffset) / tileSpan * tileSize;
-			const ty = (y - yOffset) / tileSpan * tileSize;
-
 			// plot pixel coords
-			const px = (x / tileSpan) * tileSize;
-			const py = (y / tileSpan) * tileSize;
-
-			vertices[i*2] = tx;
-			vertices[i*2+1] = ty;
+			const px = x + xOffset;
+			const py = y + yOffset;
 
 			points[i] = {
-				x: tx,
-				y: ty,
+				x: x,
+				y: y,
 				radius: radius,
 				minX: px - radius,
 				maxX: px + radius,
 				minY: py - radius,
 				maxY: py + radius,
 				tile: tile,
-				data: datum
+				data: data[i]
 			};
 		}
 
@@ -205,7 +255,8 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 
 	draw() {
 
-		const plot = this.layer.plot;
+		const layer = this.layer;
+		const plot = layer.plot;
 		const proj = this.getOrthoMatrix();
 		const shader = this.shader;
 
@@ -222,10 +273,12 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 		// render the tiles
 		renderTiles(
 			this.gl,
-			this.atlas,
 			shader,
+			this.atlas,
+			plot,
+			layer,
 			proj,
-			this.getRenderables(),
+			layer.lod > 0 ? this.getRenderablesLOD() : this.getRenderables(),
 			this.color,
 			this.radius);
 
