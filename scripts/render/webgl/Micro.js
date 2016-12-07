@@ -187,7 +187,7 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 
 		// const collisions = {};
 
-		for (let i=0; i<hits.length; i++) {
+		for (let i=0; i<vertices.length/2; i++) {
 
 			const x = vertices[i*2];
 			const y = vertices[i*2+1];
@@ -214,7 +214,7 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 				minY: py - radius,
 				maxY: py + radius,
 				tile: tile,
-				data: data[i]
+				data: hits ? hits[i] : null
 			};
 		}
 
