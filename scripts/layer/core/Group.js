@@ -1,5 +1,6 @@
 'use strict';
 
+const lumo = require('lumo');
 const defaultTo = require('lodash/defaultTo');
 
 class Group {
@@ -14,8 +15,18 @@ class Group {
 			throw 'No plot argument provided';
 		}
 		this.plot = plot;
+		// for each layer
 		this.layers.forEach(layer => {
-			layer.onAdd(plot);
+			layer.plot = plot;
+			layer.renderers.forEach(renderer => {
+				renderer.onAdd(layer);
+			});
+		});
+		// refresh tiles
+		this.refresh();
+		this.layers.forEach(layer => {
+			// emit on add
+			layer.emit(lumo.ON_ADD, new lumo.LayerEvent(layer));
 		});
 		return this;
 	}
