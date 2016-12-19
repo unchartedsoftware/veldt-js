@@ -1,7 +1,7 @@
 'use strict';
 
-const _ = require('lodash');
 const $ = require('jquery');
+const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
 const Transform = require('../transform/Transform');
 
@@ -19,15 +19,14 @@ class CommunityLabel extends lumo.HTMLRenderer {
 
 	constructor(options = {}) {
 		super(options);
-		this.xField = _.defaultTo(options.xField, 'x');
-		this.yField = _.defaultTo(options.yField, 'y');
-		this.minFontSize = _.defaultTo(options.minFontSize, 10);
-		this.maxFontSize = _.defaultTo(options.maxFontSize, 24);
-		this.minOpacity = _.defaultTo(options.minOpacity, 0.5);
-		this.maxOpacity = _.defaultTo(options.maxOpacity, 1.0);
-		this.labelMaxLength = _.defaultTo(options.labelMaxLength, 256);
-		this.labelThreshold = _.defaultTo(options.labelThreshold, 0.6);
-		this.labelField = _.defaultTo(options.labelField, 'metadata');
+		this.transform = defaultTo(options.transform, 'log10');
+		this.minFontSize = defaultTo(options.minFontSize, 10);
+		this.maxFontSize = defaultTo(options.maxFontSize, 24);
+		this.minOpacity = defaultTo(options.minOpacity, 0.2);
+		this.maxOpacity = defaultTo(options.maxOpacity, 1.0);
+		this.labelMaxLength = defaultTo(options.labelMaxLength, 256);
+		this.labelThreshold = defaultTo(options.labelThreshold, 0.4);
+		this.labelField = defaultTo(options.labelField, 'metadata');
 	}
 
 	onAdd(layer) {
@@ -58,82 +57,88 @@ class CommunityLabel extends lumo.HTMLRenderer {
 
 	onMouseOver(event) {
 		const data = $(event.target).data('community');
-		const plot = this.layer.plot;
-		this.emit(lumo.MOUSE_OVER, new lumo.MouseEvent(
-			this.layer,
-			getMouseButton(event),
-			plot.mouseToViewPx(),
-			plot.mouseToPlotPx(),
-			data
-		));
+		if (data) {
+			const plot = this.layer.plot;
+			this.emit(lumo.MOUSE_OVER, new lumo.MouseEvent(
+				this.layer,
+				getMouseButton(event),
+				plot.mouseToViewPx(event),
+				plot.mouseToPlotPx(event),
+				data
+			));
+		}
 	}
 
 	onMouseOut(event) {
-		const plot = this.layer.plot;
-		this.emit(lumo.MOUSE_OVER, new lumo.MouseEvent(
-			this.layer,
-			getMouseButton(event),
-			plot.mouseToViewPx(),
-			plot.mouseToPlotPx()
-		));
+		const data = $(event.target).data('community');
+		if (data) {
+			const plot = this.layer.plot;
+			this.emit(lumo.MOUSE_OUT, new lumo.MouseEvent(
+				this.layer,
+				getMouseButton(event),
+				plot.mouseToViewPx(event),
+				plot.mouseToPlotPx(event)
+			));
+		}
 	}
 
 	onClick(event) {
 		const data = $(event.target).data('community');
-		const plot = this.layer.plot;
-		this.emit(lumo.MOUSE_OVER, new lumo.MouseEvent(
-			this.layer,
-			getMouseButton(event),
-			plot.mouseToViewPx(),
-			plot.mouseToPlotPx(),
-			data
-		));
+		if (data) {
+			const plot = this.layer.plot;
+			this.emit(lumo.CLICK, new lumo.MouseEvent(
+				this.layer,
+				getMouseButton(event),
+				plot.mouseToViewPx(event),
+				plot.mouseToPlotPx(event),
+				data
+			));
+		}
 	}
 
 	drawTile(element, tile) {
+		const hits = tile.data.hits;
+		const points = tile.data.points;
 
-		const scale = Math.pow(2, tile.coord.z);
-		const tileSize = this.layer.plot.tileSize;
-		const tileSpan = Math.pow(2, 32) / scale;
-		const params = this.layer.getParams().top_hits;
-		const sortField = params.top_hits.sort ? params.top_hits.sort : null;
+		if (!hits) {
+			return;
+		}
+
+		const sortField = this.layer.sortField;
+		const extrema = this.layer.getExtrema();
 
 		let divs = $();
-		tile.data.forEach(community => {
+		hits.forEach((community, index) => {
 
-			const label = _.get(community, this.labelField);
+			const label = community[this.labelField];
 			if (!label) {
 				return;
 			}
 
-			const val = _.get(community, sortField);
-			const nval = Transform.transform(
-				val,
-				this.transform,
-				this.getExtrema());
+			const val = community[sortField];
+			const nval = Transform.transform(val, this.transform, extrema);
 
-			if (nval < this.threshold) {
+			if (nval < this.labelThreshold) {
 				return;
 			}
 
-			const x = _.get(community, this.xField);
-			const y = _.get(community, this.getYField());
-			const left = ((x % tileSpan) / tileSpan) * tileSize;
-			const top = ((y % tileSpan) / tileSpan) * tileSize;
+			const x = points[index*2] - (this.labelMaxLength / 2);
+			const y = points[index*2+1];
 
-			// normalize the nval as it is currently in the range [this.threshold : 1]
-			const rnval = (nval - this.threshold) / (1.0 - this.threshold);
+			// normalize the nval as it is currently in the range [this.labelThreshold : 1]
+			const rnval = (nval - this.labelThreshold) / (1.0 - this.labelThreshold);
 			const zIndex = Math.ceil(100 * rnval);
 			const fontSize = this.minFontSize + (rnval * (this.maxFontSize - this.minFontSize));
 			const opacity = this.minOpacity + (rnval * (this.maxOpacity - this.minOpacity));
-			const div = $(
-				`
+			const div = $(`
 				<div class="community-label" style="
-					left: ${left}px;
-					top: ${top}px;
+					left: ${x}px;
+					bottom: ${y}px;
 					opacity: ${opacity};
-					font-size: ${fontSize}px;
 					z-index: ${zIndex};
+					width: ${this.labelMaxLength}px;
+					height: ${fontSize+2}px;
+					font-size: ${fontSize}px;
 					line-height: ${fontSize}px;">${label}</div>
 				`);
 			div.data('community', community);

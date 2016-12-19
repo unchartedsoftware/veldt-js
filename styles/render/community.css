@@ -1,36 +1,21 @@
-.community-ring {
-	position: absolute;
-	border-radius: 50%;
-	border: 1px solid #aaa;
-	pointer-events: all;
-	cursor: pointer;
-}
-
-.community-ring:hover {
-	position: absolute;
-	border-radius: 50%;
-	border: 2px solid #ff80ff;
-	pointer-events: all;
-}
-
 .community-label {
 	position: absolute;
-	pointer-events:visible;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	width: 256px;
 	text-align: center;
 	cursor: pointer;
+	text-shadow:
+		-1px -1px 0 #000,
+		1px -1px 0 #000,
+		-1px 1px 0 #000,
+		1px 1px 0 #000,
+		1px 0 0 #000,
+		-1px 0 0 #000,
+		0 1px 0 #000,
+		0 -1px 0 #000;
 }
 
 .community-label:hover {
 	color: #ff80ff;
-	position: absolute;
-	pointer-events:visible;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	width: 256px;
-	text-align: center;
 }
