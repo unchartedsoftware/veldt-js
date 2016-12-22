@@ -3,6 +3,9 @@
 const lumo = require('lumo');
 const defaultTo = require('lodash/defaultTo');
 const isEmpty = require('lodash/isEmpty');
+const isFunction = require('lodash/isFunction');
+
+const REDRAW_TIMEOUT_MS = 800;
 
 class Live extends lumo.Layer {
 
@@ -12,11 +15,25 @@ class Live extends lumo.Layer {
 		this.params = {};
 		this.query = null;
 		this.transform = defaultTo(options.transform, null);
+		this.redrawDebounce = null;
 		this.on(lumo.TILE_ADD, event => {
 			if (this.transform) {
 				event.tile.data = this.transform(event.tile.data);
 			}
-			this.updateExtrema(event.tile.coord, event.tile.data);
+			const updated = this.updateExtrema(event.tile.coord, event.tile.data);
+			if (updated) {
+				clearTimeout(this.redrawDebounce);
+				this.redrawDebounce = setTimeout(() => {
+					this.renderers.forEach(renderer => {
+						// redraw DOM based tiles
+						if (renderer.redraw) {
+							renderer.redraw(true);
+						}
+					});
+					// clear debounce
+					this.redrawDebounce = null;
+				}, REDRAW_TIMEOUT_MS);
+			}
 		});
 		// set extrema / cache
 		this.clearExtrema();
@@ -63,7 +80,7 @@ class Live extends lumo.Layer {
 	}
 
 	setQuery(query) {
-		if (isEmpty(query)) {
+		if (isEmpty(query) && !isFunction(query)) {
 			throw 'Query object is empty';
 		}
 		this.query = query;
@@ -71,10 +88,10 @@ class Live extends lumo.Layer {
 	}
 
 	getQuery() {
-		if (isEmpty(this.query)) {
+		if (isEmpty(this.query) && !isFunction(this.query)) {
 			return null;
 		}
-		return this.query;
+		return isFunction(this.query) ? this.query() : this.query;
 	}
 
 	clearQuery() {
