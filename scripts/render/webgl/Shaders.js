@@ -257,6 +257,55 @@ const macro = {
 		`
 };
 
+
+/**
+ * community ring shader
+ */
+const communityRing = {
+	vert:
+		precision +
+		`
+		attribute vec2 aPosition;
+		attribute float aRadius;
+		uniform vec2 uTileOffset;
+		uniform float uScale;
+		uniform float uPixelRatio;
+		uniform float uRadiusOffset;
+		uniform mat4 uProjectionMatrix;
+		//varying float vRadius;
+		void main() {
+			vec2 wPosition = (aPosition * uScale) + uTileOffset;
+			gl_PointSize = (aRadius + uRadiusOffset) * uScale * 2.0 * uPixelRatio;
+			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
+			//vRadius = aRadius;
+		}
+		`,
+	frag:
+		precision +
+		`
+		#ifdef GL_OES_standard_derivatives
+			#extension GL_OES_standard_derivatives : enable
+		#endif
+		uniform vec4 uColor;
+		uniform float uOutline;
+		//varying float vRadius;
+		void main() {
+			vec2 cxy = 2.0 * gl_PointCoord - 1.0;
+			float radius = dot(cxy, cxy);
+			float alpha = 1.0;
+			#ifdef GL_OES_standard_derivatives
+				float delta = fwidth(radius);
+				alpha = 1.0 - smoothstep(1.0 - delta, 1.0 + delta, radius);
+			#else
+				if (radius > 1.0) {
+					discard;
+				}
+			#endif
+			gl_FragColor = vec4(uColor.rgb, uColor.a * alpha);
+		}
+		`
+};
+
 module.exports = {
 	/**
 	 * heatmap shader
@@ -271,5 +320,10 @@ module.exports = {
 	/**
 	 * macro shader
 	 */
-	macro: macro
+	macro: macro,
+
+	/**
+	 * community ring shader
+	 */
+	communityRing: communityRing
 };

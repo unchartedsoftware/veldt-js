@@ -122,14 +122,16 @@ class CommunityLabel extends lumo.HTMLRenderer {
 				return;
 			}
 
-			const x = points[index*2] - (this.labelMaxLength / 2);
-			const y = points[index*2+1];
-
 			// normalize the nval as it is currently in the range [this.labelThreshold : 1]
 			const rnval = (nval - this.labelThreshold) / (1.0 - this.labelThreshold);
 			const zIndex = Math.ceil(100 * rnval);
 			const fontSize = this.minFontSize + (rnval * (this.maxFontSize - this.minFontSize));
 			const opacity = this.minOpacity + (rnval * (this.maxOpacity - this.minOpacity));
+
+			// get position
+			const x = points[index*2] - (this.labelMaxLength / 2);
+			const y = points[index*2+1] - (fontSize / 2);
+
 			const div = $(`
 				<div class="community-label" style="
 					left: ${x}px;
