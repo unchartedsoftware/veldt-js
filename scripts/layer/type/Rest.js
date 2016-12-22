@@ -4,7 +4,7 @@ const lumo = require('lumo');
 const defaultTo = require('lodash/defaultTo');
 const ImageRenderer = require('../../render/webgl/Image');
 
-class Image extends lumo.Layer {
+class Rest extends lumo.Layer {
 
 	constructor(endpoint, options = {}) {
 		super(options);
@@ -30,7 +30,7 @@ class Image extends lumo.Layer {
 		this.endpoint = endpoint;
 	}
 
-	getTile(name = 'image') {
+	getTile(name = 'rest') {
 		const params = {
 			ext: this.ext,
 			endpoint: this.endpoint,
@@ -42,4 +42,4 @@ class Image extends lumo.Layer {
 	}
 }
 
-module.exports = Image;
+module.exports = Rest;
