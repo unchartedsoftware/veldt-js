@@ -20,10 +20,11 @@ const HTML = {
 
 // webgl renderers
 const WebGL = {
+	Community: require('./webgl/Community'),
 	Heatmap: require('./webgl/Heatmap'),
 	Micro: require('./webgl/Micro'),
-	Macro: require('./webgl/Macro')
-	//Community: require('./webgl/Community')
+	Macro: require('./webgl/Macro'),
+	Repeat: require('./webgl/Repeat')
 };
 
 module.exports = {

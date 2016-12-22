@@ -183,11 +183,11 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 		const yOffset = coord.y * tileSize;
 		const radius = this.radius;
 
-		const points = new Array(data.length);
+		const points = new Array(vertices.length / 2);
 
 		// const collisions = {};
 
-		for (let i=0; i<vertices.length/2; i++) {
+		for (let i=0; i<vertices.length / 2; i++) {
 
 			const x = vertices[i*2];
 			const y = vertices[i*2+1];
