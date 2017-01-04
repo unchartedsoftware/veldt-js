@@ -39,7 +39,7 @@ const getOffsetIndices = function(x, y, extent, lod) {
 	return [ start, stop ];
 };
 
-const draw = function(gl, shader, atlas, renderables) {
+const draw = function(shader, atlas, renderables) {
 	// for each renderable
 	renderables.forEach(renderable => {
 		// set tile uniforms
@@ -52,7 +52,7 @@ const draw = function(gl, shader, atlas, renderables) {
 	});
 };
 
-const drawLOD = function(gl, shader, atlas, plot, lod, renderables) {
+const drawLOD = function(shader, atlas, plot, lod, renderables) {
 	const zoom = Math.round(plot.zoom);
 	// for each renderable
 	renderables.forEach(renderable => {
@@ -103,14 +103,7 @@ const drawLOD = function(gl, shader, atlas, plot, lod, renderables) {
 	});
 };
 
-const renderTiles = function(gl, shader, atlas, plot, layer, proj, renderables, color, radius) {
-
-	// clear render target
-	gl.clear(gl.COLOR_BUFFER_BIT);
-
-	// set blending func
-	gl.enable(gl.BLEND);
-	gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+const renderTiles = function(shader, atlas, plot, layer, renderables, color, radius) {
 
 	shader.setUniform('uColor', color);
 	shader.setUniform('uRadius', radius);
@@ -119,16 +112,16 @@ const renderTiles = function(gl, shader, atlas, plot, layer, proj, renderables, 
 	atlas.bind();
 
 	if (layer.lod > 0) {
-		drawLOD(gl, shader, atlas, plot, layer.lod, renderables);
+		drawLOD(shader, atlas, plot, layer.lod, renderables);
 	} else {
-		draw(gl, shader, atlas, renderables);
+		draw(shader, atlas, renderables);
 	}
 
 	// unbind
 	atlas.unbind();
 };
 
-const renderPoint = function(gl, point, shader, proj, plot, target, color, radiusOffset) {
+const renderPoint = function(point, shader, plot, target, color, radiusOffset) {
 
 	// get tile offset
 	const coord = target.tile.coord;
@@ -166,6 +159,8 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 		this.shader = null;
 		this.point = null;
 		this.atlas = null;
+		this.highlighted = null;
+		this.selected = null;
 		this.color = defaultTo(options.color, [ 1.0, 0.4, 0.1, 0.8 ]);
 		this.radius = defaultTo(options.radius, POINT_RADIUS);
 		// this.jitter = defaultTo(options.radius, true);
@@ -255,6 +250,7 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 
 	draw() {
 
+		const gl = this.gl;
 		const layer = this.layer;
 		const plot = layer.plot;
 		const proj = this.getOrthoMatrix();
@@ -262,6 +258,11 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 
 		// bind render target
 		plot.renderBuffer.bind();
+		plot.renderBuffer.clear();
+
+		// set blending func
+		gl.enable(gl.BLEND);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
 		// use shader
 		shader.use();
@@ -272,12 +273,10 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 
 		// render the tiles
 		renderTiles(
-			this.gl,
 			shader,
 			this.atlas,
 			plot,
 			layer,
-			proj,
 			layer.lod > 0 ? this.getRenderablesLOD() : this.getRenderables(),
 			this.color,
 			this.radius);
@@ -285,10 +284,8 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 		// render selected
 		if (this.selected) {
 			renderPoint(
-				this.gl,
 				this.point,
 				shader,
-				proj,
 				plot,
 				this.selected,
 				this.color,
@@ -298,10 +295,8 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 		// render highlighted
 		if (this.highlighted && this.highlighted !== this.selected) {
 			renderPoint(
-				this.gl,
 				this.point,
 				shader,
-				proj,
 				plot,
 				this.highlighted,
 				this.color,

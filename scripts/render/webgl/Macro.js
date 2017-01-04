@@ -15,7 +15,7 @@ const getOffsetIndices = function(x, y, extent, lod) {
 	return [ start, stop ];
 };
 
-const draw = function(gl, shader, atlas, renderables) {
+const draw = function(shader, atlas, renderables) {
 	// for each renderable
 	renderables.forEach(renderable => {
 		// set tile uniforms
@@ -28,7 +28,7 @@ const draw = function(gl, shader, atlas, renderables) {
 	});
 };
 
-const drawLOD = function(gl, shader, atlas, plot, lod, renderables) {
+const drawLOD = function(shader, atlas, plot, lod, renderables) {
 	const zoom = Math.round(plot.zoom);
 	// for each renderable
 	renderables.forEach(renderable => {
@@ -130,9 +130,7 @@ class Macro extends lumo.WebGLVertexRenderer {
 
 		// bind render target
 		plot.renderBuffer.bind();
-
-		// clear render target
-		gl.clear(gl.COLOR_BUFFER_BIT);
+		plot.renderBuffer.clear();
 
 		// set blending func
 		gl.enable(gl.BLEND);
@@ -151,9 +149,9 @@ class Macro extends lumo.WebGLVertexRenderer {
 		atlas.bind();
 
 		if (layer.lod > 0) {
-			drawLOD(gl, shader, atlas, plot, layer.lod, this.getRenderablesLOD());
+			drawLOD(shader, atlas, plot, layer.lod, this.getRenderablesLOD());
 		} else {
-			draw(gl, shader, atlas, this.getRenderables());
+			draw(shader, atlas, this.getRenderables());
 		}
 
 		// unbind
