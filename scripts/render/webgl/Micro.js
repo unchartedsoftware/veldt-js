@@ -2,148 +2,10 @@
 
 const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
-const morton = require('../morton/Morton');
-const Shaders = require('./Shaders');
+const Point = require('../shape/Point');
 
 const POINT_RADIUS = 8;
 const POINT_RADIUS_INC = 4;
-
-const createPoint = function(gl) {
-	const vertices = new Float32Array(2);
-	vertices[0] = 0.0;
-	vertices[1] = 0.0;
-	// create quad buffer
-	return new lumo.VertexBuffer(
-		gl,
-		vertices,
-		{
-			0: {
-				size: 2,
-				type: 'FLOAT',
-				byteOffset: 0
-			}
-		},
-		{
-			mode: 'POINTS',
-			count: 1
-		});
-};
-
-const getOffsetIndices = function(x, y, extent, lod) {
-	const partitions = Math.pow(2, lod);
-	const xcell = x * partitions;
-	const ycell = y * partitions;
-	const stride = extent * partitions;
-	const start = morton(xcell, ycell);
-	const stop = start + (stride * stride);
-	return [ start, stop ];
-};
-
-const draw = function(shader, atlas, renderables) {
-	// for each renderable
-	renderables.forEach(renderable => {
-		// set tile uniforms
-		shader.setUniform('uScale', renderable.scale);
-		shader.setUniform('uTileOffset', renderable.tileOffset);
-		shader.setUniform('uLODScale', 1);
-		shader.setUniform('uLODOffset', [0, 0]);
-		// draw the points
-		atlas.draw(renderable.hash, 'POINTS');
-	});
-};
-
-const drawLOD = function(shader, atlas, plot, lod, renderables) {
-	const zoom = Math.round(plot.zoom);
-	// for each renderable
-	renderables.forEach(renderable => {
-
-		// distance between actual zoom and the LOD of tile
-		const dist = Math.abs(renderable.tile.coord.z - zoom);
-
-		if (dist > lod) {
-			// not even lod to support it
-			return;
-		}
-
-		const xOffset = renderable.uvOffset[0];
-		const yOffset = renderable.uvOffset[1];
-		const extent = renderable.uvOffset[3];
-
-		// set tile uniforms
-		shader.setUniform('uScale', renderable.scale);
-		shader.setUniform('uTileOffset', renderable.tileOffset);
-
-		const lodScale = 1 / extent;
-
-		const lodOffset = [
-			-(xOffset * lodScale * plot.tileSize),
-			-(yOffset * lodScale * plot.tileSize)];
-
-		shader.setUniform('uLODScale', 1 / extent);
-		shader.setUniform('uLODOffset', lodOffset);
-		// get byte offset and count
-		const [ start, stop ] = getOffsetIndices(
-			xOffset,
-			yOffset,
-			extent,
-			lod);
-
-		const points = renderable.tile.data.points;
-		const offsets = renderable.tile.data.offsets;
-
-		const startByte = offsets[start];
-		const stopByte = (stop === offsets.length) ? points.byteLength : offsets[stop];
-
-		const offset = startByte / (atlas.stride * 4);
-		const count = (stopByte - startByte) / (atlas.stride * 4);
-		if (count > 0) {
-			// draw the points
-			atlas.draw(renderable.hash, 'POINTS', offset, count);
-		}
-	});
-};
-
-const renderTiles = function(shader, atlas, plot, layer, renderables, color, radius) {
-
-	shader.setUniform('uColor', color);
-	shader.setUniform('uRadius', radius);
-
-	// binds the buffer to instance
-	atlas.bind();
-
-	if (layer.lod > 0) {
-		drawLOD(shader, atlas, plot, layer.lod, renderables);
-	} else {
-		draw(shader, atlas, renderables);
-	}
-
-	// unbind
-	atlas.unbind();
-};
-
-const renderPoint = function(point, shader, plot, target, color, radiusOffset) {
-
-	// get tile offset
-	const coord = target.tile.coord;
-	const scale = Math.pow(2, plot.zoom - coord.z);
-	const tileOffset = [
-		(coord.x * scale * plot.tileSize) + (scale * target.x) - plot.viewport.x,
-		(coord.y * scale * plot.tileSize) + (scale * target.y) - plot.viewport.y
-	];
-	shader.setUniform('uTileOffset', tileOffset);
-	shader.setUniform('uScale', scale);
-	shader.setUniform('uColor', color);
-	shader.setUniform('uRadius', radiusOffset + target.radius);
-
-	// binds the buffer to instance
-	point.bind();
-
-	// draw the points
-	point.draw();
-
-	// unbind
-	point.unbind();
-};
 
 // const applyJitter = function(point, maxDist) {
 // 	const angle = Math.random() * (Math.PI * 2);
@@ -156,7 +18,6 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 
 	constructor(options = {}) {
 		super(options);
-		this.shader = null;
 		this.point = null;
 		this.atlas = null;
 		this.highlighted = null;
@@ -225,10 +86,7 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 
 	onAdd(layer) {
 		super.onAdd(layer);
-		// get the extension for standard derivatives
-		this.ext = this.gl.getExtension('OES_standard_derivatives');
-		this.point = createPoint(this.gl);
-		this.shader = this.createShader(Shaders.micro);
+		this.point = new Point(this);
 		this.atlas = this.createVertexAtlas({
 			// position
 			0: {
@@ -241,7 +99,6 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 
 	onRemove(layer) {
 		this.destroyVertexAtlas(this.atlas);
-		this.shader = null;
 		this.atlas = null;
 		this.point = null;
 		super.onRemove(layer);
@@ -253,8 +110,6 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 		const gl = this.gl;
 		const layer = this.layer;
 		const plot = layer.plot;
-		const proj = this.getOrthoMatrix();
-		const shader = this.shader;
 
 		// bind render target
 		plot.renderBuffer.bind();
@@ -264,43 +119,26 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
-		// use shader
-		shader.use();
-
-		// set uniforms
-		shader.setUniform('uProjectionMatrix', proj);
-		shader.setUniform('uPixelRatio', plot.pixelRatio);
-
-		// render the tiles
-		renderTiles(
-			shader,
+		// draw instances
+		this.point.drawInstanced(
 			this.atlas,
-			plot,
-			layer,
-			layer.lod > 0 ? this.getRenderablesLOD() : this.getRenderables(),
-			this.color,
-			this.radius);
+			this.radius,
+			this.color);
 
 		// render selected
 		if (this.selected) {
-			renderPoint(
-				this.point,
-				shader,
-				plot,
+			this.point.drawIndividual(
 				this.selected,
-				this.color,
-				POINT_RADIUS_INC * 2);
+				this.radius + POINT_RADIUS_INC * 2,
+				this.color);
 		}
 
 		// render highlighted
 		if (this.highlighted && this.highlighted !== this.selected) {
-			renderPoint(
-				this.point,
-				shader,
-				plot,
+			this.point.drawIndividual(
 				this.highlighted,
-				this.color,
-				POINT_RADIUS_INC);
+				this.radius + POINT_RADIUS_INC,
+				this.color);
 		}
 
 		// unbind render target

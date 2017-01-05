@@ -2,188 +2,15 @@
 
 const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
-const Shaders = require('./Shaders');
-
-const NUM_SEGMENTS = 64;
-const RADIUS_OFFSET = 10;
-
-const createRing = function(gl, numSegments, radius, ringWidth) {
-	const theta = (2 * Math.PI) / numSegments;
-	// pre-calculate sine and cosine
-	const c = Math.cos(theta);
-	const s = Math.sin(theta);
-	// start at angle = 0
-	let x0 = 0;
-	let y0 = radius - (ringWidth / 2);
-	let x1 = 0;
-	let y1 = radius + (ringWidth / 2);
-	const vertices = new Float32Array((numSegments + 1) * (2 + 2));
-	for (let i = 0; i <= numSegments; i++) {
-		vertices[i*4] = x0;
-		vertices[i*4+1] = y0;
-		vertices[i*4+2] = x1;
-		vertices[i*4+3] = y1;
-		// apply the rotation
-		let t = x0;
-		x0 = c * x0 - s * y0;
-		y0 = s * t + c * y0;
-		t = x1;
-		x1 = c * x1 - s * y1;
-		y1 = s * t + c * y1;
-	}
-	return new lumo.VertexBuffer(
-		gl,
-		vertices,
-		{
-			// x, y
-			0: {
-				size: 2,
-				type: 'FLOAT'
-			}
-		}, {
-			mode: 'TRIANGLE_STRIP',
-			count: vertices.length / 2
-		});
-};
-
-/*
-const renderTiles = function(shader, ring, ding, atlas, proj, renderables, color, opacity) {
-	// use shader
-	shader.use();
-
-	// set uniforms
-	shader.setUniform('uProjectionMatrix', proj);
-	shader.setUniform('uColor', color);
-	shader.setUniform('uOpacity', opacity);
-	shader.setUniform('uRadiusOffset', RADIUS_OFFSET);
-
-	// bind the ring buffer
-	ring.bind();
-
-	// binds instance offset buffer
-	atlas.bindInstanced();
-
-	// for each renderable
-	renderables.forEach(renderable => {
-		// set tile uniforms
-		shader.setUniform('uScale', renderable.scale);
-		shader.setUniform('uTileOffset', renderable.tileOffset);
-		// draw the instances
-		atlas.drawInstanced(renderable.hash, ring.mode, ring.count);
-	});
-
-	// unbind instance offset buffer
-	atlas.unbindInstanced();
-
-	// unbind the ring buffer
-	ring.unbind();
-};
-*/
-
-const renderTiles = function(shader, fill, outline, atlas, proj, renderables, color, outlineColor, opacity) {
-	// use shader
-	shader.use();
-
-	// set uniforms
-	shader.setUniform('uProjectionMatrix', proj);
-	shader.setUniform('uRadiusOffset', RADIUS_OFFSET);
-	shader.setUniform('uOpacity', opacity);
-
-	/*
-	 * Draw outlineWidth
-	 */
-
-	// bind the ring buffer
-	outline.bind();
-
-	// binds instance offset buffer
-	atlas.bindInstanced();
-
-	// set color
-	shader.setUniform('uColor', outlineColor);
-
-	renderables.forEach(renderable => {
-		// set tile uniforms
-		shader.setUniform('uScale', renderable.scale);
-		shader.setUniform('uTileOffset', renderable.tileOffset);
-		// draw the instances
-		atlas.drawInstanced(renderable.hash, outline.mode, outline.count);
-	});
-
-	// unbind instance offset buffer
-	atlas.unbindInstanced();
-
-	// unbind the ring buffer
-	outline.unbind();
-
-	/*
-	 * Draw fill
-	 */
-
-	// bind the ring buffer
-	fill.bind();
-
-	// binds instance offset buffer
-	atlas.bindInstanced();
-
-	// set color
-	shader.setUniform('uColor', color);
-
-	// for each renderable
-	renderables.forEach(renderable => {
-		// set tile uniforms
-		shader.setUniform('uScale', renderable.scale);
-		shader.setUniform('uTileOffset', renderable.tileOffset);
-		// draw the instances
-		atlas.drawInstanced(renderable.hash, fill.mode, fill.count);
-	});
-
-	// unbind instance offset buffer
-	atlas.unbindInstanced();
-
-	// unbind the ring buffer
-	fill.unbind();
-};
-
-const renderRing = function(shader, fill, proj, plot, target, color, opacity) {
-
-	// get tile offset
-	const coord = target.tile.coord;
-	const scale = Math.pow(2, plot.zoom - coord.z);
-	const tileOffset = [
-		(coord.x * scale * plot.tileSize) + (scale * target.x) - plot.viewport.x,
-		(coord.y * scale * plot.tileSize) + (scale * target.y) - plot.viewport.y
-	];
-
-	// use shader
-	shader.use();
-
-	// set uniforms
-	shader.setUniform('uProjectionMatrix', proj);
-	shader.setUniform('uColor', color);
-	shader.setUniform('uOpacity', opacity);
-	shader.setUniform('uRadius', target.radius);
-	shader.setUniform('uRadiusOffset', RADIUS_OFFSET);
-	shader.setUniform('uScale', scale);
-	shader.setUniform('uTileOffset', tileOffset);
-
-	// bind the ring buffer
-	fill.bind();
-	// draw ring
-	fill.draw();
-	// unbind the ring buffer
-	fill.unbind();
-};
+const Ring = require('../shape/Ring');
 
 class Community extends lumo.WebGLInteractiveRenderer {
 
 	constructor(options = {}) {
 		super(options);
-		this.shader = null;
-		this.instancedShader = null;
+		this.atlas = null;
 		this.ringFill = null;
 		this.ringOutline = null;
-		this.atlas = null;
 		this.color = defaultTo(options.color, [ 1.0, 1.0, 1.0, 1.0 ]);
 		this.outlineColor = defaultTo(options.outlineColor, [ 0.0, 0.0, 0.0, 1.0 ]);
 		this.highlightedColor = defaultTo(options.highlightedColor, [ 1.0, 0.5, 1.0, 0.8 ]);
@@ -195,20 +22,10 @@ class Community extends lumo.WebGLInteractiveRenderer {
 
 	onAdd(layer) {
 		super.onAdd(layer);
-		// geometry
-		this.ringFill = createRing(
-			this.gl,
-			NUM_SEGMENTS,
-			RADIUS_OFFSET,
-			this.ringWidth);
-		this.ringOutline = createRing(
-			this.gl,
-			NUM_SEGMENTS,
-			RADIUS_OFFSET,
-			this.ringWidth + (this.outlineWidth * 2));
-		// shaders
-		this.shader = this.createShader(Shaders.ring);
-		this.instancedShader = this.createShader(Shaders.instancedRing);
+		// ring fill
+		this.ringFill = new Ring(this, this.ringWidth);
+		// ring outline
+		this.ringOutline = new Ring(this, this.ringWidth + (this.outlineWidth * 2));
 		// offset atlas
 		this.atlas = this.createVertexAtlas({
 			// offset
@@ -227,8 +44,6 @@ class Community extends lumo.WebGLInteractiveRenderer {
 
 	onRemove(layer) {
 		this.destroyVertexAtlas(this.atlas);
-		this.shader = null;
-		this.instancedShader = null;
 		this.atlas = null;
 		this.ringFill = null;
 		this.ringOutline = null;
@@ -294,58 +109,39 @@ class Community extends lumo.WebGLInteractiveRenderer {
 	draw() {
 
 		const gl = this.gl;
-		const layer = this.layer;
-		const plot = layer.plot;
-		const proj = this.getOrthoMatrix();
-
-		// // bind render target
-		// plot.renderBuffer.bind();
-		// plot.renderBuffer.clear();
+		const opacity = this.layer.opacity;
 
 		// set blending func
 		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-		renderTiles(
-			this.instancedShader,
-			this.ringFill,
-			this.ringOutline,
+		// draw outline
+		this.ringOutline.drawInstanced(
 			this.atlas,
-			proj,
-			this.getRenderables(),
-			this.color,
 			this.outlineColor,
-			layer.opacity);
+			opacity);
+
+		// draw fill
+		this.ringFill.drawInstanced(
+			this.atlas,
+			this.color,
+			opacity);
 
 		// render selected
 		if (this.selected) {
-			renderRing(
-				this.shader,
-				this.ringFill,
-				proj,
-				plot,
+			this.ringFill.drawIndividual(
 				this.selected,
 				this.selectedColor,
-				layer.opacity);
+				opacity);
 		}
 
 		// render highlighted
 		if (this.highlighted && this.highlighted !== this.selected) {
-			renderRing(
-				this.shader,
-				this.ringFill,
-				proj,
-				plot,
+			this.ringFill.drawIndividual(
 				this.highlighted,
 				this.highlightedColor,
-				layer.opacity);
+				opacity);
 		}
-
-		// // unbind render target
-		// plot.renderBuffer.unbind();
-		//
-		// // render framebuffer to the backbuffer
-		// plot.renderBuffer.blitToScreen(this.layer.opacity);
 
 		return this;
 	}
