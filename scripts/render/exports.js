@@ -21,6 +21,7 @@ const HTML = {
 // webgl renderers
 const WebGL = {
 	Community: require('./webgl/Community'),
+	CommunityBucket: require('./webgl/CommunityBucket'),
 	Heatmap: require('./webgl/Heatmap'),
 	Micro: require('./webgl/Micro'),
 	Macro: require('./webgl/Macro'),
