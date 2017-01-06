@@ -16,9 +16,8 @@ const INDIVIDUAL_SHADER = {
 		uniform float uRadiusOffset;
 		uniform mat4 uProjectionMatrix;
 		void main() {
-			vec2 wPosition = (aPosition * uScale) +
-				uTileOffset +
-				(normalize(aPosition) * (uRadius - uRadiusOffset));
+			vec2 radiusOffset = normalize(aPosition) * (uRadius - uRadiusOffset);
+			vec2 wPosition = (aPosition * uScale) + radiusOffset + uTileOffset;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 		}
 		`,
