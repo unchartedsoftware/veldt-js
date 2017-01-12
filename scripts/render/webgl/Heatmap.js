@@ -5,9 +5,6 @@ const lumo = require('lumo');
 const ColorRamp = require('../color/ColorRamp');
 
 const SHADER = {
-	define: {
-		'LOG_TRANSFORM': 1
-	},
 	vert:
 		`
 		precision highp float;
@@ -161,13 +158,40 @@ const createQuad = function(gl, min, max) {
 		});
 };
 
+const addTransformDefine = function(shader ,transform) {
+	const define = {};
+	switch (transform) {
+		case 'linear':
+			define.LINEAR_TRANSFORM = 1;
+
+		case 'sigmoid':
+			define.SIGMOID_TRANSFORM = 1;
+
+		default:
+			define.LOG_TRANSFORM = 1;
+	}
+	shader.define = define;
+	return shader;
+};
+
+const createRampTexture = function(gl, type) {
+	const table = ColorRamp.getTable(type);
+	const size = Math.sqrt(table.length / 4);
+	const texture = new lumo.Texture(gl, null, {
+		filter: 'NEAREST'
+	});
+	texture.bufferData(table, size, size);
+	return texture;
+};
+
 class Heatmap extends lumo.WebGLTextureRenderer {
 
 	constructor(options = {}) {
+		options.filter = 'NEAREST';
 		super(options);
 		this.transform = _.defaultTo(options.transform, 'log10');
+		this.range = _.defaultTo(options.range, [0, 1]);
 		this.colorRamp = _.defaultTo(options.colorRamp, 'verdant');
-		this.filter = 'NEAREST';
 		this.quad = null;
 		this.shader = null;
 		this.array = null;
@@ -175,6 +199,10 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 	}
 
 	addTile(array, tile) {
+		// update chunksize if layer resolution changes
+		if (this.array.chunkSize !== this.layer.resolution) {
+			this.array.chunkSize = this.layer.resolution;
+		}
 		array.set(tile.coord.hash, new Uint8Array(tile.data));
 	}
 
@@ -185,9 +213,10 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 	onAdd(layer) {
 		super.onAdd(layer);
 		this.quad = createQuad(this.gl, 0, layer.plot.tileSize);
-		this.shader = this.createShader(SHADER);
+		this.shader = this.createShader(
+			addTransformDefine(SHADER, this.transform));
 		this.array = this.createTextureArray(layer.resolution);
-		this.ramp = this.createRampTexture(this.colorRamp);
+		this.ramp = createRampTexture(this.gl, this.colorRamp);
 		return this;
 	}
 
@@ -200,14 +229,42 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 		return this;
 	}
 
-	createRampTexture(type) {
-		const table = ColorRamp.getTable(type);
-		const size = Math.sqrt(table.length / 4);
-		const texture = new lumo.Texture(this.gl, null, {
-			filter: 'NEAREST'
-		});
-		texture.bufferData(table, size, size);
-		return texture;
+	setTransform(transform) {
+		this.transform = transform;
+		// re-compile shader
+		this.shader = this.createShader(
+			addTransformDefine(SHADER, this.transform));
+	}
+
+	getTransform() {
+		return this.transform;
+	}
+
+	setValueRange(min, max) {
+		this.range = [
+			_.clamp(min, 0, 1),
+			_.clamp(max, 0, 1)
+		];
+	}
+
+	getValueRange() {
+		return [
+			this.range[0],
+			this.range[1]
+		];
+	}
+
+	setColorRamp(colorRamp) {
+		this.colorRamp = colorRamp;
+		this.ramp = createRampTexture(this.gl, this.colorRamp);
+	}
+
+	getColorRamp() {
+		return this.colorRamp;
+	}
+
+	getColorRampFunc() {
+		return ColorRamp.getFunc(this.colorRamp);
 	}
 
 	draw() {
@@ -231,8 +288,8 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 
 		// TODO: implement value ranges / transforms
 		shader.setUniform('uOpacity', this.layer.opacity);
-		shader.setUniform('uRangeMin', 0); //this.getValueRange().min);
-		shader.setUniform('uRangeMax', 1); //this.getValueRange().max);
+		shader.setUniform('uRangeMin', this.range[0]);
+		shader.setUniform('uRangeMax', this.range[1]);
 		shader.setUniform('uMin', extrema.min);
 		shader.setUniform('uMax', extrema.max);
 

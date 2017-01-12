@@ -206,7 +206,7 @@ const getTable = function(type) {
 	return colorTables[type];
 };
 
-const getRamp = function(type) {
+const getFunc = function(type) {
 	if (!colorRamps[type]) {
 		throw `Color table ${type} does not exist`;
 	}
@@ -221,7 +221,7 @@ const createRamp = function(type, baseColors) {
 
 module.exports = {
 	getTable: getTable,
-	getRamp: getRamp,
+	getFunc: getFunc,
 	createRamp: createRamp,
 	NUM_GRADIENT_STEPS: NUM_GRADIENT_STEPS
 };

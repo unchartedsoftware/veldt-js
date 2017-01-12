@@ -8,7 +8,7 @@ class Micro extends Bivariate {
 	constructor(meta, options = {}) {
 		super(meta, options);
 		this.lod = defaultTo(options.lod, 4);
-		this.sortField = options.sortField;
+		this.sortField = defaultTo(options.sortField, null);
 		this.sortOrder = defaultTo(options.sortOrder, 'desc');
 		this.hitsCount = defaultTo(options.hitsCount, 10);
 		this.includeFields = defaultTo(options.includeFields, null);

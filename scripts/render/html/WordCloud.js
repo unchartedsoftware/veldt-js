@@ -188,7 +188,7 @@ class WordCloud extends lumo.HTMLRenderer {
 		}
 	}
 
-	_measureWords(wordCounts) {
+	_measureWords(wordCounts, extrema) {
 		// sort words by frequency
 		wordCounts = wordCounts.sort((a, b) => {
 			return b.count - a.count;
@@ -197,7 +197,7 @@ class WordCloud extends lumo.HTMLRenderer {
 		const $html = $('<div style="height:256px; width:256px;"></div>');
 		const minFontSize = this.minFontSize;
 		const maxFontSize = this.maxFontSize;
-		const extrema = this.layer.getExtrema();
+		const layer = this.layer;
 		const transform = this.transform;
 		wordCounts.forEach(word => {
 			word.percent = Transform.transform(word.count, transform, extrema);
@@ -219,7 +219,7 @@ class WordCloud extends lumo.HTMLRenderer {
 		return wordCounts;
 	}
 
-	_createWordCloud(wordCounts) {
+	_createWordCloud(wordCounts, extrema) {
 		const tileSize = this.layer.plot.tileSize;
 		const boundingBox = {
 			width: tileSize - HORIZONTAL_OFFSET * 2,
@@ -229,7 +229,7 @@ class WordCloud extends lumo.HTMLRenderer {
 		};
 		const cloud = [];
 		// sort words by frequency
-		wordCounts = this._measureWords(wordCounts);
+		wordCounts = this._measureWords(wordCounts, extrema);
 		// assemble word cloud
 		wordCounts.forEach(wordCount => {
 			// starting spiral position
@@ -271,10 +271,12 @@ class WordCloud extends lumo.HTMLRenderer {
 				count: count
 			};
 		});
+		const layer = this.layer;
+		const extrema = layer.getExtrema(tile.coord.z);
 		// genereate the cloud
-		const cloud = this._createWordCloud(wordCounts);
+		const cloud = this._createWordCloud(wordCounts, extrema);
 		// half tile size
-		const halfSize = this.layer.plot.tileSize / 2;
+		const halfSize = layer.plot.tileSize / 2;
 		// create html for tile
 		const divs = [];
 

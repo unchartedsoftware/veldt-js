@@ -11,7 +11,7 @@ class Rest extends lumo.Layer {
 		this.ext = defaultTo(options.ext, 'png');
 		this.scheme = defaultTo(options.ext, 'http');
 		this.endpoint = endpoint;
-		this.addRenderer(new ImageRenderer());
+		this.setRenderer(new ImageRenderer());
 	}
 
 	setExt(ext) {

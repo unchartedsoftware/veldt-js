@@ -11,7 +11,6 @@ const Core = {
 
 // html renderers
 const HTML = {
-	//Community: require('./html/Community'),
 	CommunityLabel: require('./html/CommunityLabel'),
 	//Debug: require('./html/Debug'),
 	//TopTerms: require('./html/TopTerms'),

@@ -5,6 +5,8 @@ const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
 const Transform = require('../transform/Transform');
 
+const HEIGHT_BUFFER = 4;
+
 const getMouseButton = function(event) {
 	if (event.which === 1) {
 		return 'left';
@@ -104,8 +106,9 @@ class CommunityLabel extends lumo.HTMLRenderer {
 			return;
 		}
 
-		const sortField = this.layer.sortField;
-		const extrema = this.layer.getExtrema();
+		const layer = this.layer;
+		const sortField = layer.sortField;
+		const extrema = layer.getExtrema(tile.coord.z);
 
 		let divs = $();
 		hits.forEach((community, index) => {
@@ -127,10 +130,11 @@ class CommunityLabel extends lumo.HTMLRenderer {
 			const zIndex = Math.ceil(100 * rnval);
 			const fontSize = this.minFontSize + (rnval * (this.maxFontSize - this.minFontSize));
 			const opacity = this.minOpacity + (rnval * (this.maxOpacity - this.minOpacity));
+			const height = fontSize + HEIGHT_BUFFER; // add buffer to prevent cutoff of some letters
 
 			// get position
 			const x = points[index*2] - (this.labelMaxLength / 2);
-			const y = points[index*2+1] - (fontSize / 2);
+			const y = points[index*2+1] - (height / 2);
 
 			const div = $(`
 				<div class="community-label" style="
@@ -139,7 +143,7 @@ class CommunityLabel extends lumo.HTMLRenderer {
 					opacity: ${opacity};
 					z-index: ${zIndex};
 					width: ${this.labelMaxLength}px;
-					height: ${fontSize+2}px;
+					height: ${height}px;
 					font-size: ${fontSize}px;
 					line-height: ${fontSize}px;">${label}</div>
 				`);

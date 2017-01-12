@@ -18,9 +18,9 @@ class Group {
 		// for each layer
 		this.layers.forEach(layer => {
 			layer.plot = plot;
-			layer.renderers.forEach(renderer => {
-				renderer.onAdd(layer);
-			});
+			if (layer.renderer) {
+				layer.renderer.onAdd(layer);
+			}
 		});
 		// refresh tiles
 		this.refresh();

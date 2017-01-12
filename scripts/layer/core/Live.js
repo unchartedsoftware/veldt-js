@@ -21,15 +21,12 @@ class Live extends lumo.Layer {
 				event.tile.data = this.transform(event.tile.data);
 			}
 			const updated = this.updateExtrema(event.tile.coord, event.tile.data);
-			if (updated) {
+			if (updated && this.renderer && this.renderer.redraw) {
 				clearTimeout(this.redrawDebounce);
 				this.redrawDebounce = setTimeout(() => {
-					this.renderers.forEach(renderer => {
-						// redraw DOM based tiles
-						if (renderer.redraw) {
-							renderer.redraw(true);
-						}
-					});
+					if (this.renderer && this.renderer.redraw) {
+						this.renderer.redraw(true);
+					}
 					// clear debounce
 					this.redrawDebounce = null;
 				}, REDRAW_TIMEOUT_MS);
