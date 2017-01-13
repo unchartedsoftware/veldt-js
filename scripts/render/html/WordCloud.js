@@ -197,7 +197,6 @@ class WordCloud extends lumo.HTMLRenderer {
 		const $html = $('<div style="height:256px; width:256px;"></div>');
 		const minFontSize = this.minFontSize;
 		const maxFontSize = this.maxFontSize;
-		const layer = this.layer;
 		const transform = this.transform;
 		wordCounts.forEach(word => {
 			word.percent = Transform.transform(word.count, transform, extrema);

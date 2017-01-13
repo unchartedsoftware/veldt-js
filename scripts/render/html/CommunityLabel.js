@@ -24,7 +24,7 @@ class CommunityLabel extends lumo.HTMLRenderer {
 		this.transform = defaultTo(options.transform, 'log10');
 		this.minFontSize = defaultTo(options.minFontSize, 10);
 		this.maxFontSize = defaultTo(options.maxFontSize, 24);
-		this.minOpacity = defaultTo(options.minOpacity, 0.2);
+		this.minOpacity = defaultTo(options.minOpacity, 0.4);
 		this.maxOpacity = defaultTo(options.maxOpacity, 1.0);
 		this.labelMaxLength = defaultTo(options.labelMaxLength, 256);
 		this.labelThreshold = defaultTo(options.labelThreshold, 0.4);
