@@ -7,6 +7,7 @@ class Group {
 
 	constructor(options = {}) {
 		this.hidden = defaultTo(options.hidden, false);
+		this.muted = defaultTo(options.muted, false);
 		this.layers = defaultTo(options.layers, []);
 	}
 
@@ -87,9 +88,55 @@ class Group {
 		return this;
 	}
 
+	isHidden() {
+		return this.hidden;
+	}
+
+	mute() {
+		this.muted = true;
+		return this;
+	}
+
+	unmute() {
+		if (this.muted) {
+			this.muted = false;
+			if (this.plot) {
+				// request tiles
+				Request.requestTiles(this.plot);
+			}
+		}
+		return this;
+	}
+
+	isMuted() {
+		return this.muted;
+	}
+
+	enable() {
+		this.show();
+		this.unmute();
+		return this;
+	}
+
+	disable() {
+		this.hide();
+		this.mute();
+		return this;
+	}
+
+	isDisabled() {
+		return this.muted && this.hidden;
+	}
+
 	draw(timestamp) {
 		if (this.hidden) {
-			return;
+			this.layers.forEach(layer => {
+				if (layer.renderer && layer.renderer.clear) {
+					// clear DOM based renderer
+					layer.renderer.clear();
+				}
+			});
+			return this;
 		}
 		this.layers.forEach(layer => {
 			layer.draw(timestamp);
@@ -104,6 +151,9 @@ class Group {
 	}
 
 	requestTiles(coords) {
+		if (this.muted) {
+			return this;
+		}
 		this.layers.forEach(layer => {
 			layer.requestTiles(coords);
 		});
