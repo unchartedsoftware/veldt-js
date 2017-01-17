@@ -14,6 +14,7 @@ class Live extends lumo.Layer {
 		this.meta = meta;
 		this.params = {};
 		this.query = null;
+		this.filters = new Map();
 		this.transform = defaultTo(options.transform, null);
 		this.redrawDebounce = null;
 		this.on(lumo.TILE_ADD, event => {
@@ -76,6 +77,22 @@ class Live extends lumo.Layer {
 		};
 	}
 
+	addFilter(id, filter) {
+		this.filters.set(id, filter);
+		this.clearExtrema();
+	}
+
+	removeFilter(id) {
+		if (this.filters.has(id)) {
+			this.filters.delete(id);
+			this.clearExtrema();
+		}
+	}
+
+	clearFilters() {
+		this.filtesr.clear();
+	}
+
 	setQuery(query) {
 		if (isEmpty(query) && !isFunction(query)) {
 			throw 'Query object is empty';
@@ -85,10 +102,21 @@ class Live extends lumo.Layer {
 	}
 
 	getQuery() {
-		if (isEmpty(this.query) && !isFunction(this.query)) {
+		if (isEmpty(this.query) &&
+			!isFunction(this.query) &&
+			this.filters.size === 0) {
+				// no query / filters
 			return null;
 		}
-		return isFunction(this.query) ? this.query() : this.query;
+		let query = isFunction(this.query) ? this.query() : this.query || [];
+		if (!Array.isArray(query)) {
+			query = [query];
+		}
+		this.filters.forEach(filter => {
+			query.push('AND');
+			query.push(isFunction(filter) ? filter() : filter);
+		});
+		return query;
 	}
 
 	clearQuery() {
