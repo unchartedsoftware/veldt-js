@@ -219,9 +219,26 @@ const createRamp = function(type, baseColors) {
 	return colorRamps[type];
 };
 
+const getBuckets = function(type, numBuckets) {
+	const ramp = getFunc(type);
+	const buckets = [];
+	const color = [];
+	for (let i = 0; i<numBuckets; i++) {
+		ramp(i/numBuckets, color);
+		buckets.push([
+			color[0] / 255,
+			color[1] / 255,
+			color[2] / 255,
+			color[3] / 255
+		]);
+	}
+	return buckets;
+};
+
 module.exports = {
 	getTable: getTable,
 	getFunc: getFunc,
+	getBuckets: getBuckets,
 	createRamp: createRamp,
 	NUM_GRADIENT_STEPS: NUM_GRADIENT_STEPS
 };
