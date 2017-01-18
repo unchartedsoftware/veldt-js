@@ -2,7 +2,7 @@
 
 const lumo = require('lumo');
 
-const NUM_SEGMENTS = 360;
+const NUM_SLICES = 360;
 const RADIUS_OFFSET = 10;
 
 const INDIVIDUAL_SHADER = {
@@ -11,20 +11,8 @@ const INDIVIDUAL_SHADER = {
 		precision highp float;
 		attribute vec3 aPosition;
 
-		#if (NUM_SEGMENTS == 2)
-			uniform float uPercentages;
-			uniform vec4 uColors[2];
-		#elif (NUM_SEGMENTS == 3)
-			uniform vec2 uPercentages;
-			uniform vec4 uColors[3];
-		#elif (NUM_SEGMENTS == 4)
-			uniform vec3 uPercentages;
-			uniform vec4 uColors[4];
-		#elif (NUM_SEGMENTS == 5)
-			uniform vec4 uPercentages;
-			uniform vec4 uColors[5];
-		#endif
-
+		uniform float uPercentages[NUM_SEGMENTS];
+		uniform vec4 uColors[NUM_SEGMENTS];
 		uniform float uRadius;
 		uniform vec2 uTileOffset;
 		uniform float uScale;
@@ -39,52 +27,12 @@ const INDIVIDUAL_SHADER = {
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 
 			float percentage = aPosition.z;
-
-			#if (NUM_SEGMENTS == 2)
-
-				if (percentage < uPercentages) {
-					vColor = uColors[0];
-				} else {
-					vColor = uColors[1];
+			for (int i = 0; i<NUM_SEGMENTS; i++) {
+				if (percentage < uPercentages[i]) {
+					vColor = uColors[i];
+					break;
 				}
-
-			#elif (NUM_SEGMENTS == 3)
-
-				if (percentage < uPercentages.x) {
-					vColor = uColors[0];
-				} else if (percentage < uPercentages.y) {
-					vColor = uColors[1];
-				} else {
-					vColor = uColors[2];
-				}
-
-			#elif (NUM_SEGMENTS == 4)
-
-				if (percentage < uPercentages.x) {
-					vColor = uColors[0];
-				} else if (percentage < uPercentages.y) {
-					vColor = uColors[1];
-				} else if (percentage < uPercentages.z) {
-					vColor = uColors[2];
-				} else {
-					vColor = uColors[3];
-				}
-
-			#elif (NUM_SEGMENTS == 5)
-
-				if (percentage < uPercentages.x) {
-					vColor = uColors[0];
-				} else if (percentage < uPercentages.y) {
-					vColor = uColors[1];
-				} else if (percentage < uPercentages.z) {
-					vColor = uColors[2];
-				} else if (percentage < uPercentages.w) {
-					vColor = uColors[3];
-				} else {
-					vColor = uColors[4];
-				}
-
-			#endif
+			}
 		}
 		`,
 	frag:
@@ -105,21 +53,12 @@ const INSTANCED_SHADER = {
 		attribute vec3 aPosition;
 		attribute vec2 aOffset;
 		attribute float aRadius;
+		attribute vec4 aPercentagesA;
+		attribute vec4 aPercentagesB;
+		attribute vec4 aPercentagesC;
+		attribute vec4 aPercentagesD;
 
-		#if (NUM_SEGMENTS == 2)
-			attribute float aPercentages;
-			uniform vec4 uColors[2];
-		#elif (NUM_SEGMENTS == 3)
-			attribute vec2 aPercentages;
-			uniform vec4 uColors[3];
-		#elif (NUM_SEGMENTS == 4)
-			attribute vec3 aPercentages;
-			uniform vec4 uColors[4];
-		#elif (NUM_SEGMENTS == 5)
-			attribute vec4 aPercentages;
-			uniform vec4 uColors[5];
-		#endif
-
+		uniform vec4 uColors[NUM_SEGMENTS];
 		uniform vec2 uTileOffset;
 		uniform float uScale;
 		uniform float uRadiusOffset;
@@ -133,53 +72,68 @@ const INSTANCED_SHADER = {
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 
 			float percentage = aPosition.z;
-
-			#if (NUM_SEGMENTS == 2)
-
-				if (percentage < aPercentages) {
-					vColor = uColors[0];
-				} else {
+			if (percentage < aPercentagesA.x) {
+				vColor = uColors[0];
+			#if NUM_SEGMENTS > 1
+				} else if (percentage < aPercentagesA.y) {
 					vColor = uColors[1];
-				}
-
-			#elif (NUM_SEGMENTS == 3)
-
-				if (percentage < aPercentages.x) {
-					vColor = uColors[0];
-				} else if (percentage < aPercentages.y) {
-					vColor = uColors[1];
-				} else {
-					vColor = uColors[2];
-				}
-
-			#elif NUM_SEGMENTS == 4
-
-				if (percentage < aPercentages.x) {
-					vColor = uColors[0];
-				} else if (percentage < aPercentages.y) {
-					vColor = uColors[1];
-				} else if (percentage < aPercentages.z) {
-					vColor = uColors[2];
-				} else {
-					vColor = uColors[3];
-				}
-
-			#elif (NUM_SEGMENTS == 5)
-
-				if (percentage < aPercentages.x) {
-					vColor = uColors[0];
-				} else if (percentage < aPercentages.y) {
-					vColor = uColors[1];
-				} else if (percentage < aPercentages.z) {
-					vColor = uColors[2];
-				} else if (percentage < aPercentages.w) {
-					vColor = uColors[3];
-				} else {
-					vColor = uColors[4];
-				}
-
 			#endif
-		}
+			#if NUM_SEGMENTS > 2
+				} else if (percentage < aPercentagesA.z) {
+					vColor = uColors[2];
+			#endif
+			#if NUM_SEGMENTS > 3
+				} else if (percentage < aPercentagesA.w) {
+					vColor = uColors[3];
+			#endif
+			#if NUM_SEGMENTS > 4
+				} else if (percentage < aPercentagesB.x) {
+					vColor = uColors[4];
+			#endif
+			#if NUM_SEGMENTS > 5
+				} else if (percentage < aPercentagesB.y) {
+					vColor = uColors[5];
+			#endif
+			#if NUM_SEGMENTS > 6
+				} else if (percentage < aPercentagesB.z) {
+					vColor = uColors[6];
+			#endif
+			#if NUM_SEGMENTS > 7
+				} else if (percentage < aPercentagesB.w) {
+					vColor = uColors[7];
+			#endif
+			#if NUM_SEGMENTS > 8
+				} else if (percentage < aPercentagesC.x) {
+					vColor = uColors[8];
+			#endif
+			#if NUM_SEGMENTS > 9
+				} else if (percentage < aPercentagesC.y) {
+					vColor = uColors[9];
+			#endif
+			#if NUM_SEGMENTS > 10
+				} else if (percentage < aPercentagesC.z) {
+					vColor = uColors[10];
+			#endif
+			#if NUM_SEGMENTS > 11
+				} else if (percentage < aPercentagesC.w) {
+					vColor = uColors[11];
+			#endif
+			#if NUM_SEGMENTS > 12
+				} else if (percentage < aPercentagesD.x) {
+					vColor = uColors[12];
+			#endif
+			#if NUM_SEGMENTS > 13
+				} else if (percentage < aPercentagesD.y) {
+					vColor = uColors[13];
+			#endif
+			#if NUM_SEGMENTS > 14
+				} else if (percentage < aPercentagesD.z) {
+					vColor = uColors[14];
+			#endif
+				} else {
+					vColor = uColors[NUM_SEGMENTS-1];
+				}
+			}
 		`,
 	frag:
 		`
@@ -238,7 +192,7 @@ class SegmentedRing {
 		this.renderer = renderer;
 		this.ring = createSegmentedRing(
 			renderer.gl,
-			NUM_SEGMENTS,
+			NUM_SLICES,
 			RADIUS_OFFSET,
 			width);
 		this.shaders = {
