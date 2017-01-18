@@ -113,7 +113,9 @@ class Live extends lumo.Layer {
 			query = [query];
 		}
 		this.filters.forEach(filter => {
-			query.push('AND');
+			if (query.length > 0) {
+				query.push('AND');
+			}
 			query.push(isFunction(filter) ? filter() : filter);
 		});
 		return query;
