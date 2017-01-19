@@ -23,7 +23,7 @@ const INDIVIDUAL_SHADER = {
 
 		void main() {
 			vec2 radiusOffset = normalize(aPosition.xy) * (uRadius - uRadiusOffset);
-			vec2 wPosition = (aPosition.xy * uScale) + radiusOffset + uTileOffset;
+			vec2 wPosition = ((aPosition.xy + radiusOffset) * uScale) + uTileOffset;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 
 			float percentage = aPosition.z;

@@ -18,7 +18,7 @@ function establishConnection(requestor, callback) {
 	requestor.socket.onopen = function() {
 		requestor.isOpen = true;
 		console.log('Websocket connection established');
-		callback.apply(this, arguments);
+		callback(null, requestor);
 	};
 	// on message
 	requestor.socket.onmessage = function(event) {

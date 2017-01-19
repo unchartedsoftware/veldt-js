@@ -5,7 +5,7 @@ const lumo = require('lumo');
 const defaultTo = require('lodash/defaultTo');
 const Ring = require('../shape/Ring');
 const ColorRamp = require('../color/ColorRamp');
-//const Quad = require('../shape/Quad');
+const RadialQuad = require('../shape/RadialQuad');
 const SegmentedRing = require('../shape/SegmentedRing');
 
 class CommunityBucket extends lumo.WebGLInteractiveRenderer {
@@ -43,13 +43,12 @@ class CommunityBucket extends lumo.WebGLInteractiveRenderer {
 		const fullWidth = this.ringWidth + this.outlineWidth;
 		this.ringFill = new SegmentedRing(this, this.ringWidth, this.numBuckets);
 		this.ringOutline = new Ring(this, fullWidth);
-		// quad vertexbuffer
-		// this.quad = new Quad(
-		// 	this,
-		// 	-this.tickWidth/2,
-		// 	this.tickWidth/2,
-		// 	-fullWidth/2,
-		// 	this.tickHeight);
+		this.quad = new RadialQuad(
+			this,
+			-this.tickWidth/2,
+			this.tickWidth/2,
+			-fullWidth/2,
+			this.tickHeight);
 		// vertex atlas for all tiles
 		this.atlas = this.createVertexAtlas({
 			// offset
@@ -223,6 +222,13 @@ class CommunityBucket extends lumo.WebGLInteractiveRenderer {
 				this.highlightedColors,
 				opacity);
 		}
+
+		// draw radial ticks
+		this.quad.drawInstanced(
+			this.atlas,
+			this.outlineColor,
+			0.0,
+			opacity);
 
 		return this;
 	}
