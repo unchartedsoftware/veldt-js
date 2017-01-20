@@ -2,7 +2,6 @@
   "name": "prism-client",
   "version": "0.11.0",
   "author": "Kevin Birk <kbirk@uncharted.software>",
-  "description": "Leaflet layer plugins for prism applications",
   "main": "scripts/exports.js",
   "style": "styles/**/*.css",
   "license": "MIT",
