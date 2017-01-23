@@ -81,15 +81,13 @@ class Quad {
 		shader.setUniform('uProjectionMatrix', projection);
 		shader.setUniform('uRotation', rotation);
 		shader.setUniform('uOpacity', opacity);
+		shader.setUniform('uColor', color);
 
 		// bind the quad buffer
 		quad.bind();
 
 		// binds instance offset buffer
 		atlas.bindInstanced();
-
-		// set color
-		shader.setUniform('uColor', color);
 
 		renderables.forEach(renderable => {
 			// set tile uniforms
@@ -105,8 +103,7 @@ class Quad {
 		// unbind the quad buffer
 		quad.unbind();
 	}
-	drawIndividual(target, color, opacity = 1) {
-		/*
+	drawIndividual(target, color, rotation, opacity = 1) {
 		const shader = this.shaders.individual;
 		const quad = this.quad;
 		const plot = this.renderer.layer.plot;
@@ -125,11 +122,11 @@ class Quad {
 
 		// set uniforms
 		shader.setUniform('uProjectionMatrix', projection);
-		shader.setUniform('uColor', color);
+		shader.setUniform('uRotation', rotation);
 		shader.setUniform('uOpacity', opacity);
+		shader.setUniform('uColor', color);
 		shader.setUniform('uScale', scale);
 		shader.setUniform('uTileOffset', tileOffset);
-		shader.setUniform('uOffset', offset);
 
 		// bind the quad buffer
 		quad.bind();
@@ -137,7 +134,6 @@ class Quad {
 		quad.draw();
 		// unbind the quad buffer
 		quad.unbind();
-		*/
 	}
 }
 

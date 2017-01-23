@@ -226,15 +226,13 @@ class SegmentedRing {
 		shader.setUniform('uProjectionMatrix', projection);
 		shader.setUniform('uRadiusOffset', RADIUS_OFFSET);
 		shader.setUniform('uOpacity', opacity);
+		shader.setUniform('uColors', colors);
 
 		// bind the ring buffer
 		ring.bind();
 
 		// binds instance offset buffer
 		atlas.bindInstanced();
-
-		// set color
-		shader.setUniform('uColors', colors);
 
 		renderables.forEach(renderable => {
 			// set tile uniforms

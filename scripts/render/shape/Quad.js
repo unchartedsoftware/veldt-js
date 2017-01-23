@@ -8,10 +8,11 @@ const INDIVIDUAL_SHADER = {
 		precision highp float;
 		attribute vec2 aPosition;
 		uniform vec2 uTileOffset;
+		uniform vec2 uOffset;
 		uniform float uScale;
 		uniform mat4 uProjectionMatrix;
 		void main() {
-			vec2 wPosition = (aPosition * uScale) + uTileOffset;
+			vec2 wPosition = (aPosition * uScale) + uTileOffset + uOffset;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 		}
 		`,
@@ -33,10 +34,11 @@ const INSTANCED_SHADER = {
 		attribute vec2 aPosition;
 		attribute vec2 aOffset;
 		uniform vec2 uTileOffset;
+		uniform vec2 uOffset;
 		uniform float uScale;
 		uniform mat4 uProjectionMatrix;
 		void main() {
-			vec2 wPosition = ((aPosition + aOffset) * uScale) + uTileOffset;
+			vec2 wPosition = ((aPosition + aOffset) * uScale) + uTileOffset + uOffset;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 		}
 		`,
@@ -86,7 +88,7 @@ class Quad {
 			individual: renderer.createShader(INDIVIDUAL_SHADER)
 		};
 	}
-	drawInstanced(atlas, color, opacity = 1) {
+	drawInstanced(atlas, color, opacity = 1, offset = [0,0]) {
 
 		const shader = this.shaders.instanced;
 		const ring = this.ring;
@@ -99,15 +101,14 @@ class Quad {
 		// set uniforms
 		shader.setUniform('uProjectionMatrix', projection);
 		shader.setUniform('uOpacity', opacity);
+		shader.setUniform('uOffset', offset);
+		shader.setUniform('uColor', color);
 
 		// bind the ring buffer
 		ring.bind();
 
 		// binds instance offset buffer
 		atlas.bindInstanced();
-
-		// set color
-		shader.setUniform('uColor', color);
 
 		renderables.forEach(renderable => {
 			// set tile uniforms
@@ -123,7 +124,7 @@ class Quad {
 		// unbind the ring buffer
 		ring.unbind();
 	}
-	drawIndividual(target, color, opacity = 1) {
+	drawIndividual(target, color, opacity = 1, offset = [0, 0]) {
 
 		const shader = this.shaders.individual;
 		const ring = this.ring;
@@ -147,6 +148,7 @@ class Quad {
 		shader.setUniform('uOpacity', opacity);
 		shader.setUniform('uScale', scale);
 		shader.setUniform('uTileOffset', tileOffset);
+		shader.setUniform('uOffset', offset);
 
 		// bind the ring buffer
 		ring.bind();

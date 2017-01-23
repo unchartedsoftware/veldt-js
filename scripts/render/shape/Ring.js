@@ -126,15 +126,13 @@ class Ring {
 		shader.setUniform('uProjectionMatrix', projection);
 		shader.setUniform('uRadiusOffset', RADIUS_OFFSET);
 		shader.setUniform('uOpacity', opacity);
+		shader.setUniform('uColor', color);
 
 		// bind the ring buffer
 		ring.bind();
 
 		// binds instance offset buffer
 		atlas.bindInstanced();
-
-		// set color
-		shader.setUniform('uColor', color);
 
 		renderables.forEach(renderable => {
 			// set tile uniforms

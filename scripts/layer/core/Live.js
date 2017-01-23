@@ -90,7 +90,7 @@ class Live extends lumo.Layer {
 	}
 
 	clearFilters() {
-		this.filtesr.clear();
+		this.filters.clear();
 	}
 
 	setQuery(query) {
