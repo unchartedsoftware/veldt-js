@@ -101,8 +101,10 @@ class Group {
 		if (this.muted) {
 			this.muted = false;
 			if (this.plot) {
+				// get visible coords
+				const coords = this.plot.getVisibleCoords();
 				// request tiles
-				Request.requestTiles(this.plot);
+				this.requestTiles(coords);
 			}
 		}
 		return this;

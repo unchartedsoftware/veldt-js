@@ -166,6 +166,14 @@ const GREYSCALE = buildPerceptualLookupTable([
 	[0xff, 0xff, 0xff, 0xff]
 ]);
 
+const GOLD = buildPerceptualLookupTable([
+	[ 0x84, 0x54, 0x0F, 0xFF ],
+	[ 0xA6, 0x7B, 0x3E, 0xFF ],
+	[ 0xC9, 0xA3, 0x6D, 0xFF ],
+	[ 0xEC, 0xCB, 0x9C, 0xFF ],
+	[ 0xff, 0xff, 0xff, 0xff ]
+]);
+
 const FLAT = buildFlatLookupTable([0xff, 0xff, 0xff, 0xff]);
 
 const buildLookupFunction = function(RAMP) {
@@ -185,6 +193,7 @@ const colorTables = {
 	verdant: VERDANT,
 	spectral: SPECTRAL,
 	temperature: TEMPERATURE,
+	gold: GOLD,
 	grey: GREYSCALE,
 	flat: FLAT
 };
@@ -195,6 +204,7 @@ const colorRamps = {
 	verdant: buildLookupFunction(VERDANT),
 	spectral: buildLookupFunction(SPECTRAL),
 	temperature: buildLookupFunction(TEMPERATURE),
+	gold: buildLookupFunction(GOLD),
 	grey: buildLookupFunction(GREYSCALE),
 	flat: buildLookupFunction(FLAT)
 };
@@ -224,7 +234,7 @@ const getBuckets = function(type, numBuckets) {
 	const buckets = [];
 	const color = [];
 	for (let i = 0; i<numBuckets; i++) {
-		ramp(i/numBuckets, color);
+		ramp(i/(numBuckets-1), color);
 		buckets.push([
 			color[0] / 255,
 			color[1] / 255,

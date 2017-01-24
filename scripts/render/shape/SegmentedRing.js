@@ -28,7 +28,7 @@ const INDIVIDUAL_SHADER = {
 
 			float percentage = aPosition.z;
 			for (int i = 0; i<NUM_SEGMENTS; i++) {
-				if (percentage < uPercentages[i]) {
+				if (percentage <= uPercentages[i]) {
 					vColor = uColors[i];
 					break;
 				}
@@ -72,62 +72,62 @@ const INSTANCED_SHADER = {
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 
 			float percentage = aPosition.z;
-			if (percentage < aPercentagesA.x) {
+			if (percentage <= aPercentagesA.x) {
 				vColor = uColors[0];
 			#if NUM_SEGMENTS > 1
-				} else if (percentage < aPercentagesA.y) {
+			} else if (percentage <= aPercentagesA.y) {
 					vColor = uColors[1];
 			#endif
 			#if NUM_SEGMENTS > 2
-				} else if (percentage < aPercentagesA.z) {
+				} else if (percentage <= aPercentagesA.z) {
 					vColor = uColors[2];
 			#endif
 			#if NUM_SEGMENTS > 3
-				} else if (percentage < aPercentagesA.w) {
+				} else if (percentage <= aPercentagesA.w) {
 					vColor = uColors[3];
 			#endif
 			#if NUM_SEGMENTS > 4
-				} else if (percentage < aPercentagesB.x) {
+				} else if (percentage <= aPercentagesB.x) {
 					vColor = uColors[4];
 			#endif
 			#if NUM_SEGMENTS > 5
-				} else if (percentage < aPercentagesB.y) {
+				} else if (percentage <= aPercentagesB.y) {
 					vColor = uColors[5];
 			#endif
 			#if NUM_SEGMENTS > 6
-				} else if (percentage < aPercentagesB.z) {
+				} else if (percentage <= aPercentagesB.z) {
 					vColor = uColors[6];
 			#endif
 			#if NUM_SEGMENTS > 7
-				} else if (percentage < aPercentagesB.w) {
+				} else if (percentage <= aPercentagesB.w) {
 					vColor = uColors[7];
 			#endif
 			#if NUM_SEGMENTS > 8
-				} else if (percentage < aPercentagesC.x) {
+				} else if (percentage <= aPercentagesC.x) {
 					vColor = uColors[8];
 			#endif
 			#if NUM_SEGMENTS > 9
-				} else if (percentage < aPercentagesC.y) {
+				} else if (percentage <= aPercentagesC.y) {
 					vColor = uColors[9];
 			#endif
 			#if NUM_SEGMENTS > 10
-				} else if (percentage < aPercentagesC.z) {
+				} else if (percentage <= aPercentagesC.z) {
 					vColor = uColors[10];
 			#endif
 			#if NUM_SEGMENTS > 11
-				} else if (percentage < aPercentagesC.w) {
+				} else if (percentage <= aPercentagesC.w) {
 					vColor = uColors[11];
 			#endif
 			#if NUM_SEGMENTS > 12
-				} else if (percentage < aPercentagesD.x) {
+				} else if (percentage <= aPercentagesD.x) {
 					vColor = uColors[12];
 			#endif
 			#if NUM_SEGMENTS > 13
-				} else if (percentage < aPercentagesD.y) {
+				} else if (percentage <= aPercentagesD.y) {
 					vColor = uColors[13];
 			#endif
 			#if NUM_SEGMENTS > 14
-				} else if (percentage < aPercentagesD.z) {
+				} else if (percentage <= aPercentagesD.z) {
 					vColor = uColors[14];
 			#endif
 				} else {

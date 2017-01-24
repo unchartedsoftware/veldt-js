@@ -105,10 +105,10 @@ class Live extends lumo.Layer {
 		if (isEmpty(this.query) &&
 			!isFunction(this.query) &&
 			this.filters.size === 0) {
-				// no query / filters
+			// no query / filters
 			return null;
 		}
-		let query = isFunction(this.query) ? this.query() : this.query || [];
+		let query = isFunction(this.query) ? this.query(this) : this.query || [];
 		if (!Array.isArray(query)) {
 			query = [query];
 		}
@@ -116,7 +116,7 @@ class Live extends lumo.Layer {
 			if (query.length > 0) {
 				query.push('AND');
 			}
-			query.push(isFunction(filter) ? filter() : filter);
+			query.push(isFunction(filter) ? filter(this) : filter);
 		});
 		return query;
 	}

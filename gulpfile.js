@@ -44,7 +44,13 @@ gulp.task('build-scripts', () => {
 		})
 		.bundle()
 		.on('error', function(err) {
-			console.error(err);
+			if (err instanceof SyntaxError) {
+				console.error('Syntax Error:');
+				console.error(err.message);
+				console.error(err.codeFrame);
+			} else {
+				console.error(err.message);
+			}
 			this.emit('end');
 		})
 		.pipe(source(`${name}.js`))
