@@ -97,7 +97,7 @@ class Repeat extends lumo.WebGLRenderer {
 		this.layer.on(lumo.TILE_REMOVE, remove);
 		// store handlers
 		this.handlers.set(TILE_ADD, add);
-		this.handlers.set(TILE_ADD, remove);
+		this.handlers.set(TILE_REMOVE, remove);
 		return this;
 	}
 

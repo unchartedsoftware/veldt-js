@@ -16,6 +16,7 @@ class Community extends lumo.WebGLInteractiveRenderer {
 		this.highlightedColor = defaultTo(options.highlightedColor, [ 1.0, 0.5, 1.0, 0.8 ]);
 		this.selectedColor = defaultTo(options.selectedColor, [ 1.0, 0.5, 1.0, 0.8 ]);
 		this.ringWidth = defaultTo(options.ringWidth, 2);
+		this.ringOffset = defaultTo(options.ringOffset, 0);
 		this.outlineWidth = defaultTo(options.outlineWidth, 1);
 		this.radiusField = defaultTo(options.radiusField, 'radius');
 	}
@@ -23,9 +24,9 @@ class Community extends lumo.WebGLInteractiveRenderer {
 	onAdd(layer) {
 		super.onAdd(layer);
 		// ring fill
-		this.ringFill = new Ring(this, this.ringWidth);
+		this.ringFill = new Ring(this, this.ringWidth + this.ringOffset);
 		// ring outline
-		this.ringOutline = new Ring(this, this.ringWidth + (this.outlineWidth * 2));
+		this.ringOutline = new Ring(this, this.ringWidth + this.ringOffset + (this.outlineWidth * 2));
 		// offset atlas
 		this.atlas = this.createVertexAtlas({
 			// offset
