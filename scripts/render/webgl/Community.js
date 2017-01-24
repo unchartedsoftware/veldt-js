@@ -24,9 +24,9 @@ class Community extends lumo.WebGLInteractiveRenderer {
 	onAdd(layer) {
 		super.onAdd(layer);
 		// ring fill
-		this.ringFill = new Ring(this, this.ringWidth + this.ringOffset);
+		this.ringFill = new Ring(this, this.ringWidth);
 		// ring outline
-		this.ringOutline = new Ring(this, this.ringWidth + this.ringOffset + (this.outlineWidth * 2));
+		this.ringOutline = new Ring(this, this.ringWidth + (this.outlineWidth * 2));
 		// offset atlas
 		this.atlas = this.createVertexAtlas({
 			// offset
@@ -64,7 +64,11 @@ class Community extends lumo.WebGLInteractiveRenderer {
 		const radiusField = this.radiusField;
 
 		const radiusScale = Math.pow(2, coord.z);
-		const outlineOffset = this.outlineWidth;
+		const ringOffset = this.ringOffset;
+		const totalOffset =
+			(this.ringWidth / 2) + // width
+			this.outlineWidth + // outline
+			this.ringOffset; // offset
 
 		const points = new Array(positions.length / 2);
 		const vertices = new Float32Array((positions.length / 2) * 3);
@@ -74,7 +78,7 @@ class Community extends lumo.WebGLInteractiveRenderer {
 			const hit = hits[i];
 			const x = positions[i*2];
 			const y = positions[i*2+1];
-			const radius = hit[radiusField] * radiusScale + outlineOffset;
+			const radius = hit[radiusField] * radiusScale + ringOffset;
 
 			// plot pixel coords
 			const px = x + xOffset;
@@ -84,10 +88,10 @@ class Community extends lumo.WebGLInteractiveRenderer {
 				x: x,
 				y: y,
 				radius: radius,
-				minX: px - radius,
-				maxX: px + radius,
-				minY: py - radius,
-				maxY: py + radius,
+				minX: px - (radius + totalOffset),
+				maxX: px + (radius + totalOffset),
+				minY: py - (radius + totalOffset),
+				maxY: py + (radius + totalOffset),
 				tile: tile,
 				data: hit
 			};
