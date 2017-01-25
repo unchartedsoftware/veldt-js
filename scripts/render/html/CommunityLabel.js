@@ -27,7 +27,7 @@ class CommunityLabel extends lumo.HTMLRenderer {
 		this.minOpacity = defaultTo(options.minOpacity, 0.6);
 		this.maxOpacity = defaultTo(options.maxOpacity, 1.0);
 		this.labelMaxLength = defaultTo(options.labelMaxLength, 256);
-		this.labelThreshold = defaultTo(options.labelThreshold, 0.4);
+		this.labelThreshold = defaultTo(options.labelThreshold, 0.6);
 		this.labelField = defaultTo(options.labelField, 'metadata');
 	}
 

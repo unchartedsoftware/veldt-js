@@ -5,6 +5,8 @@ const defaultTo = require('lodash/defaultTo');
 const isEmpty = require('lodash/isEmpty');
 const isFunction = require('lodash/isFunction');
 
+const TILE_ADD = Symbol();
+
 const REDRAW_TIMEOUT_MS = 800;
 
 class Live extends lumo.Layer {
@@ -17,7 +19,14 @@ class Live extends lumo.Layer {
 		this.filters = new Map();
 		this.transform = defaultTo(options.transform, null);
 		this.redrawDebounce = null;
-		this.on(lumo.TILE_ADD, event => {
+		this.handlers = new Map();
+		// set extrema / cache
+		this.clearExtrema();
+	}
+
+	onAdd(plot) {
+		// create handler
+		const add = event => {
 			if (this.transform) {
 				event.tile.data = this.transform(event.tile.data);
 			}
@@ -32,9 +41,27 @@ class Live extends lumo.Layer {
 					this.redrawDebounce = null;
 				}, REDRAW_TIMEOUT_MS);
 			}
-		});
-		// set extrema / cache
-		this.clearExtrema();
+		};
+		// attach handler
+		// NOTE: add this BEFORE calling super, this NEEDS to be the first
+		// `TILE_ADD` callback.
+		this.on(lumo.TILE_ADD, add);
+		// store handler
+		this.handlers.set(TILE_ADD, add);
+		super.onAdd(plot);
+		return this;
+	}
+
+	onRemove(plot) {
+		// clear any pending timeout
+		clearTimeout(this.redrawDebounce);
+		this.redrawDebounce = null;
+		// detach handler
+		this.removeListener(lumo.TILE_ADD, this.handlers.get(TILE_ADD));
+		// delete handler
+		this.handlers.delete(TILE_ADD);
+		super.onRemove(plot);
+		return this;
 	}
 
 	clearExtrema() {

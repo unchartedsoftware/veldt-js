@@ -13,8 +13,8 @@ class Community extends lumo.WebGLInteractiveRenderer {
 		this.ringOutline = null;
 		this.color = defaultTo(options.color, [ 1.0, 1.0, 1.0, 1.0 ]);
 		this.outlineColor = defaultTo(options.outlineColor, [ 0.0, 0.0, 0.0, 1.0 ]);
-		this.highlightedColor = defaultTo(options.highlightedColor, [ 1.0, 0.5, 1.0, 0.8 ]);
-		this.selectedColor = defaultTo(options.selectedColor, [ 1.0, 0.5, 1.0, 0.8 ]);
+		this.highlightedColor = defaultTo(options.highlightedColor, [ 1.0, 0.5, 1.0, 1.0 ]);
+		this.selectedColor = defaultTo(options.selectedColor, [ 1.0, 0.5, 1.0, 1.0 ]);
 		this.ringWidth = defaultTo(options.ringWidth, 2);
 		this.ringOffset = defaultTo(options.ringOffset, 0);
 		this.outlineWidth = defaultTo(options.outlineWidth, 1);
