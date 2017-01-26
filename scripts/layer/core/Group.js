@@ -1,11 +1,12 @@
 'use strict';
 
-const lumo = require('lumo');
+const EventEmitter = require('events');
 const defaultTo = require('lodash/defaultTo');
 
-class Group {
+class Group extends EventEmitter {
 
 	constructor(options = {}) {
+		super();
 		this.hidden = defaultTo(options.hidden, false);
 		this.muted = defaultTo(options.muted, false);
 		this.layers = defaultTo(options.layers, []);
@@ -16,18 +17,8 @@ class Group {
 			throw 'No plot argument provided';
 		}
 		this.plot = plot;
-		// for each layer
 		this.layers.forEach(layer => {
-			layer.plot = plot;
-			if (layer.renderer) {
-				layer.renderer.onAdd(layer);
-			}
-		});
-		// refresh tiles
-		this.refresh();
-		this.layers.forEach(layer => {
-			// emit on add
-			layer.emit(lumo.ON_ADD, new lumo.LayerEvent(layer));
+			layer.onAdd(this.plot);
 		});
 		return this;
 	}
@@ -53,7 +44,6 @@ class Group {
 		this.layers.push(layer);
 		if (this.plot) {
 			layer.onAdd(this.plot);
-			layer.refresh();
 		}
 		return this;
 	}
