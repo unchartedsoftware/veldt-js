@@ -1,8 +1,5 @@
 .DS_Store
 TODO.md
 node_modules
-coverage/*
-*.swp
-build
+coverage
 .idea
-*.iml

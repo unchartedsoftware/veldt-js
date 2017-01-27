@@ -10,7 +10,7 @@ const eslint = require('gulp-eslint');
 const runSequence = require('run-sequence');
 const source = require('vinyl-source-stream');
 
-const name = 'prism';
+const name = 'veldt';
 const paths = {
 	root: 'scripts/exports.js',
 	scripts: [
