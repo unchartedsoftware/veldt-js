@@ -2,6 +2,10 @@
   "name": "veldt",
   "version": "0.1.0",
   "author": "Kevin Birk <kbirk@uncharted.software>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/unchartedsoftware/veldt-js.git"
+  },
   "main": [
 	"build/veldt.js",
 	"build/veldt.css"
