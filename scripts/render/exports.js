@@ -23,6 +23,7 @@ const WebGL = {
 	CommunityBucket: require('./webgl/CommunityBucket'),
 	Heatmap: require('./webgl/Heatmap'),
 	Micro: require('./webgl/Micro'),
+	MicroEdge: require('./webgl/MicroEdge'),
 	Macro: require('./webgl/Macro'),
 	Repeat: require('./webgl/Repeat')
 };

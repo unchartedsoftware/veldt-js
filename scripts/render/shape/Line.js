@@ -8,10 +8,9 @@ const INSTANCED_SHADER = {
 		precision highp float;
 		attribute vec2 aPosition;
 		uniform vec2 uTileOffset;
-		uniform float uScale;
 		uniform mat4 uProjectionMatrix;
 		void main() {
-			vec2 wPosition = (aPosition * uScale) + uTileOffset;
+			vec2 wPosition = aPosition + uTileOffset;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 		}
 		`,
@@ -20,7 +19,7 @@ const INSTANCED_SHADER = {
 		precision highp float;
 		uniform vec4 uColor;
 		void main() {
-			gl_FragColor = vec4(uColor.rgb, uColor.a * alpha);
+			gl_FragColor = vec4(uColor.rgb, uColor.a);
 		}
 		`
 };
@@ -37,7 +36,7 @@ const INDIVIDUAL_SHADER = {
 		uniform vec2 uPointB;
 		void main() {
 			vec2 wPosition;
-			if (aPosition.x > 0) {
+			if (aPosition.x > 0.0) {
 				wPosition = (uPointA * uScale) + uTileOffset;
 			} else {
 				wPosition = (uPointB * uScale) + uTileOffset;
@@ -50,7 +49,7 @@ const INDIVIDUAL_SHADER = {
 		precision highp float;
 		uniform vec4 uColor;
 		void main() {
-			gl_FragColor = vec4(uColor.rgb, uColor.a * alpha);
+			gl_FragColor = vec4(uColor.rgb, uColor.a);
 		}
 		`
 };
@@ -80,8 +79,8 @@ const createLine = function(gl) {
 class Line {
 	constructor(renderer) {
 		this.renderer = renderer;
-		this.line = createLine(renderer.gl);
-		this.shaders = {
+		this.line = createLine(renderer.gl); // TODO: Don't see this used anywhere.
+		this.shader = {
 			instanced: renderer.createShader(INSTANCED_SHADER),
 			individual: renderer.createShader(INDIVIDUAL_SHADER)
 		};
@@ -106,9 +105,8 @@ class Line {
 		// for each renderable
 		renderables.forEach(renderable => {
 			// set tile uniforms
-			shader.setUniform('uScale', renderable.scale);
 			shader.setUniform('uTileOffset', renderable.tileOffset);
-			// draw the points
+			// draw the lines
 			atlas.draw(renderable.hash, 'LINES');
 		});
 
