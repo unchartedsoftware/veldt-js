@@ -15,10 +15,10 @@ class Edge extends Live {
 		this.dstYField = defaultTo(options.dstYField, 'dstYField');
 
 		// Bounds TODO: Common with Bivariate.. is there a sensiblle default?
-		this.left = options.left;
-		this.right = options.right;
-		this.bottom = options.bottom;
-		this.top = options.top;
+		this.left = defaultTo(options.left, -180);
+		this.right = defaultTo(options.right, 180);
+		this.bottom = defaultTo(options.bottom, -90);
+		this.top = defaultTo(options.top, 90);
 		this.setBounds(options.left, options.right, options.bottom, options.top);
 
 		// TODO: Common with Micro
