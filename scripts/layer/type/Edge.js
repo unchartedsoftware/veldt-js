@@ -19,7 +19,7 @@ class Edge extends Live {
 		this.right = defaultTo(options.right, 180);
 		this.bottom = defaultTo(options.bottom, -90);
 		this.top = defaultTo(options.top, 90);
-		this.setBounds(options.left, options.right, options.bottom, options.top);
+		this.setBounds(this.left, this.right, this.bottom, this.top);
 
 		// TODO: Common with Micro
 		this.lod = defaultTo(options.lod, 4);
