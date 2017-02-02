@@ -4,18 +4,15 @@ const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
 const Line = require('../shape/Line');
 
-const POINT_RADIUS = 8;
+const POINT_RADIUS = 4;
 
-class MicroEdge extends lumo.WebGLInteractiveRenderer {
+class Edge extends lumo.WebGLInteractiveRenderer {
 
 	constructor(options = {}) {
 		super(options);
 		this.line = null;
 		this.atlas = null;
-		this.highlighted = null;
-		this.selected = null;
 		this.color = defaultTo(options.color, [ 1.0, 0.4, 0.1, 0.8 ]);
-		this.radius = defaultTo(options.radius, POINT_RADIUS);
 	}
 
 	addTile(atlas, tile) {
@@ -27,7 +24,6 @@ class MicroEdge extends lumo.WebGLInteractiveRenderer {
 		const tileSize = this.layer.plot.tileSize;
 		const xOffset = coord.x * tileSize;
 		const yOffset = coord.y * tileSize;
-		const radius = this.radius;
 
 		const pairSize = 4;
 		const points = new Array(vertices.length / pairSize);
@@ -44,11 +40,10 @@ class MicroEdge extends lumo.WebGLInteractiveRenderer {
 			points[i] = {
 				x: x,
 				y: y,
-				radius: radius,
-				minX: px - radius,
-				maxX: px + radius,
-				minY: py - radius,
-				maxY: py + radius,
+				minX: px - POINT_RADIUS,
+				maxX: px + POINT_RADIUS,
+				minY: py - POINT_RADIUS,
+				maxY: py + POINT_RADIUS,
 				tile: tile,
 				data: hits ? hits[i] : null
 			};
@@ -104,20 +99,6 @@ class MicroEdge extends lumo.WebGLInteractiveRenderer {
 			this.atlas,
 			this.color);
 
-		//// render selected
-		//if (this.selected) {
-		//	this.line.drawIndividual(
-		//		this.selected,
-		//		this.color);
-		//}
-        //
-		//// render highlighted
-		//if (this.highlighted && this.highlighted !== this.selected) {
-		//	this.line.drawIndividual(
-		//		this.highlighted,
-		//		this.color);
-		//}
-
 		// unbind render target
 		plot.renderBuffer.unbind();
 
@@ -128,4 +109,4 @@ class MicroEdge extends lumo.WebGLInteractiveRenderer {
 
 }
 
-module.exports = MicroEdge;
+module.exports = Edge;

@@ -14,7 +14,7 @@ module.exports = {
 	Heatmap: require('./type/Heatmap'),
 	Macro: require('./type/Macro'),
 	Micro: require('./type/Micro'),
-	MicroPair: require('./type/MicroPair'),
+	Edge: require('./type/Edge'),
 	Rest: require('./type/Rest'),
 	TopTermCount: require('./type/TopTermCount'),
 	// Preview: require('./type/Preview'),
