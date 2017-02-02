@@ -9,17 +9,17 @@ class Edge extends Live {
 
 	constructor(meta, options = {}) {
 		super(meta, options);
-		super(meta, options);
-		this.srcXField = options.srcXField;
-		this.srcYField = options.srcYField;
-		this.dstXField = options.dstXField;
-		this.dstYField = options.dstYField;
+		this.srcXField = defaultTo(options.srcXField, 'srcXField');
+		this.srcYField = defaultTo(options.srcYField, 'srcYField');
+		this.dstXField = defaultTo(options.dstXField, 'dstXField');
+		this.dstYField = defaultTo(options.dstYField, 'dstYField');
 
-		// Bounds TODO: Common with Bivariate
+		// Bounds TODO: Common with Bivariate.. is there a sensiblle default?
 		this.left = options.left;
 		this.right = options.right;
 		this.bottom = options.bottom;
 		this.top = options.top;
+		this.setBounds(options.left, options.right, options.bottom, options.top);
 
 		// TODO: Common with Micro
 		this.lod = defaultTo(options.lod, 4);
@@ -71,6 +71,27 @@ class Edge extends Live {
 
 	setDstYField(field) {
 		this._setWithStringCheck('dstYField', field);
+	}
+
+	// TODO: Common with Micro
+	setLOD(lod) {
+		this.lod = lod;
+	}
+
+	setSortField(sortField) {
+		this.sortField = sortField;
+	}
+
+	setSortOrder(sortOrder) {
+		this.sortOrder = sortOrder;
+	}
+
+	setHitsCount(hitsCount) {
+		this.hitsCount = hitsCount;
+	}
+
+	setIncludeFields(includeFields) {
+		this.includeFields = includeFields;
 	}
 
 	// TODO: Pull-Up
