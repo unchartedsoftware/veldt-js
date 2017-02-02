@@ -15,11 +15,11 @@ class Edge extends Live {
 		this.dstYField = defaultTo(options.dstYField, 'dstYField');
 
 		// Bounds TODO: Common with Bivariate.. is there a sensiblle default?
-		this.left = defaultTo(options.left, -180);
-		this.right = defaultTo(options.right, 180);
-		this.bottom = defaultTo(options.bottom, -90);
-		this.top = defaultTo(options.top, 90);
-		this.setBounds(this.left, this.right, this.bottom, this.top);
+		const left = defaultTo(options.left, -180);
+		const right = defaultTo(options.right, 180);
+		const bottom = defaultTo(options.bottom, -90);
+		const top = defaultTo(options.top, 90);
+		this.setBounds(left, right, bottom, top);
 
 		// TODO: Common with Micro
 		this.lod = defaultTo(options.lod, 4);
@@ -55,6 +55,10 @@ class Edge extends Live {
 		if (!isNumber(top)) {
 			throw `top (4th) argument ${top} is invalid`;
 		}
+		this.left = left;
+		this.right = right;
+		this.bottom = bottom;
+		this.top = top;
 	}
 
 	setSrcXField(field) {
