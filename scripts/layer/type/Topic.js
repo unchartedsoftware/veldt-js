@@ -15,6 +15,8 @@ class Topic extends Bivariate {
 		this.topicWordCount = 3;
 		this.tileCount = 0;
 		this.updatedParameters = false;
+		this.timeFrom = 0;
+		this.timeTo = 0;
 	}
 
 	extractExtrema(data) {
@@ -66,6 +68,20 @@ class Topic extends Bivariate {
 		if (this.exclusiveness !== exclusiveness) {
 			this.updatedParameters = true;
 			this.exclusiveness = exclusiveness;
+		}
+	}
+
+	setTimeFrom(timeFrom) {
+		if (this.timeFrom !== timeFrom) {
+			this.updatedParameters = true;
+			this.timeFrom = timeFrom;
+		}
+	}
+
+	setTimeTo(timeTo) {
+		if (this.timeTo !== timeTo) {
+			this.updatedParameters = true;
+			this.timeTo = timeTo;
 		}
 	}
 

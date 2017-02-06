@@ -15,6 +15,7 @@ module.exports = {
 	Macro: require('./type/Macro'),
 	Micro: require('./type/Micro'),
 	Rest: require('./type/Rest'),
+	Topic: require('./type/Topic'),
 	TopTermCount: require('./type/TopTermCount'),
 	// Preview: require('./type/Preview'),
 	// TopFrequency: require('./type/TopFrequency'),
