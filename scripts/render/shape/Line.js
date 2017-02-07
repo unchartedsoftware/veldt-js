@@ -79,7 +79,6 @@ const createLine = function(gl) {
 class Line {
 	constructor(renderer) {
 		this.renderer = renderer;
-		this.line = createLine(renderer.gl); // TODO: Don't see this used anywhere.
 		this.shader = {
 			instanced: renderer.createShader(INSTANCED_SHADER),
 			individual: renderer.createShader(INDIVIDUAL_SHADER)
