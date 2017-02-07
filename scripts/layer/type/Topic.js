@@ -126,6 +126,8 @@ class Topic extends Bivariate {
 			exclusiveness: this.exclusiveness,
 			topicWordCount: this.topicWordCount,
 			topicClusterCount: this.topicClusterCount,
+			timeFrom: this.timeFrom,
+			timeTo: this.timeTo,
 			tileCount: this.tileCount,
 			requestId: this.requestId
 		};
