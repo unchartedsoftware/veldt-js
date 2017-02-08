@@ -13,7 +13,6 @@ class Topic extends Bivariate {
 		this.exclusiveness = 0;
 		this.topicClusterCount = 3;
 		this.topicWordCount = 3;
-		this.tileCount = 0;
 		this.updatedParameters = false;
 		this.timeFrom = 0;
 		this.timeTo = 0;
@@ -54,14 +53,6 @@ class Topic extends Bivariate {
 
 	hasUpdatedParameters() {
 		return this.updatedParameters;
-	}
-
-	setTileCount(tileCount) {
-		this.tileCount = tileCount;
-	}
-
-	setRequestId(requestId) {
-		this.requestId = requestId;
 	}
 
 	setExclusiveness(exclusiveness) {
@@ -127,9 +118,7 @@ class Topic extends Bivariate {
 			topicWordCount: this.topicWordCount,
 			topicClusterCount: this.topicClusterCount,
 			timeFrom: this.timeFrom,
-			timeTo: this.timeTo,
-			tileCount: this.tileCount,
-			requestId: this.requestId
+			timeTo: this.timeTo
 		};
 		const tile = {};
 		tile[name] = params;
