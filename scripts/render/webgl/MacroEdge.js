@@ -4,9 +4,7 @@ const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
 const Line = require('../shape/Line');
 
-const POINT_RADIUS = 4;
-
-class Edge extends lumo.WebGLInteractiveRenderer {
+class MacroEdge extends lumo.WebGLVertexRenderer {
 
 	constructor(options = {}) {
 		super(options);
@@ -16,47 +14,8 @@ class Edge extends lumo.WebGLInteractiveRenderer {
 	}
 
 	addTile(atlas, tile) {
-		const coord = tile.coord;
 		const data = tile.data;
-		const hits = data.hits;
-		const vertices = data.points;
-
-		const tileSize = this.layer.plot.tileSize;
-		const xOffset = coord.x * tileSize;
-		const yOffset = coord.y * tileSize;
-
-		const pairSize = 4;
-		const points = new Array(vertices.length / pairSize);
-
-		for (let i=0; i<vertices.length / pairSize; i++) {
-
-			const x = vertices[i*pairSize];
-			const y = vertices[i*pairSize+1];
-
-			// plot pixel coords
-			const px = x + xOffset;
-			const py = y + yOffset;
-
-			points[i] = {
-				x: x,
-				y: y,
-				minX: px - POINT_RADIUS,
-				maxX: px + POINT_RADIUS,
-				minY: py - POINT_RADIUS,
-				maxY: py + POINT_RADIUS,
-				tile: tile,
-				data: hits ? hits[i] : null
-			};
-		}
-
-		this.addPoints(coord, points);
-		atlas.set(coord.hash, vertices, points.length);
-	}
-
-	removeTile(atlas, tile) {
-		const coord = tile.coord;
-		atlas.delete(coord.hash);
-		this.removePoints(coord);
+		atlas.set(tile.coord.hash, data, data.length / (atlas.stride * 2));
 	}
 
 	onAdd(layer) {
@@ -109,4 +68,4 @@ class Edge extends lumo.WebGLInteractiveRenderer {
 
 }
 
-module.exports = Edge;
+module.exports = MacroEdge;

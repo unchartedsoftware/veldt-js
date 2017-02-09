@@ -1,7 +1,7 @@
 'use strict';
 
+const defaultTo = require('lodash/defaultTo');
 const isString = require('lodash/isString');
-const isNil = require('lodash/isNil');
 const isNumber = require('lodash/isNumber');
 const Live = require('../core/Live');
 
@@ -13,41 +13,45 @@ class Bivariate extends Live {
 
 	constructor(meta, options = {}) {
 		super(meta, options);
-		this.xField = options.xField;
-		this.yField = options.yField;
-		this.left = options.left;
-		this.right = options.right;
-		this.bottom = options.bottom;
-		this.top = options.top;
+		this.xField = defaultTo(options.xField, 'x');
+		this.yField = defaultTo(options.xField, 'y');
+		const left = defaultTo(options.left, 0);
+		const right = defaultTo(options.right, Math.pow(2, 32));
+		const bottom = defaultTo(options.bottom, 0);
+		const top = defaultTo(options.top, Math.pow(2, 32));
+		this.setBounds(left, right, bottom, top);
 		this.resolution = options.resolution;
 	}
 
-	setX(field, left, right) {
+	setXField(field) {
 		if (!isString(field)) {
-			throw `field argument ${field} must be of type String`;
-		}
-		if (isNil(left)) {
-			throw `left argument ${left} is invalid`;
-		}
-		if (isNil(right)) {
-			throw `right argument ${right} is invalid`;
+			throw `xField argument ${field} must be of type String`;
 		}
 		this.xField = field;
-		this.left = left;
-		this.right = right;
 	}
 
-	setY(field, bottom, top) {
+	setYField(field) {
 		if (!isString(field)) {
-			throw `field argument ${field} must be of type String`;
-		}
-		if (isNil(bottom)) {
-			throw `bottom argument ${bottom} is invalid`;
-		}
-		if (isNil(top)) {
-			throw `top argument ${top} is invalid`;
+			throw `yField argument ${field} must be of type String`;
 		}
 		this.yField = field;
+	}
+
+	setBounds(left, right, bottom, top) {
+		if (!isNumber(left)) {
+			throw `left argument ${left} is invalid`;
+		}
+		if (!isNumber(right)) {
+			throw `right argument ${right} is invalid`;
+		}
+		if (!isNumber(bottom)) {
+			throw `bottom argument ${bottom} is invalid`;
+		}
+		if (!isNumber(top)) {
+			throw `top argument ${top} is invalid`;
+		}
+		this.left = left;
+		this.right = right;
 		this.bottom = bottom;
 		this.top = top;
 	}

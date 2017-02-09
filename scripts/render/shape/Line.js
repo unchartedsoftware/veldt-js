@@ -8,9 +8,10 @@ const INSTANCED_SHADER = {
 		precision highp float;
 		attribute vec2 aPosition;
 		uniform vec2 uTileOffset;
+		uniform float uScale;
 		uniform mat4 uProjectionMatrix;
 		void main() {
-			vec2 wPosition = aPosition + uTileOffset;
+			vec2 wPosition = (aPosition * uScale) + uTileOffset;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 		}
 		`,
@@ -104,6 +105,7 @@ class Line {
 		// for each renderable
 		renderables.forEach(renderable => {
 			// set tile uniforms
+			shader.setUniform('uScale', renderable.scale);
 			shader.setUniform('uTileOffset', renderable.tileOffset);
 			// draw the lines
 			atlas.draw(renderable.hash, 'LINES');
