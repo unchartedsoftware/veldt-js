@@ -14,8 +14,11 @@ class MacroEdge extends lumo.WebGLVertexRenderer {
 	}
 
 	addTile(atlas, tile) {
-		const data = tile.data;
-		atlas.set(tile.coord.hash, data, data.length / (atlas.stride * 2));
+		const edges = (this.layer.lod > 0) ? tile.data.edges : tile.data;
+		atlas.set(
+			tile.coord.hash,
+			edges,
+			edges.length / (atlas.stride * 2));
 	}
 
 	onAdd(layer) {

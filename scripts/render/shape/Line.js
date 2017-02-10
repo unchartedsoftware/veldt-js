@@ -1,6 +1,7 @@
 'use strict';
 
 const lumo = require('lumo');
+const morton = require('../morton/Morton');
 
 const INSTANCED_SHADER = {
 	vert:
@@ -9,9 +10,11 @@ const INSTANCED_SHADER = {
 		attribute vec2 aPosition;
 		uniform vec2 uTileOffset;
 		uniform float uScale;
+		uniform vec2 uLODOffset;
+		uniform float uLODScale;
 		uniform mat4 uProjectionMatrix;
 		void main() {
-			vec2 wPosition = (aPosition * uScale) + uTileOffset;
+			vec2 wPosition = (aPosition * uScale * uLODScale) + (uTileOffset + (uScale * uLODOffset));
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
 		}
 		`,
@@ -77,6 +80,80 @@ const createLine = function(gl) {
 		});
 };
 
+const getOffsetIndices = function(x, y, extent, lod) {
+	const partitions = Math.pow(2, lod);
+	const xcell = x * partitions;
+	const ycell = y * partitions;
+	const stride = extent * partitions;
+	const start = morton(xcell, ycell);
+	const stop = start + (stride * stride);
+	return [ start, stop ];
+};
+
+const draw = function(shader, atlas, renderables) {
+	// for each renderable
+	renderables.forEach(renderable => {
+		// set tile uniforms
+		shader.setUniform('uScale', renderable.scale);
+		shader.setUniform('uTileOffset', renderable.tileOffset);
+		shader.setUniform('uLODScale', 1);
+		shader.setUniform('uLODOffset', [0, 0]);
+		// draw the points
+		atlas.draw(renderable.hash, 'LINES');
+	});
+};
+
+const drawLOD = function(shader, atlas, plot, lod, renderables) {
+	const zoom = Math.round(plot.zoom);
+	// for each renderable
+	renderables.forEach(renderable => {
+
+		// distance between actual zoom and the LOD of tile
+		const dist = Math.abs(renderable.tile.coord.z - zoom);
+
+		if (dist > lod) {
+			// not even lod to support it
+			return;
+		}
+
+		const xOffset = renderable.uvOffset[0];
+		const yOffset = renderable.uvOffset[1];
+		const extent = renderable.uvOffset[3];
+
+		// set tile uniforms
+		shader.setUniform('uScale', renderable.scale);
+		shader.setUniform('uTileOffset', renderable.tileOffset);
+
+		const lodScale = 1 / extent;
+
+		const lodOffset = [
+			-(xOffset * lodScale * plot.tileSize),
+			-(yOffset * lodScale * plot.tileSize)];
+
+		shader.setUniform('uLODScale', 1 / extent);
+		shader.setUniform('uLODOffset', lodOffset);
+		// get byte offset and count
+		const [ start, stop ] = getOffsetIndices(
+			xOffset,
+			yOffset,
+			extent,
+			lod);
+
+		const edges = renderable.tile.data.edges;
+		const offsets = renderable.tile.data.offsets;
+
+		const startByte = offsets[start];
+		const stopByte = (stop === offsets.length) ? edges.byteLength : offsets[stop];
+
+		const offset = startByte / (atlas.stride * 2 * 4);
+		const count = (stopByte - startByte) / (atlas.stride * 2 * 4);
+		if (count > 0) {
+			// draw the edges
+			atlas.draw(renderable.hash, 'LINES', offset, count);
+		}
+	});
+};
+
 class Line {
 	constructor(renderer) {
 		this.renderer = renderer;
@@ -84,13 +161,15 @@ class Line {
 			instanced: renderer.createShader(INSTANCED_SHADER),
 			individual: renderer.createShader(INDIVIDUAL_SHADER)
 		};
+		this.line = createLine(renderer.gl);
 	}
 	drawInstanced(atlas, color) {
 
 		const shader = this.shader.instanced;
 		const renderer = this.renderer;
+		const layer = renderer.layer;
+		const plot = layer.plot;
 		const projection = renderer.getOrthoMatrix();
-		const renderables = renderer.getRenderables();
 
 		// bind shader
 		shader.use();
@@ -102,14 +181,21 @@ class Line {
 		// binds the vertex atlas
 		atlas.bind();
 
-		// for each renderable
-		renderables.forEach(renderable => {
-			// set tile uniforms
-			shader.setUniform('uScale', renderable.scale);
-			shader.setUniform('uTileOffset', renderable.tileOffset);
-			// draw the lines
-			atlas.draw(renderable.hash, 'LINES');
-		});
+		if (layer.lod > 0) {
+			// draw using LOD
+			drawLOD(
+				shader,
+				atlas,
+				plot,
+				layer.lod,
+				renderer.getRenderablesLOD());
+		} else {
+			// draw non-LOD
+			draw(
+				shader,
+				atlas,
+				renderer.getRenderables());
+		}
 
 		// unbind
 		atlas.unbind();
@@ -117,7 +203,7 @@ class Line {
 	drawIndividual(target, color) {
 
 		const shader = this.shader.individual;
-		const point = this.point;
+		const line = this.line;
 		const plot = this.renderer.layer.plot;
 		const projection = this.renderer.getOrthoMatrix();
 
@@ -140,13 +226,13 @@ class Line {
 		shader.setUniform('uColor', color);
 
 		// binds the buffer to instance
-		point.bind();
+		line.bind();
 
 		// draw the points
-		point.draw();
+		line.draw();
 
 		// unbind
-		point.unbind();
+		line.unbind();
 	}
 }
 

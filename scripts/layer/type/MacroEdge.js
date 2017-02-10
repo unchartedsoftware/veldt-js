@@ -15,12 +15,12 @@ class MacroEdge extends Edge {
 		this.transform = data => {
 			if (this.lod > 0) {
 				const view = new DataView(data);
-				const pointsByteLength = view.getUint32(0, true /* little endian */);
+				const edgesByteLength = view.getUint32(0, true /* little endian */);
 				const offsetsByteLength = view.getUint32(4, true  /* little endian */);
-				const points = data.slice(8, 8+pointsByteLength);
-				const offsets = data.slice(8+pointsByteLength, 8+pointsByteLength+offsetsByteLength);
+				const edges = data.slice(8, 8+edgesByteLength);
+				const offsets = data.slice(8+edgesByteLength, 8+edgesByteLength+offsetsByteLength);
 				return {
-					points: new Float32Array(points),
+					edges: new Float32Array(edges),
 					offsets: new Uint32Array(offsets)
 				};
 			}
