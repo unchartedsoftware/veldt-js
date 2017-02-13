@@ -5,36 +5,42 @@ const isString = require('lodash/isString');
 const isNumber = require('lodash/isNumber');
 const Live = require('../core/Live');
 
-function isPoT(n) {
-	return n && (n & (n - 1)) === 0;
-}
+const setStringField = function(layer, property, value) {
+	if (!isString(value)) {
+		throw `${property} argument ${value} must be of type String`;
+	}
+	layer[property] = value;
+};
 
-class Bivariate extends Live {
+class Edge extends Live {
 
 	constructor(meta, options = {}) {
 		super(meta, options);
-		this.xField = defaultTo(options.xField, 'x');
-		this.yField = defaultTo(options.xField, 'y');
+		this.srcXField = defaultTo(options.srcXField, 'srcXField');
+		this.srcYField = defaultTo(options.srcYField, 'srcYField');
+		this.dstXField = defaultTo(options.dstXField, 'dstXField');
+		this.dstYField = defaultTo(options.dstYField, 'dstYField');
 		const left = defaultTo(options.left, 0);
 		const right = defaultTo(options.right, Math.pow(2, 32));
 		const bottom = defaultTo(options.bottom, 0);
 		const top = defaultTo(options.top, Math.pow(2, 32));
 		this.setBounds(left, right, bottom, top);
-		this.resolution = options.resolution;
 	}
 
-	setXField(field) {
-		if (!isString(field)) {
-			throw `xField argument ${field} must be of type String`;
-		}
-		this.xField = field;
+	setSrcXField(field) {
+		setStringField(this, 'srcXField', field);
 	}
 
-	setYField(field) {
-		if (!isString(field)) {
-			throw `yField argument ${field} must be of type String`;
-		}
-		this.yField = field;
+	setSrcYField(field) {
+		setStringField(this, 'srcYField', field);
+	}
+
+	setDstXField(field) {
+		setStringField(this, 'dstXField', field);
+	}
+
+	setDstYField(field) {
+		setStringField(this, 'dstYField', field);
 	}
 
 	setBounds(left, right, bottom, top) {
@@ -56,15 +62,6 @@ class Bivariate extends Live {
 		this.top = top;
 	}
 
-	setResolution(resolution) {
-		if (!(isNumber(resolution))) {
-			throw `resolution argument ${resolution} must be of type Number`;
-		}
-		if (!isPoT(resolution)) {
-			throw `resolution argument ${resolution} must be a power-of-two`;
-		}
-		this.resolution = resolution;
-	}
 }
 
-module.exports = Bivariate;
+module.exports = Edge;

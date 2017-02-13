@@ -24,6 +24,7 @@ const WebGL = {
 	Heatmap: require('./webgl/Heatmap'),
 	Micro: require('./webgl/Micro'),
 	Macro: require('./webgl/Macro'),
+	MacroEdge: require('./webgl/MacroEdge'),
 	Repeat: require('./webgl/Repeat')
 };
 
