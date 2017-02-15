@@ -84,6 +84,81 @@ const getMouseButton = function(event) {
 	}
 };
 
+const measureWords = function(renderer, wordCounts, extrema) {
+	// sort words by frequency
+	wordCounts = wordCounts.sort((a, b) => {
+		return b.count - a.count;
+	}).slice(0, renderer.maxNumWords);
+	// build measurement html
+	const $html = $('<div style="height:256px; width:256px;"></div>');
+	const minFontSize = renderer.minFontSize;
+	const maxFontSize = renderer.maxFontSize;
+	const transform = renderer.transform;
+	wordCounts.forEach(word => {
+		word.percent = Transform.transform(word.count, transform, extrema);
+		word.fontSize = minFontSize + word.percent * (maxFontSize - minFontSize);
+		$html.append(
+			`
+			<div class="word-cloud-label" style="
+				visibility:hidden;
+				font-size: ${word.fontSize}px;">${word.text}</div>;
+			`);
+	});
+	// append measurements
+	$('body').append($html);
+	$html.children().each((index, elem) => {
+		wordCounts[index].width = elem.offsetWidth;
+		wordCounts[index].height = elem.offsetHeight;
+	});
+	$html.remove();
+	return wordCounts;
+};
+
+const createWordCloud = function(renderer, wordCounts, extrema) {
+	const tileSize = renderer.layer.plot.tileSize;
+	const boundingBox = {
+		width: tileSize - HORIZONTAL_OFFSET * 2,
+		height: tileSize - VERTICAL_OFFSET * 2,
+		x: 0,
+		y: 0
+	};
+	const cloud = [];
+	// sort words by frequency
+	wordCounts = measureWords(renderer, wordCounts, extrema);
+	// assemble word cloud
+	wordCounts.forEach(wordCount => {
+		// starting spiral position
+		let pos = {
+			radius: 1,
+			radiusInc: 5,
+			arcLength: 10,
+			x: 0,
+			y: 0,
+			t: 0,
+			collisions: 0
+		};
+		// spiral outwards to find position
+		while (pos.collisions < NUM_ATTEMPTS) {
+			// increment position in a spiral
+			pos = spiralPosition(pos);
+			// test for intersection
+			if (!intersectWord(pos, wordCount, cloud, boundingBox)) {
+				cloud.push({
+					text: wordCount.text,
+					fontSize: wordCount.fontSize,
+					percent: Math.round((wordCount.percent * 100) / 10) * 10, // round to nearest 10
+					x: pos.x,
+					y: pos.y,
+					width: wordCount.width,
+					height: wordCount.height
+				});
+				break;
+			}
+		}
+	});
+	return cloud;
+};
+
 class WordCloud extends lumo.HTMLRenderer {
 
 	constructor(options = {}) {
@@ -188,81 +263,6 @@ class WordCloud extends lumo.HTMLRenderer {
 		}
 	}
 
-	_measureWords(wordCounts, extrema) {
-		// sort words by frequency
-		wordCounts = wordCounts.sort((a, b) => {
-			return b.count - a.count;
-		}).slice(0, this.maxNumWords);
-		// build measurement html
-		const $html = $('<div style="height:256px; width:256px;"></div>');
-		const minFontSize = this.minFontSize;
-		const maxFontSize = this.maxFontSize;
-		const transform = this.transform;
-		wordCounts.forEach(word => {
-			word.percent = Transform.transform(word.count, transform, extrema);
-			word.fontSize = minFontSize + word.percent * (maxFontSize - minFontSize);
-			$html.append(
-				`
-				<div class="word-cloud-label" style="
-					visibility:hidden;
-					font-size: ${word.fontSize}px;">${word.text}</div>;
-				`);
-		});
-		// append measurements
-		$('body').append($html);
-		$html.children().each((index, elem) => {
-			wordCounts[index].width = elem.offsetWidth;
-			wordCounts[index].height = elem.offsetHeight;
-		});
-		$html.remove();
-		return wordCounts;
-	}
-
-	_createWordCloud(wordCounts, extrema) {
-		const tileSize = this.layer.plot.tileSize;
-		const boundingBox = {
-			width: tileSize - HORIZONTAL_OFFSET * 2,
-			height: tileSize - VERTICAL_OFFSET * 2,
-			x: 0,
-			y: 0
-		};
-		const cloud = [];
-		// sort words by frequency
-		wordCounts = this._measureWords(wordCounts, extrema);
-		// assemble word cloud
-		wordCounts.forEach(wordCount => {
-			// starting spiral position
-			let pos = {
-				radius: 1,
-				radiusInc: 5,
-				arcLength: 10,
-				x: 0,
-				y: 0,
-				t: 0,
-				collisions: 0
-			};
-			// spiral outwards to find position
-			while (pos.collisions < NUM_ATTEMPTS) {
-				// increment position in a spiral
-				pos = spiralPosition(pos);
-				// test for intersection
-				if (!intersectWord(pos, wordCount, cloud, boundingBox)) {
-					cloud.push({
-						text: wordCount.text,
-						fontSize: wordCount.fontSize,
-						percent: Math.round((wordCount.percent * 100) / 10) * 10, // round to nearest 10
-						x: pos.x,
-						y: pos.y,
-						width: wordCount.width,
-						height: wordCount.height
-					});
-					break;
-				}
-			}
-		});
-		return cloud;
-	}
-
 	drawTile(element, tile) {
 		const wordCounts = _.map(tile.data, (count, text) => {
 			return {
@@ -273,12 +273,12 @@ class WordCloud extends lumo.HTMLRenderer {
 		const layer = this.layer;
 		const extrema = layer.getExtrema(tile.coord.z);
 		// genereate the cloud
-		const cloud = this._createWordCloud(wordCounts, extrema);
+		const cloud = createWordCloud(this, wordCounts, extrema);
 		// half tile size
 		const halfSize = layer.plot.tileSize / 2;
 		// create html for tile
 		const divs = [];
-
+		// for each word int he cloud
 		cloud.forEach(word => {
 			const highlight = (word.text === this.highlight) ? 'highlight' : '';
 			// create element for word

@@ -285,8 +285,6 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 		shader.setUniform('uTextureSampler', 0);
 		shader.setUniform('uColorRampSampler', 1);
 		shader.setUniform('uColorRampSize', ramp.width);
-
-		// TODO: implement value ranges / transforms
 		shader.setUniform('uOpacity', this.layer.opacity);
 		shader.setUniform('uRangeMin', this.range[0]);
 		shader.setUniform('uRangeMax', this.range[1]);

@@ -12,8 +12,7 @@ const Core = {
 // html renderers
 const HTML = {
 	CommunityLabel: require('./html/CommunityLabel'),
-	//Debug: require('./html/Debug'),
-	//TopTerms: require('./html/TopTerms'),
+	Debug: require('./html/Debug'),
 	WordCloud: require('./html/WordCloud')
 };
 
