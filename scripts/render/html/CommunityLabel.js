@@ -137,7 +137,7 @@ class CommunityLabel extends lumo.HTMLRenderer {
 			const y = points[index*2+1] - (height / 2);
 
 			const div = $(`
-				<div class="community-label" style="
+				<div class="community-label deconfliction-collider" style="
 					left: ${x}px;
 					bottom: ${y}px;
 					opacity: ${opacity};
@@ -147,6 +147,7 @@ class CommunityLabel extends lumo.HTMLRenderer {
 					font-size: ${fontSize}px;
 					line-height: ${fontSize}px;">${label}</div>
 				`);
+
 			div.data('community', community);
 			divs = divs.add(div);
 		});

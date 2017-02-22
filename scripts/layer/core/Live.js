@@ -5,6 +5,8 @@ const defaultTo = require('lodash/defaultTo');
 const isEmpty = require('lodash/isEmpty');
 const isFunction = require('lodash/isFunction');
 
+const $ = require('jquery');
+
 const TILE_ADD = Symbol();
 
 const REDRAW_TIMEOUT_MS = 800;
@@ -159,6 +161,44 @@ class Live extends lumo.Layer {
 
 	getParams() {
 		return this.params;
+	}
+
+	postUpdate() {
+		const $dc = $('.deconfliction-collider');
+		const tree = new lumo.RTree({
+				collisionType: lumo.RECTANGLE,
+				nodeCapacity: 32
+			});
+
+		$dc.sort(function(a,b){
+			const sizeA = $(a).outerHeight();
+			const sizeB = $(b).outerHeight();
+			if(sizeA < sizeB) {
+				return 1
+			}else if(sizeA > sizeB) {
+				return -1;
+			}
+			return 0;
+		});
+
+		$dc.each(function(index, element){
+			const $e = $(element);
+			const position = $e.offset();
+			const w = $e.width();
+			const h = $e.height();
+			const point = {
+				'minX': position.left,
+				'maxX': position.left + w,
+				'minY': position.top,
+				'maxY': position.top + h
+			}
+
+			if(tree.searchRectangle(point.minX, point.maxX, point.minY, point.maxY) !== null) {
+				$(element).css('visibility', 'hidden');
+			} else {
+				tree.insert([point]);
+			}
+		});
 	}
 }
 
