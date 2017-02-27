@@ -1,10 +1,16 @@
-.community-label {
+.community-label-container {
 	position: absolute;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	text-align: center;
 	cursor: pointer;
+	margin: auto;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
 	text-shadow:
 		-1px -1px 0 #000,
 		1px -1px 0 #000,
@@ -16,6 +22,14 @@
 		0 -1px 0 #000;
 }
 
+.community-label {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .community-label:hover {
 	color: #ff80ff;
+	opacity: 1 !important;
+	z-index: 1000;
 }

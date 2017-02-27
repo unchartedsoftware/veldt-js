@@ -70,9 +70,9 @@ class CommunityLabel extends lumo.HTMLRenderer {
 						point.minY,
 						point.maxY);
 					if (collision) {
-						element.style.visibility = 'hidden';
+						element.style.opacity = 0;
 					} else {
-						element.style.visibility = 'visible';
+						//element.style.visibility = 'visible';
 						tree.insert([ point ]);
 					}
 				});
@@ -177,15 +177,19 @@ class CommunityLabel extends lumo.HTMLRenderer {
 			const y = points[index*2+1] - (height / 2);
 
 			const div = $(`
+				<div class="community-label-container" style="
+				left: ${x}px;
+				bottom: ${y}px;
+				width: ${this.labelMaxLength}px;
+				height: ${height}px;
+				font-size: ${fontSize}px;
+				line-height: ${fontSize}px;
+				">
 				<div class="community-label" style="
-					left: ${x}px;
-					bottom: ${y}px;
 					opacity: ${opacity};
 					z-index: ${zIndex};
-					width: ${this.labelMaxLength}px;
-					height: ${height}px;
-					font-size: ${fontSize}px;
-					line-height: ${fontSize}px;">${label}</div>
+					max-width: ${this.labelMaxLength}px;"
+					>${label}</div></div>
 				`);
 
 			div.data('community', community);
