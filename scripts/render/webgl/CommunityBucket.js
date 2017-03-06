@@ -12,15 +12,10 @@ class CommunityBucket extends lumo.WebGLInteractiveRenderer {
 
 	constructor(options = {}) {
 		super(options);
-
 		this.ringFill = null;
 		this.ringOutline = null;
 		this.quad = null;
 		this.atlas = null;
-
-		this.highlighted = null;
-		this.selected = null;
-
 		this.outlineWidth = defaultTo(options.outlineWidth, 1);
 		this.outlineColor = defaultTo(options.outlineColor, [0.0, 0.0, 0.0, 1.0]);
 		this.ringWidth = defaultTo(options.ringWidth, 3);
@@ -31,7 +26,6 @@ class CommunityBucket extends lumo.WebGLInteractiveRenderer {
 		this.numBuckets = defaultTo(options.numBuckets, 4);
 		this.bucketsField = defaultTo(options.bucketsField, 'buckets');
 		this.colorRamp = defaultTo(options.colorRamp, 'verdant');
-
 		const buckets = ColorRamp.getBuckets(this.colorRamp, this.numBuckets + 2);
 		this.colors = _.flatten(buckets.slice(0, this.numBuckets));
 		this.highlightedColors = _.flatten(buckets.slice(1, this.numBuckets+1));
@@ -213,15 +207,16 @@ class CommunityBucket extends lumo.WebGLInteractiveRenderer {
 			opacity);
 
 		// render selected
-		if (this.selected) {
+		this.selected.forEach(selected => {
 			this.ringFill.drawIndividual(
-				this.selected,
-				this.selectedColors,
+				selected,
+				this.selectedColor,
 				opacity);
-		}
+		});
 
 		// render highlighted
-		if (this.highlighted && this.highlighted !== this.selected) {
+		if (this.highlighted &&
+			this.selected.indexOf(this.highlighted) === -1) {
 			this.ringFill.drawIndividual(
 				this.highlighted,
 				this.highlightedColors,

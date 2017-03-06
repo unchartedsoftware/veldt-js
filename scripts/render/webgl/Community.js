@@ -133,15 +133,16 @@ class Community extends lumo.WebGLInteractiveRenderer {
 			opacity);
 
 		// render selected
-		if (this.selected) {
+		this.selected.forEach(selected => {
 			this.ringFill.drawIndividual(
-				this.selected,
+				selected,
 				this.selectedColor,
 				opacity);
-		}
+		});
 
 		// render highlighted
-		if (this.highlighted && this.highlighted !== this.selected) {
+		if (this.highlighted &&
+			this.selected.indexOf(this.highlighted) === -1) {
 			this.ringFill.drawIndividual(
 				this.highlighted,
 				this.highlightedColor,

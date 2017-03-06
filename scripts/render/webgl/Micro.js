@@ -20,8 +20,6 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 		super(options);
 		this.point = null;
 		this.atlas = null;
-		this.highlighted = null;
-		this.selected = null;
 		this.color = defaultTo(options.color, [ 1.0, 0.4, 0.1, 0.8 ]);
 		this.radius = defaultTo(options.radius, POINT_RADIUS);
 		// this.jitter = defaultTo(options.radius, true);
@@ -126,15 +124,16 @@ class Micro extends lumo.WebGLInteractiveRenderer {
 			this.color);
 
 		// render selected
-		if (this.selected) {
+		this.selected.forEach(selected => {
 			this.point.drawIndividual(
-				this.selected,
+				selected,
 				this.radius + POINT_RADIUS_INC * 2,
 				this.color);
-		}
+		});
 
 		// render highlighted
-		if (this.highlighted && this.highlighted !== this.selected) {
+		if (this.highlighted &&
+			this.selected.indexOf(this.highlighted) === -1) {
 			this.point.drawIndividual(
 				this.highlighted,
 				this.radius + POINT_RADIUS_INC,
