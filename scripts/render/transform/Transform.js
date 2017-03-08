@@ -1,6 +1,6 @@
 'use strict';
 
-const _ = require('lodash');
+const clamp = require('lodash/clamp');
 
 const SIGMOID_SCALE = 0.15;
 
@@ -78,14 +78,14 @@ const interpolate = function(nval, range) {
 	const rMax = range.max;
 	const rval = (nval - rMin) / (rMax - rMin);
 	// ensure output is [0:1]
-	return _.clamp(rval, 0, 1);
+	return clamp(rval, 0, 1);
 };
 
 const transform = function(val, type, extrema) {
 	// clamp the value between the extreme (shouldn't be necessary)
 	const min = extrema.min;
 	const max = extrema.max;
-	const clamped = _.clamp(val, min, max);
+	const clamped = clamp(val, min, max);
 	// normalize the value
 	if (min !== max) {
 		return Transform[type](clamped, min, max);
@@ -98,7 +98,7 @@ const untransform = function(nval, type, extrema) {
 	const min = extrema.min;
 	const max = extrema.max;
 	// clamp the value between the extreme (shouldn't be necessary)
-	const clamped = _.clamp(nval, min, max);
+	const clamped = clamp(nval, min, max);
 	// unnormalize the value
 	if (min !== max) {
 		return Inverse[type](clamped, min, max);

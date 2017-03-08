@@ -1,5 +1,6 @@
 'use strict';
 
+const get = require('lodash/get');
 const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
 const Ring = require('../shape/Ring');
@@ -78,7 +79,7 @@ class Community extends lumo.WebGLInteractiveRenderer {
 			const hit = hits[i];
 			const x = positions[i*2];
 			const y = positions[i*2+1];
-			const radius = hit[radiusField] * radiusScale + ringOffset;
+			const radius = get(hit, radiusField) * radiusScale + ringOffset;
 
 			// plot pixel coords
 			const px = x + xOffset;

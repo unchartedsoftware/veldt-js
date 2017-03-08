@@ -47,12 +47,6 @@ class Group extends EventEmitter {
 		broadcast(this, lumo.ZOOM_START);
 		broadcast(this, lumo.ZOOM);
 		broadcast(this, lumo.ZOOM_END);
-		broadcast(this, lumo.TILE_REQUEST);
-		broadcast(this, lumo.TILE_FAILURE);
-		broadcast(this, lumo.TILE_ADD);
-		broadcast(this, lumo.TILE_DISCARD);
-		broadcast(this, lumo.TILE_REMOVE);
-		broadcast(this, lumo.LOAD);
 		return this;
 	}
 
@@ -66,12 +60,6 @@ class Group extends EventEmitter {
 		unbroadcast(this, lumo.ZOOM_START);
 		unbroadcast(this, lumo.ZOOM);
 		unbroadcast(this, lumo.ZOOM_END);
-		unbroadcast(this, lumo.TILE_REQUEST);
-		unbroadcast(this, lumo.TILE_FAILURE);
-		unbroadcast(this, lumo.TILE_ADD);
-		unbroadcast(this, lumo.TILE_DISCARD);
-		unbroadcast(this, lumo.TILE_REMOVE);
-		unbroadcast(this, lumo.LOAD);
 		this.layers.forEach(layer => {
 			layer.onRemove(plot);
 		});

@@ -1,6 +1,7 @@
 'use strict';
 
-const _ = require('lodash');
+const clamp = require('lodash/clamp');
+const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
 const ColorRamp = require('../color/ColorRamp');
 
@@ -120,7 +121,6 @@ const SHADER = {
 		`
 };
 
-
 const createQuad = function(gl, min, max) {
 	const vertices = new Float32Array(24);
 	// positions
@@ -189,9 +189,9 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 	constructor(options = {}) {
 		options.filter = 'NEAREST';
 		super(options);
-		this.transform = _.defaultTo(options.transform, 'log10');
-		this.range = _.defaultTo(options.range, [0, 1]);
-		this.colorRamp = _.defaultTo(options.colorRamp, 'verdant');
+		this.transform = defaultTo(options.transform, 'log10');
+		this.range = defaultTo(options.range, [0, 1]);
+		this.colorRamp = defaultTo(options.colorRamp, 'verdant');
 		this.quad = null;
 		this.shader = null;
 		this.array = null;
@@ -242,8 +242,8 @@ class Heatmap extends lumo.WebGLTextureRenderer {
 
 	setValueRange(min, max) {
 		this.range = [
-			_.clamp(min, 0, 1),
-			_.clamp(max, 0, 1)
+			clamp(min, 0, 1),
+			clamp(max, 0, 1)
 		];
 	}
 

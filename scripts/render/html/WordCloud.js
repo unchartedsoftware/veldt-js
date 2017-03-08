@@ -1,7 +1,8 @@
 'use strict';
 
-const _ = require('lodash');
 const $ = require('jquery');
+const map = require('lodash/map');
+const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
 const Transform = require('../transform/Transform');
 
@@ -163,10 +164,10 @@ class WordCloud extends lumo.HTMLRenderer {
 
 	constructor(options = {}) {
 		super(options);
-		this.transform = _.defaultTo(options.transform, 'log10');
-		this.maxNumWords = _.defaultTo(options.maxNumWords, 10);
-		this.minFontSize = _.defaultTo(options.minFontSize, 10);
-		this.maxFontSize = _.defaultTo(options.maxFontSize, 24);
+		this.transform = defaultTo(options.transform, 'log10');
+		this.maxNumWords = defaultTo(options.maxNumWords, 10);
+		this.minFontSize = defaultTo(options.minFontSize, 10);
+		this.maxFontSize = defaultTo(options.maxFontSize, 24);
 	}
 
 	onAdd(layer) {
@@ -264,7 +265,7 @@ class WordCloud extends lumo.HTMLRenderer {
 	}
 
 	drawTile(element, tile) {
-		const wordCounts = _.map(tile.data, (count, text) => {
+		const wordCounts = map(tile.data, (count, text) => {
 			return {
 				text: text,
 				count: count

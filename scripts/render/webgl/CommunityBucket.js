@@ -1,8 +1,9 @@
 'use strict';
 
-const _ = require('lodash');
-const lumo = require('lumo');
+const get = require('lodash/get');
+const flatten = require('lodash/flatten');
 const defaultTo = require('lodash/defaultTo');
+const lumo = require('lumo');
 const Ring = require('../shape/Ring');
 const ColorRamp = require('../color/ColorRamp');
 const RadialQuad = require('../shape/RadialQuad');
@@ -27,9 +28,9 @@ class CommunityBucket extends lumo.WebGLInteractiveRenderer {
 		this.bucketsField = defaultTo(options.bucketsField, 'buckets');
 		this.colorRamp = defaultTo(options.colorRamp, 'verdant');
 		const buckets = ColorRamp.getBuckets(this.colorRamp, this.numBuckets + 2);
-		this.colors = _.flatten(buckets.slice(0, this.numBuckets));
-		this.highlightedColors = _.flatten(buckets.slice(1, this.numBuckets+1));
-		this.selectedColors = _.flatten(buckets.slice(2, this.numBuckets+2));
+		this.colors = flatten(buckets.slice(0, this.numBuckets));
+		this.highlightedColors = flatten(buckets.slice(1, this.numBuckets+1));
+		this.selectedColors = flatten(buckets.slice(2, this.numBuckets+2));
 	}
 
 	onAdd(layer) {
@@ -114,8 +115,8 @@ class CommunityBucket extends lumo.WebGLInteractiveRenderer {
 			const hit = hits[i];
 			const x = positions[i*2];
 			const y = positions[i*2+1];
-			const radius = hit[radiusField] * radiusScale + ringOffset;
-			const buckets = hit[bucketsField];
+			const radius = get(hit, radiusField) * radiusScale + ringOffset;
+			const buckets = get(hit, bucketsField);
 
 			// plot pixel coords
 			const px = x + xOffset;
