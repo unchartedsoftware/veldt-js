@@ -10,6 +10,7 @@ module.exports = {
 	// types
 	Count: require('./type/Count'),
 	Community: require('./type/Community'),
+	Exclusiveness: require('./type/Exclusiveness'),
 	// Frequency: require('./type/Frequency'),
 	Heatmap: require('./type/Heatmap'),
 	Macro: require('./type/Macro'),
