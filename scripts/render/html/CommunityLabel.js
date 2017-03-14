@@ -1,6 +1,7 @@
 'use strict';
 
 const $ = require('jquery');
+const get = require('lodash/get');
 const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
 const Transform = require('../transform/Transform');
@@ -29,6 +30,7 @@ class CommunityLabel extends lumo.HTMLRenderer {
 		this.labelMaxLength = defaultTo(options.labelMaxLength, 256);
 		this.labelThreshold = defaultTo(options.labelThreshold, 0.6);
 		this.labelField = defaultTo(options.labelField, 'metadata');
+		this.labelDeconflict = defaultTo(options.labelDeconflict, true);
 	}
 
 	onAdd(layer) {
@@ -42,6 +44,42 @@ class CommunityLabel extends lumo.HTMLRenderer {
 		this.click = event => {
 			this.onClick(event);
 		};
+		if (this.labelDeconflict) {
+			this.deconflict = () => {
+				const tree = new lumo.RTree({
+					collisionType: lumo.RECTANGLE,
+					nodeCapacity: 64
+				});
+				// grab all labels
+				const $labels = $(this.container).find('.community-label');
+				// sort based on size / importance
+				$labels.sort((a, b) => {
+					return b.offsetHeight - a.offsetHeight;
+				});
+				// check if they conflict, if so, hide them
+				$labels.each((index, element) => {
+					const position = $(element).offset();
+					const point = {
+						minX: position.left,
+						maxX: position.left + element.offsetWidth,
+						minY: position.top,
+						maxY: position.top + element.offsetHeight
+					};
+					const collision = tree.searchRectangle(
+						point.minX,
+						point.maxX,
+						point.minY,
+						point.maxY);
+					if (collision) {
+						element.style.visibility = 'hidden';
+					} else {
+						element.style.visibility = 'visible';
+						tree.insert([ point ]);
+					}
+				});
+			};
+			this.on(lumo.POST_DRAW, this.deconflict);
+		}
 		$(this.container).on('mouseover', this.mouseover);
 		$(this.container).on('mouseout', this.mouseout);
 		$(this.container).on('click', this.click);
@@ -51,6 +89,9 @@ class CommunityLabel extends lumo.HTMLRenderer {
 		$(this.container).off('mouseover', this.mouseover);
 		$(this.container).off('mouseout', this.mouseout);
 		$(this.container).off('click', this.click);
+		if (this.labelDeconflict) {
+			this.removeListener(lumo.POST_DRAW, this.deconflict);
+		}
 		this.mouseover = null;
 		this.mouseout = null;
 		this.click = null;
@@ -113,12 +154,12 @@ class CommunityLabel extends lumo.HTMLRenderer {
 		let divs = $();
 		hits.forEach((community, index) => {
 
-			const label = community[this.labelField];
+			const label = get(community, this.labelField);
 			if (!label) {
 				return;
 			}
 
-			const val = community[sortField];
+			const val = get(community, sortField);
 			const nval = Transform.transform(val, this.transform, extrema);
 
 			if (nval < this.labelThreshold) {
@@ -147,6 +188,7 @@ class CommunityLabel extends lumo.HTMLRenderer {
 					font-size: ${fontSize}px;
 					line-height: ${fontSize}px;">${label}</div>
 				`);
+
 			div.data('community', community);
 			divs = divs.add(div);
 		});

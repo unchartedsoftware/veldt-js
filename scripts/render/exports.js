@@ -12,8 +12,7 @@ const Core = {
 // html renderers
 const HTML = {
 	CommunityLabel: require('./html/CommunityLabel'),
-	//Debug: require('./html/Debug'),
-	//TopTerms: require('./html/TopTerms'),
+	Debug: require('./html/Debug'),
 	WordCloud: require('./html/WordCloud')
 };
 
@@ -24,6 +23,7 @@ const WebGL = {
 	Heatmap: require('./webgl/Heatmap'),
 	Micro: require('./webgl/Micro'),
 	Macro: require('./webgl/Macro'),
+	MacroEdge: require('./webgl/MacroEdge'),
 	Repeat: require('./webgl/Repeat')
 };
 

@@ -32,6 +32,7 @@ class Heatmap extends Bivariate {
 		tile[name] = params;
 		return tile;
 	}
+
 }
 
 module.exports = Heatmap;

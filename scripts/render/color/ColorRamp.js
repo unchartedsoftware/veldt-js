@@ -1,6 +1,7 @@
 'use strict';
 
-const _ = require('lodash');
+const map = require('lodash/map');
+const sum = require('lodash/sum');
 
 const NUM_GRADIENT_STEPS = 256;
 
@@ -66,17 +67,15 @@ const buildFlatLookupTable = function(color) {
 const buildPerceptualLookupTable = function(baseColors) {
 	const outputGradient = new Uint8Array(NUM_GRADIENT_STEPS*4);
 	// Calculate perceptual spread in L*a*b* space
-	const labs = _.map(baseColors, color => {
+	const labs = map(baseColors, color => {
 		return rgb2lab([color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 255]);
 	});
-	let distances = _.map(labs, (color, index, colors) => {
+	let distances = map(labs, (color, index, colors) => {
 		return index > 0 ? distance(color, colors[index - 1]) : 0;
 	});
 	// Calculate cumulative distances in [0,1]
-	const totalDistance = _.reduce(distances, (a, b) => {
-		return a + b;
-	}, 0);
-	distances = _.map(distances, d => {
+	const totalDistance = sum(distances);
+	distances = map(distances, d => {
 		return d / totalDistance;
 	});
 	let distanceTraversed = 0;

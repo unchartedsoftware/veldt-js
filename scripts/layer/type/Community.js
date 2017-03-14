@@ -1,5 +1,6 @@
 'use strict';
 
+const get = require('lodash/get');
 const minBy = require('lodash/minBy');
 const maxBy = require('lodash/maxBy');
 const Micro = require('./Micro');
@@ -22,14 +23,14 @@ class Community extends Micro {
 		}
 		const field = this.sortField;
 		const min = minBy(hits, community => {
-			return community[field];
+			return get(community, field);
 		});
 		const max = maxBy(hits, community => {
-			return community[field];
+			return get(community, field);
 		});
 		return {
-			min: min[field],
-			max: max[field]
+			min: get(min, field),
+			max: get(max, field)
 		};
 	}
 }
