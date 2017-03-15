@@ -22,10 +22,10 @@ class Topic extends Bivariate {
 	extractExtrema(data) {
 		const valsRaw = values(data);
 		const vals = _.flatMap(valsRaw, (value, key) => {
-            return _.map(value.words, (weight, word) => {
-    			return weight;
-    		});
-        });
+			return _.map(value.words, (weight, word) => {
+				return weight;
+			});
+		});
 
 		let min = Infinity;
 		let max = -Infinity;
@@ -96,7 +96,7 @@ class Topic extends Bivariate {
 
 	setTopicClusterCount(topicClusterCount) {
 		if (this.topicClusterCount !== topicClusterCount) {
-			this.topicClusterCount = true;
+			this.updatedParameters = true;
 			this.topicClusterCount = topicClusterCount;
 		}
 	}
