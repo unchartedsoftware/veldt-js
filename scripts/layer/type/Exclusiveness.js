@@ -14,6 +14,10 @@ class Exclusiveness extends Heatmap {
 		return this.updatedParameters;
 	}
 
+	resetParameters() {
+		this.updatedParameters = false;
+	}
+
 	setTimeFrom(timeFrom) {
 		if (this.timeFrom !== timeFrom) {
 			this.updatedParameters = true;

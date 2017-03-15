@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash')
 const values = require('lodash/values');
 const defaultTo = require('lodash/defaultTo');
 const Bivariate = require('./Bivariate');
@@ -19,7 +20,13 @@ class Topic extends Bivariate {
 	}
 
 	extractExtrema(data) {
-		const vals = values(data);
+		const valsRaw = values(data);
+		const vals = _.flatMap(valsRaw, (value, key) => {
+            return _.map(value.words, (weight, word) => {
+    			return weight;
+    		});
+        });
+
 		let min = Infinity;
 		let max = -Infinity;
 		for (let i=0; i<vals.length; i++) {
@@ -53,6 +60,10 @@ class Topic extends Bivariate {
 
 	hasUpdatedParameters() {
 		return this.updatedParameters;
+	}
+
+	resetParameters() {
+		this.updatedParameters = false;
 	}
 
 	setExclusiveness(exclusiveness) {
