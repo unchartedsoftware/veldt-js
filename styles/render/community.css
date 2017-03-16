@@ -31,5 +31,5 @@
 .community-label:hover {
 	color: #ff80ff;
 	opacity: 1 !important;
-	z-index: 1000;
+	z-index: 1000 !important;
 }

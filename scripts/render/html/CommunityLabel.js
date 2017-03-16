@@ -70,7 +70,7 @@ class CommunityLabel extends lumo.HTMLRenderer {
 						point.minY,
 						point.maxY);
 					if (collision) {
-						element.style.opacity = 0;
+						element.style.opacity = 0.1;
 					} else {
 						//element.style.visibility = 'visible';
 						tree.insert([ point ]);
