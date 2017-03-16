@@ -11,7 +11,6 @@ class MacroEdge extends Edge {
 		this.sortField = defaultTo(options.sortField, null);
 		this.sortOrder = defaultTo(options.sortOrder, 'desc');
 		this.hitsCount = defaultTo(options.hitsCount, 10);
-		this.includeFields = defaultTo(options.includeFields, null);
 		this.transform = data => {
 			if (this.lod > 0) {
 				const view = new DataView(data);
@@ -44,10 +43,6 @@ class MacroEdge extends Edge {
 		this.hitsCount = hitsCount;
 	}
 
-	setIncludeFields(includeFields) {
-		this.includeFields = includeFields;
-	}
-
 	getTile(name = 'macro-edge') {
 		const params = {
 			srcXField: this.srcXField,
@@ -61,8 +56,7 @@ class MacroEdge extends Edge {
 			lod: this.lod,
 			sortField: this.sortField,
 			sortOrder: this.sortOrder,
-			hitsCount: this.hitsCount,
-			includeFields: this.includeFields
+			hitsCount: this.hitsCount
 		};
 		const tile = {};
 		tile[name] = params;

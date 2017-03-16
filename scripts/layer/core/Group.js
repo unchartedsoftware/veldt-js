@@ -1,7 +1,27 @@
 'use strict';
 
+const lumo = require('lumo');
 const EventEmitter = require('events');
 const defaultTo = require('lodash/defaultTo');
+
+const broadcast = function(group, type) {
+	const handler = event => {
+		group.layers.forEach(layer => {
+			layer.emit(type, event);
+		});
+	};
+	group.on(type, handler);
+	group.broadcasts.set(type, handler);
+};
+
+const unbroadcast = function(group, type) {
+	group.removeListener(type, event => {
+		group.layers.forEach(layer => {
+			layer.emit(type, event);
+		});
+	});
+	group.broadcasts.delete(type);
+};
 
 class Group extends EventEmitter {
 
@@ -10,6 +30,7 @@ class Group extends EventEmitter {
 		this.hidden = defaultTo(options.hidden, false);
 		this.muted = defaultTo(options.muted, false);
 		this.layers = defaultTo(options.layers, []);
+		this.broadcasts = new Map();
 	}
 
 	onAdd(plot) {
@@ -20,6 +41,12 @@ class Group extends EventEmitter {
 		this.layers.forEach(layer => {
 			layer.onAdd(this.plot);
 		});
+		broadcast(this, lumo.PAN_START);
+		broadcast(this, lumo.PAN);
+		broadcast(this, lumo.PAN_END);
+		broadcast(this, lumo.ZOOM_START);
+		broadcast(this, lumo.ZOOM);
+		broadcast(this, lumo.ZOOM_END);
 		return this;
 	}
 
@@ -27,6 +54,12 @@ class Group extends EventEmitter {
 		if (!plot) {
 			throw 'No plot argument provided';
 		}
+		unbroadcast(this, lumo.PAN_START);
+		unbroadcast(this, lumo.PAN);
+		unbroadcast(this, lumo.PAN_END);
+		unbroadcast(this, lumo.ZOOM_START);
+		unbroadcast(this, lumo.ZOOM);
+		unbroadcast(this, lumo.ZOOM_END);
 		this.layers.forEach(layer => {
 			layer.onRemove(plot);
 		});

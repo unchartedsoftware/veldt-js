@@ -1,8 +1,9 @@
 'use strict';
 
-const _ = require('lodash');
-const lumo = require('lumo');
+const get = require('lodash/get');
+const flatten = require('lodash/flatten');
 const defaultTo = require('lodash/defaultTo');
+const lumo = require('lumo');
 const Ring = require('../shape/Ring');
 const ColorRamp = require('../color/ColorRamp');
 const RadialQuad = require('../shape/RadialQuad');
@@ -12,15 +13,10 @@ class CommunityBucket extends lumo.WebGLInteractiveRenderer {
 
 	constructor(options = {}) {
 		super(options);
-
 		this.ringFill = null;
 		this.ringOutline = null;
 		this.quad = null;
 		this.atlas = null;
-
-		this.highlighted = null;
-		this.selected = null;
-
 		this.outlineWidth = defaultTo(options.outlineWidth, 1);
 		this.outlineColor = defaultTo(options.outlineColor, [0.0, 0.0, 0.0, 1.0]);
 		this.ringWidth = defaultTo(options.ringWidth, 3);
@@ -31,11 +27,10 @@ class CommunityBucket extends lumo.WebGLInteractiveRenderer {
 		this.numBuckets = defaultTo(options.numBuckets, 4);
 		this.bucketsField = defaultTo(options.bucketsField, 'buckets');
 		this.colorRamp = defaultTo(options.colorRamp, 'verdant');
-
 		const buckets = ColorRamp.getBuckets(this.colorRamp, this.numBuckets + 2);
-		this.colors = _.flatten(buckets.slice(0, this.numBuckets));
-		this.highlightedColors = _.flatten(buckets.slice(1, this.numBuckets+1));
-		this.selectedColors = _.flatten(buckets.slice(2, this.numBuckets+2));
+		this.colors = flatten(buckets.slice(0, this.numBuckets));
+		this.highlightedColors = flatten(buckets.slice(1, this.numBuckets+1));
+		this.selectedColors = flatten(buckets.slice(2, this.numBuckets+2));
 	}
 
 	onAdd(layer) {
@@ -120,8 +115,8 @@ class CommunityBucket extends lumo.WebGLInteractiveRenderer {
 			const hit = hits[i];
 			const x = positions[i*2];
 			const y = positions[i*2+1];
-			const radius = hit[radiusField] * radiusScale + ringOffset;
-			const buckets = hit[bucketsField];
+			const radius = get(hit, radiusField) * radiusScale + ringOffset;
+			const buckets = get(hit, bucketsField);
 
 			// plot pixel coords
 			const px = x + xOffset;
@@ -213,15 +208,16 @@ class CommunityBucket extends lumo.WebGLInteractiveRenderer {
 			opacity);
 
 		// render selected
-		if (this.selected) {
+		this.selected.forEach(selected => {
 			this.ringFill.drawIndividual(
-				this.selected,
-				this.selectedColors,
+				selected,
+				this.selectedColor,
 				opacity);
-		}
+		});
 
 		// render highlighted
-		if (this.highlighted && this.highlighted !== this.selected) {
+		if (this.highlighted &&
+			this.selected.indexOf(this.highlighted) === -1) {
 			this.ringFill.drawIndividual(
 				this.highlighted,
 				this.highlightedColors,

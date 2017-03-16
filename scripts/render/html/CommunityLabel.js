@@ -1,6 +1,7 @@
 'use strict';
 
 const $ = require('jquery');
+const get = require('lodash/get');
 const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
 const Transform = require('../transform/Transform');
@@ -153,12 +154,12 @@ class CommunityLabel extends lumo.HTMLRenderer {
 		let divs = $();
 		hits.forEach((community, index) => {
 
-			const label = community[this.labelField];
+			const label = get(community, this.labelField);
 			if (!label) {
 				return;
 			}
 
-			const val = community[sortField];
+			const val = get(community, sortField);
 			const nval = Transform.transform(val, this.transform, extrema);
 
 			if (nval < this.labelThreshold) {
