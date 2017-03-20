@@ -28,6 +28,9 @@
 	text-overflow: ellipsis;
 }
 
+.community-hidden {
+	opacity : 0.1 !important;
+}
 .community-label:hover {
 	color: #ff80ff;
 	opacity: 1 !important;
