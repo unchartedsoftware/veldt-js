@@ -153,6 +153,36 @@ class Group extends EventEmitter {
 		return this.muted && this.hidden;
 	}
 
+	addFilter(id, filter) {
+		this.layers.forEach(layer => {
+			layer.addFilter(id, filter);
+		});
+	}
+
+	removeFilter(id) {
+		this.layers.forEach(layer => {
+			layer.removeFilter(id);
+		});
+	}
+
+	clearFilters() {
+		this.layers.forEach(layer => {
+			layer.clearFilters();
+		});
+	}
+
+	setQuery(query) {
+		this.layers.forEach(layer => {
+			layer.setQuery(query);
+		});
+	}
+
+	clearQuery() {
+		this.layers.forEach(layer => {
+			layer.clearQuery();
+		});
+	}
+
 	draw(timestamp) {
 		if (this.hidden) {
 			this.layers.forEach(layer => {
