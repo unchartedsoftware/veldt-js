@@ -9,10 +9,14 @@ class Debug extends lumo.HTMLRenderer {
 		super(options);
 	}
 
-	drawTile(element, coord) {
+	drawTile(element, tile) {
 		$(element)
 			.empty()
-			.append(`<div style="top:0; left:0;">${coord.z}, ${coord.x}, ${coord.y}</div>`);
+			.css({
+				'border-left': '1px solid rgba(255, 255, 255, 0.5)',
+				'border-top': '1px solid rgba(255, 255, 255, 0.5)'
+			})
+			.append(`<div style="position: absolute; top:10px; left:10px;">(${tile.coord.z}, ${tile.coord.x}, ${tile.coord.y})</div>`);
 	}
 }
 

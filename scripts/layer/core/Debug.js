@@ -9,7 +9,7 @@ class Debug extends lumo.Layer {
 	}
 
 	requestTile(coord, done) {
-		done(coord);
+		done(null, {});
 	}
 }
 
