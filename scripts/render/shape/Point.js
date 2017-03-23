@@ -2,8 +2,10 @@
 
 const lumo = require('lumo');
 const morton = require('../morton/Morton');
+const BrightnessTransform = require('../shader/BrightnessTransform');
 
 const SHADER = {
+	common: BrightnessTransform.common,
 	vert:
 		`
 		precision highp float;
@@ -40,7 +42,7 @@ const SHADER = {
 					discard;
 				}
 			#endif
-			gl_FragColor = vec4(uColor.rgb, uColor.a * alpha);
+			gl_FragColor = brightnessTransform(uColor*alpha);
 		}
 		`
 };
@@ -162,6 +164,7 @@ class Point {
 		shader.setUniform('uColor', color);
 		shader.setUniform('uRadius', radius);
 		shader.setUniform('uPixelRatio', plot.pixelRatio);
+		shader.setUniform('uBrightness', renderer.brightness);
 
 		// binds the vertex atlas
 		atlas.bind();
@@ -189,8 +192,9 @@ class Point {
 
 		const shader = this.shader;
 		const point = this.point;
-		const plot = this.renderer.layer.plot;
-		const projection = this.renderer.getOrthoMatrix();
+		const renderer = this.renderer;
+		const plot = renderer.layer.plot;
+		const projection = renderer.getOrthoMatrix();
 
 		// get tile offset
 		const coord = target.tile.coord;
@@ -209,6 +213,7 @@ class Point {
 		shader.setUniform('uColor', color);
 		shader.setUniform('uRadius', radius);
 		shader.setUniform('uPixelRatio', plot.pixelRatio);
+		shader.setUniform('uBrightness', renderer.brightness);
 
 		// binds the buffer to instance
 		point.bind();

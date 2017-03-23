@@ -3,13 +3,13 @@
 const get = require('lodash/get');
 const flatten = require('lodash/flatten');
 const defaultTo = require('lodash/defaultTo');
-const lumo = require('lumo');
+const InteractiveRenderer = require('./InteractiveRenderer');
 const Ring = require('../shape/Ring');
 const ColorRamp = require('../color/ColorRamp');
 const RadialQuad = require('../shape/RadialQuad');
 const SegmentedRing = require('../shape/SegmentedRing');
 
-class CommunityBucket extends lumo.WebGLInteractiveRenderer {
+class CommunityBucket extends InteractiveRenderer {
 
 	constructor(options = {}) {
 		super(options);

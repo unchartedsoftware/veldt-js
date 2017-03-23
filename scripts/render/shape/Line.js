@@ -2,8 +2,10 @@
 
 const lumo = require('lumo');
 const morton = require('../morton/Morton');
+const BrightnessTransform = require('../shader/BrightnessTransform');
 
 const INSTANCED_SHADER = {
+	common: BrightnessTransform.common,
 	vert:
 		`
 		precision highp float;
@@ -23,12 +25,13 @@ const INSTANCED_SHADER = {
 		precision highp float;
 		uniform vec4 uColor;
 		void main() {
-			gl_FragColor = vec4(uColor.rgb, uColor.a);
+			gl_FragColor = brightnessTransform(uColor);
 		}
 		`
 };
 
 const INDIVIDUAL_SHADER = {
+	common: BrightnessTransform.common,
 	vert:
 		`
 		precision highp float;
@@ -53,7 +56,7 @@ const INDIVIDUAL_SHADER = {
 		precision highp float;
 		uniform vec4 uColor;
 		void main() {
-			gl_FragColor = vec4(uColor.rgb, uColor.a);
+			gl_FragColor = brightnessTransform(uColor);
 		}
 		`
 };
@@ -177,6 +180,7 @@ class Line {
 		// set global uniforms
 		shader.setUniform('uProjectionMatrix', projection);
 		shader.setUniform('uColor', color);
+		shader.setUniform('uBrightness', renderer.brightness);
 
 		// binds the vertex atlas
 		atlas.bind();
@@ -204,8 +208,9 @@ class Line {
 
 		const shader = this.shader.individual;
 		const line = this.line;
-		const plot = this.renderer.layer.plot;
-		const projection = this.renderer.getOrthoMatrix();
+		const renderer = this.renderer;
+		const plot = renderer.layer.plot;
+		const projection = renderer.getOrthoMatrix();
 
 		// get tile offset
 		const coord = target.tile.coord;
@@ -224,6 +229,7 @@ class Line {
 		shader.setUniform('uPointB', [ target.b.x, target.b.y ]);
 		shader.setUniform('uScale', scale);
 		shader.setUniform('uColor', color);
+		shader.setUniform('uBrightness', renderer.brightness);
 
 		// binds the buffer to instance
 		line.bind();

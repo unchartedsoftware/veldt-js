@@ -1,8 +1,10 @@
 'use strict';
 
 const lumo = require('lumo');
+const BrightnessTransform = require('../shader/BrightnessTransform');
 
 const INSTANCED_SHADER = {
+	common: BrightnessTransform.common,
 	vert:
 		`
 		precision highp float;
@@ -28,7 +30,8 @@ const INSTANCED_SHADER = {
 		uniform float uOpacity;
 		uniform vec4 uColor;
 		void main() {
-			gl_FragColor = vec4(uColor.rgb, uColor.a * uOpacity);
+			vec4 color = brightnessTransform(uColor);
+			gl_FragColor = vec4(color.rgb, color.a * uOpacity);
 		}
 		`
 };
@@ -71,8 +74,9 @@ class Quad {
 
 		const shader = this.shaders.instanced;
 		const quad = this.quad;
-		const projection = this.renderer.getOrthoMatrix();
-		const renderables = this.renderer.getRenderables();
+		const renderer = this.renderer;
+		const projection = renderer.getOrthoMatrix();
+		const renderables = renderer.getRenderables();
 
 		// use shader
 		shader.use();
@@ -82,6 +86,7 @@ class Quad {
 		shader.setUniform('uRotation', rotation);
 		shader.setUniform('uOpacity', opacity);
 		shader.setUniform('uColor', color);
+		shader.setUniform('uBrightness', renderer.brightness);
 
 		// bind the quad buffer
 		quad.bind();
@@ -106,6 +111,7 @@ class Quad {
 	drawIndividual(target, color, rotation, opacity = 1) {
 		const shader = this.shaders.individual;
 		const quad = this.quad;
+		const renderer = this.renderer;
 		const plot = this.renderer.layer.plot;
 		const projection = this.renderer.getOrthoMatrix();
 
@@ -127,6 +133,7 @@ class Quad {
 		shader.setUniform('uColor', color);
 		shader.setUniform('uScale', scale);
 		shader.setUniform('uTileOffset', tileOffset);
+		shader.setUniform('uBrightness', renderer.brightness);
 
 		// bind the quad buffer
 		quad.bind();

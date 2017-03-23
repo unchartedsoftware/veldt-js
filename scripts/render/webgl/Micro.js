@@ -1,7 +1,7 @@
 'use strict';
 
 const defaultTo = require('lodash/defaultTo');
-const lumo = require('lumo');
+const InteractiveRenderer = require('./InteractiveRenderer');
 const Point = require('../shape/Point');
 
 const POINT_RADIUS = 8;
@@ -14,7 +14,7 @@ const POINT_RADIUS_INC = 4;
 // 	point.y += Math.floor(Math.sin(angle) * dist);
 // };
 
-class Micro extends lumo.WebGLInteractiveRenderer {
+class Micro extends InteractiveRenderer {
 
 	constructor(options = {}) {
 		super(options);

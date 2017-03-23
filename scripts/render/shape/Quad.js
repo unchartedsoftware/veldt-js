@@ -1,8 +1,10 @@
 'use strict';
 
 const lumo = require('lumo');
+const BrightnessTransform = require('../shader/BrightnessTransform');
 
 const INDIVIDUAL_SHADER = {
+	common: BrightnessTransform.common,
 	vert:
 		`
 		precision highp float;
@@ -22,12 +24,14 @@ const INDIVIDUAL_SHADER = {
 		uniform vec4 uColor;
 		uniform float uOpacity;
 		void main() {
-			gl_FragColor = vec4(uColor.rgb, uColor.a * uOpacity);
+			vec4 color = brightnessTransform(uColor);
+			gl_FragColor = vec4(color.rgb, color.a * uOpacity);
 		}
 		`
 };
 
 const INSTANCED_SHADER = {
+	common: BrightnessTransform.common,
 	vert:
 		`
 		precision highp float;
@@ -48,7 +52,8 @@ const INSTANCED_SHADER = {
 		uniform float uOpacity;
 		uniform vec4 uColor;
 		void main() {
-			gl_FragColor = vec4(uColor.rgb, uColor.a * uOpacity);
+			vec4 color = brightnessTransform(uColor);
+			gl_FragColor = vec4(color.rgb, color.a * uOpacity);
 		}
 		`
 };
@@ -92,8 +97,9 @@ class Quad {
 
 		const shader = this.shaders.instanced;
 		const ring = this.ring;
-		const projection = this.renderer.getOrthoMatrix();
-		const renderables = this.renderer.getRenderables();
+		const renderer = this.renderer;
+		const projection = renderer.getOrthoMatrix();
+		const renderables = renderer.getRenderables();
 
 		// use shader
 		shader.use();
@@ -103,6 +109,7 @@ class Quad {
 		shader.setUniform('uOpacity', opacity);
 		shader.setUniform('uOffset', offset);
 		shader.setUniform('uColor', color);
+		shader.setUniform('uBrightness', renderer.brightness);
 
 		// bind the ring buffer
 		ring.bind();
@@ -128,8 +135,9 @@ class Quad {
 
 		const shader = this.shaders.individual;
 		const ring = this.ring;
-		const plot = this.renderer.layer.plot;
-		const projection = this.renderer.getOrthoMatrix();
+		const renderer = this.renderer;
+		const plot = renderer.layer.plot;
+		const projection = renderer.getOrthoMatrix();
 
 		// get tile offset
 		const coord = target.tile.coord;
@@ -149,6 +157,7 @@ class Quad {
 		shader.setUniform('uScale', scale);
 		shader.setUniform('uTileOffset', tileOffset);
 		shader.setUniform('uOffset', offset);
+		shader.setUniform('uBrightness', renderer.brightness);
 
 		// bind the ring buffer
 		ring.bind();

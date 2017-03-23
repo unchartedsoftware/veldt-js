@@ -2,10 +2,10 @@
 
 const get = require('lodash/get');
 const defaultTo = require('lodash/defaultTo');
-const lumo = require('lumo');
+const InteractiveRenderer = require('./InteractiveRenderer');
 const Ring = require('../shape/Ring');
 
-class Community extends lumo.WebGLInteractiveRenderer {
+class Community extends InteractiveRenderer {
 
 	constructor(options = {}) {
 		super(options);

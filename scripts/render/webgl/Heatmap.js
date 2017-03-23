@@ -3,6 +3,7 @@
 const clamp = require('lodash/clamp');
 const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
+const TextureRenderer = require('./TextureRenderer');
 const ColorRamp = require('../color/ColorRamp');
 
 const SHADER = {
@@ -184,7 +185,7 @@ const createRampTexture = function(gl, type) {
 	return texture;
 };
 
-class Heatmap extends lumo.WebGLTextureRenderer {
+class Heatmap extends TextureRenderer {
 
 	constructor(options = {}) {
 		options.filter = 'NEAREST';

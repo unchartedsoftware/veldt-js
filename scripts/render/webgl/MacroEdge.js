@@ -1,10 +1,10 @@
 'use strict';
 
 const defaultTo = require('lodash/defaultTo');
-const lumo = require('lumo');
+const VertexRenderer = require('./VertexRenderer');
 const Line = require('../shape/Line');
 
-class MacroEdge extends lumo.WebGLVertexRenderer {
+class MacroEdge extends VertexRenderer {
 
 	constructor(options = {}) {
 		super(options);

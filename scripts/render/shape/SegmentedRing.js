@@ -1,11 +1,13 @@
 'use strict';
 
 const lumo = require('lumo');
+const BrightnessTransform = require('../shader/BrightnessTransform');
 
 const NUM_SLICES = 360;
 const RADIUS_OFFSET = 10;
 
 const INDIVIDUAL_SHADER = {
+	common: BrightnessTransform.common,
 	vert:
 		`
 		precision highp float;
@@ -41,12 +43,14 @@ const INDIVIDUAL_SHADER = {
 		uniform float uOpacity;
 		varying vec4 vColor;
 		void main() {
-			gl_FragColor = vec4(vColor.rgb, vColor.a * uOpacity);
+			vec4 color = brightnessTransform(uColor);
+			gl_FragColor = vec4(color.rgb, color.a * uOpacity);
 		}
 		`
 };
 
 const INSTANCED_SHADER = {
+	common: BrightnessTransform.common,
 	vert:
 		`
 		precision highp float;
@@ -140,8 +144,13 @@ const INSTANCED_SHADER = {
 		precision highp float;
 		uniform float uOpacity;
 		varying vec4 vColor;
+		uniform float uDimColor;
 		void main() {
-			gl_FragColor = vec4(vColor.rgb, vColor.a * uOpacity);
+			vec4 color = vColor;
+			if (uDimColor > 0.0) {
+				color =	transformColor(vColor);
+			}
+			gl_FragColor = vec4(color.rgb, color.a * uOpacity);
 		}
 		`
 };
@@ -216,8 +225,9 @@ class SegmentedRing {
 
 		const shader = this.shaders.instanced;
 		const ring = this.ring;
-		const projection = this.renderer.getOrthoMatrix();
-		const renderables = this.renderer.getRenderables();
+		const renderer = this.renderer;
+		const projection = renderer.getOrthoMatrix();
+		const renderables = renderer.getRenderables();
 
 		// use shader
 		shader.use();
@@ -227,6 +237,7 @@ class SegmentedRing {
 		shader.setUniform('uRadiusOffset', RADIUS_OFFSET);
 		shader.setUniform('uOpacity', opacity);
 		shader.setUniform('uColors', colors);
+		shader.setUniform('uBrightness', renderer.brightness);
 
 		// bind the ring buffer
 		ring.bind();
@@ -252,8 +263,9 @@ class SegmentedRing {
 
 		const shader = this.shaders.individual;
 		const ring = this.ring;
-		const plot = this.renderer.layer.plot;
-		const projection = this.renderer.getOrthoMatrix();
+		const renderer = this.renderer;
+		const plot = renderer.layer.plot;
+		const projection = renderer.getOrthoMatrix();
 
 		// get tile offset
 		const coord = target.tile.coord;
@@ -275,6 +287,7 @@ class SegmentedRing {
 		shader.setUniform('uRadiusOffset', RADIUS_OFFSET);
 		shader.setUniform('uScale', scale);
 		shader.setUniform('uTileOffset', tileOffset);
+		shader.setUniform('uBrightness', renderer.brightness);
 
 		// bind the ring buffer
 		ring.bind();
