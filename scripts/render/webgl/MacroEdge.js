@@ -18,7 +18,7 @@ class MacroEdge extends VertexRenderer {
 		atlas.set(
 			tile.coord.hash,
 			edges,
-			edges.length / (atlas.stride * 2));
+			edges.length / atlas.stride);
 	}
 
 	onAdd(layer) {

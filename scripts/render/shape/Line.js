@@ -148,8 +148,8 @@ const drawLOD = function(shader, atlas, plot, lod, renderables) {
 		const startByte = offsets[start];
 		const stopByte = (stop === offsets.length) ? edges.byteLength : offsets[stop];
 
-		const offset = startByte / (atlas.stride * 2 * 4);
-		const count = (stopByte - startByte) / (atlas.stride * 2 * 4);
+		const offset = startByte / (atlas.stride * 4);
+		const count = (stopByte - startByte) / (atlas.stride * 4);
 		if (count > 0) {
 			// draw the edges
 			atlas.draw(renderable.hash, 'LINES', offset, count);
