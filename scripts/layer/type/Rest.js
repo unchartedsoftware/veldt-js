@@ -1,17 +1,21 @@
 'use strict';
 
+const _ = require('lodash');
 const lumo = require('lumo');
 const defaultTo = require('lodash/defaultTo');
+const Base = require('../core/Base');
 const ImageRenderer = require('../../render/webgl/Image');
 
-class Rest extends lumo.Layer {
+class Rest extends Base {
 
 	constructor(endpoint, options = {}) {
-		super(options);
+		super(null, options);
 		this.ext = defaultTo(options.ext, 'png');
-		this.scheme = defaultTo(options.ext, 'http');
+		this.scheme = defaultTo(options.scheme, 'http');
 		this.endpoint = endpoint;
-		this.setRenderer(new ImageRenderer());
+		if(_.isNil(this.renderer)) {
+			this.setRenderer(new ImageRenderer());
+		}
 	}
 
 	setExt(ext) {

@@ -273,7 +273,7 @@ class WordCloud extends lumo.HTMLRenderer {
 		const halfSize = layer.plot.tileSize / 2;
 		// create html for tile
 		const divs = [];
-		// for each word int he cloud
+		// for each word in the cloud
 		cloud.forEach(word => {
 			const highlight = (word.text === this.highlight) ? 'highlight' : '';
 			// create element for word

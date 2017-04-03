@@ -3,6 +3,8 @@
 module.exports = {
 	// debug
 	Debug: require('./core/Debug'),
+	// base
+	Base: require('./core/Base'),
 	// live
 	Live: require('./core/Live'),
 	// group
