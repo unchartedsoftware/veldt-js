@@ -1,6 +1,6 @@
 {
   "name": "veldt",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "author": "Kevin Birk <kbirk@uncharted.software>",
   "main": "scripts/exports.js",
   "style": "styles/**/*.css",
@@ -19,7 +19,7 @@
     "jquery": "3.2.1",
     "json-stable-stringify": "1.0.1",
     "lodash": "4.17.4",
-    "lumo": "0.12.0"
+    "lumo": "0.13.0"
   },
   "devDependencies": {
     "babel-preset-es2015": "6.24.0",

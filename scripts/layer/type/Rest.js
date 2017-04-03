@@ -1,7 +1,6 @@
 'use strict';
 
 const _ = require('lodash');
-const lumo = require('lumo');
 const defaultTo = require('lodash/defaultTo');
 const Base = require('../core/Base');
 const ImageRenderer = require('../../render/webgl/Image');

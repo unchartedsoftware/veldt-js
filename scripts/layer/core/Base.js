@@ -2,8 +2,6 @@
 
 const lumo = require('lumo');
 const defaultTo = require('lodash/defaultTo');
-const isEmpty = require('lodash/isEmpty');
-const isFunction = require('lodash/isFunction');
 
 const TILE_ADD = Symbol();
 const REDRAW_TIMEOUT_MS = 800;
@@ -12,7 +10,6 @@ class Base extends lumo.Layer {
 
 	constructor(options = {}) {
 		super(options);
-		this.params = {};
 		this.transform = defaultTo(options.transform, null);
 		this.redrawDebounce = null;
 		this.handlers = new Map();
@@ -100,9 +97,6 @@ class Base extends lumo.Layer {
 		};
 	}
 
-	getParams() {
-		return this.params;
-	}
 }
 
 module.exports = Base;

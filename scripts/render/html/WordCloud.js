@@ -75,16 +75,6 @@ const intersectWord = function(position, word, cloud, bb) {
 	return false;
 };
 
-const getMouseButton = function(event) {
-	if (event.which === 1) {
-		return 'left';
-	} else if (event.which === 2) {
-		return 'middle';
-	} else if (event.which === 3) {
-		return 'right';
-	}
-};
-
 const measureWords = function(renderer, wordCounts, extrema) {
 	// sort words by frequency
 	wordCounts = wordCounts.sort((a, b) => {

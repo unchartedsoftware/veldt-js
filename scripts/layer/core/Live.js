@@ -1,7 +1,5 @@
 'use strict';
 
-const lumo = require('lumo');
-const defaultTo = require('lodash/defaultTo');
 const isEmpty = require('lodash/isEmpty');
 const isFunction = require('lodash/isFunction');
 const Base = require('./Base');
@@ -67,10 +65,6 @@ class Live extends Base {
 	getMeta() {
 		return this.meta;
 	}
-
-	//getParams() {
-	//	return this.params;
-	//}
 }
 
 module.exports = Live;
