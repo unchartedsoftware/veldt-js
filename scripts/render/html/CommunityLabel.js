@@ -8,16 +8,6 @@ const Transform = require('../transform/Transform');
 
 const HEIGHT_BUFFER = 4;
 
-const getMouseButton = function(event) {
-	if (event.which === 1) {
-		return 'left';
-	} else if (event.which === 2) {
-		return 'middle';
-	} else if (event.which === 3) {
-		return 'right';
-	}
-};
-
 class CommunityLabel extends lumo.HTMLRenderer {
 
 	constructor(options = {}) {
@@ -101,12 +91,10 @@ class CommunityLabel extends lumo.HTMLRenderer {
 	onMouseOver(event) {
 		const data = $(event.target).data('community');
 		if (data) {
-			const plot = this.layer.plot;
 			this.emit(lumo.MOUSE_OVER, new lumo.MouseEvent(
 				this.layer,
-				getMouseButton(event),
-				plot.mouseToViewPx(event),
-				plot.mouseToPlotPx(event),
+				this.getMouseButton(event),
+				this.mouseToPlot(event),
 				data
 			));
 		}
@@ -115,12 +103,10 @@ class CommunityLabel extends lumo.HTMLRenderer {
 	onMouseOut(event) {
 		const data = $(event.target).data('community');
 		if (data) {
-			const plot = this.layer.plot;
 			this.emit(lumo.MOUSE_OUT, new lumo.MouseEvent(
 				this.layer,
-				getMouseButton(event),
-				plot.mouseToViewPx(event),
-				plot.mouseToPlotPx(event)
+				this.getMouseButton(event),
+				this.mouseToPlot(event)
 			));
 		}
 	}
@@ -128,12 +114,10 @@ class CommunityLabel extends lumo.HTMLRenderer {
 	onClick(event) {
 		const data = $(event.target).data('community');
 		if (data) {
-			const plot = this.layer.plot;
 			this.emit(lumo.CLICK, new lumo.MouseEvent(
 				this.layer,
-				getMouseButton(event),
-				plot.mouseToViewPx(event),
-				plot.mouseToPlotPx(event),
+				this.getMouseButton(event),
+				this.mouseToPlot(event),
 				data
 			));
 		}

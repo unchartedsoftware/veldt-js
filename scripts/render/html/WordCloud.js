@@ -216,12 +216,10 @@ class WordCloud extends lumo.HTMLRenderer {
 			// highlight all instances of the word
 			$(`.word-cloud-label[data-word="${word}"]`).addClass('hover');
 			// emit mouseover event
-			const plot = this.layer.plot;
 			this.emit(lumo.MOUSE_OVER, new lumo.MouseEvent(
 				this.layer,
-				getMouseButton(event),
-				plot.mouseToViewPx(event),
-				plot.mouseToPlotPx(event),
+				this.getMouseButton(event),
+				this.mouseToPlot(event),
 				word
 			));
 		}
@@ -232,12 +230,10 @@ class WordCloud extends lumo.HTMLRenderer {
 		const word = $(event.target).attr('data-word');
 		if (word) {
 			// emit click event
-			const plot = this.layer.plot;
 			this.emit(lumo.MOUSE_OUT, new lumo.MouseEvent(
 				this.layer,
-				getMouseButton(event),
-				plot.mouseToViewPx(event),
-				plot.mouseToPlotPx(event),
+				this.getMouseButton(event),
+				this.mouseToPlot(event),
 				word
 			));
 		}
@@ -252,12 +248,10 @@ class WordCloud extends lumo.HTMLRenderer {
 			// set highlight
 			this.setHighlight(word);
 			// emit click event
-			const plot = this.layer.plot;
 			this.emit(lumo.CLICK, new lumo.ClickEvent(
 				this.layer,
-				getMouseButton(event),
-				plot.mouseToViewPx(event),
-				plot.mouseToPlotPx(event),
+				this.getMouseButton(event),
+				this.mouseToPlot(event),
 				word));
 		} else {
 			this.clearSelection();

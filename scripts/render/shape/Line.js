@@ -211,13 +211,14 @@ class Line {
 		const renderer = this.renderer;
 		const plot = renderer.layer.plot;
 		const projection = renderer.getOrthoMatrix();
+		const viewport = plot.getViewportPixelOffset();
 
 		// get tile offset
 		const coord = target.tile.coord;
 		const scale = Math.pow(2, plot.zoom - coord.z);
 		const tileOffset = [
-			(coord.x * scale * plot.tileSize) - plot.viewport.x,
-			(coord.y * scale * plot.tileSize) - plot.viewport.y
+			(coord.x * scale * plot.tileSize) - viewport.x,
+			(coord.y * scale * plot.tileSize) - viewport.y
 		];
 
 		// bind shader

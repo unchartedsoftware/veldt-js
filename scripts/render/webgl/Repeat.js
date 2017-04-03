@@ -125,6 +125,7 @@ class Repeat extends lumo.WebGLRenderer {
 		const quad = this.quad;
 		const proj = this.getOrthoMatrix();
 		const plot = this.layer.plot;
+		const viewport = plot.getViewportPixelOffset();
 
 		// bind shader
 		shader.use();
@@ -144,18 +145,14 @@ class Repeat extends lumo.WebGLRenderer {
 		quad.bind();
 
 		// get all currently visible tile coords
-		const coords = plot.viewport.getVisibleCoords(
-			plot.tileSize,
-			plot.zoom,
-			Math.round(plot.zoom), // get tiles closest to current zoom
-			plot.wraparound);
+		const coords = plot.getVisibleCoords();
 
 		// draw the tile
 		coords.forEach(coord => {
 			const scale = Math.pow(2, plot.zoom - coord.z);
 			const tileOffset = [
-				(coord.x * scale * plot.tileSize) - plot.viewport.x,
-				(coord.y * scale * plot.tileSize) - plot.viewport.y
+				(coord.x * scale * plot.tileSize) - viewport.x,
+				(coord.y * scale * plot.tileSize) - viewport.y
 			];
 			// set tile uniforms
 			shader.setUniform('uScale', scale);

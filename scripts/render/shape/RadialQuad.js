@@ -114,13 +114,14 @@ class Quad {
 		const renderer = this.renderer;
 		const plot = this.renderer.layer.plot;
 		const projection = this.renderer.getOrthoMatrix();
+		const viewport = plot.getViewportPixelOffset();
 
 		// get tile offset
 		const coord = target.tile.coord;
 		const scale = Math.pow(2, plot.zoom - coord.z);
 		const tileOffset = [
-			(coord.x * scale * plot.tileSize) + (scale * target.x) - plot.viewport.x,
-			(coord.y * scale * plot.tileSize) + (scale * target.y) - plot.viewport.y
+			(coord.x * scale * plot.tileSize) + (scale * target.x) - viewport.x,
+			(coord.y * scale * plot.tileSize) + (scale * target.y) - viewport.y
 		];
 
 		// use shader
