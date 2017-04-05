@@ -103,11 +103,17 @@ class Group extends EventEmitter {
 
 	show() {
 		this.hidden = false;
+		this.layers.forEach(layer => {
+			layer.show();
+		});
 		return this;
 	}
 
 	hide() {
 		this.hidden = true;
+		this.layers.forEach(layer => {
+			layer.hide();
+		});
 		return this;
 	}
 
