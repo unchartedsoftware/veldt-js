@@ -90,6 +90,14 @@ class Base extends lumo.Layer {
 		return changed;
 	}
 
+	setZIndex(index) {
+		this.zIndex = index;
+	}
+
+	setOpacity(opacity) {
+		this.opacity = Math.max(0, Math.min(opacity, 1.0)); //[0,1]
+	}
+
 	extractExtrema() {
 		return {
 			min: Infinity,
