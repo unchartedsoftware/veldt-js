@@ -25,6 +25,10 @@ class Live extends Base {
 		}
 	}
 
+	isFiltered() {
+		return (this.filters.size > 0);
+	}
+
 	clearFilters() {
 		this.filters.clear();
 	}

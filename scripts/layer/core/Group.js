@@ -3,6 +3,7 @@
 const lumo = require('lumo');
 const EventEmitter = require('events');
 const defaultTo = require('lodash/defaultTo');
+const reduce = require('lodash/reduce');
 
 const broadcast = function(group, type) {
 	const handler = event => {
@@ -157,6 +158,26 @@ class Group extends EventEmitter {
 
 	isDisabled() {
 		return this.muted && this.hidden;
+	}
+
+	setZIndex(index) {
+		this.zIndex = index;
+		this.layers.forEach(layer => {
+			layer.setZIndex(index);
+		});
+	}
+
+	setOpacity(opacity) {
+		this.opacity = Math.max(0, Math.min(opacity, 1.0)); //[0,1];
+		this.layers.forEach(layer => {
+			layer.setOpacity(opacity);
+		});
+	}
+
+	isFiltered() {
+		return reduce(this.layers, (result, layer) => {
+			return result || layer.isFiltered();
+		}, false);
 	}
 
 	addFilter(id, filter) {
