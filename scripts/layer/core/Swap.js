@@ -1,27 +1,41 @@
 'use strict';
 
+const lumo = require('lumo');
 const EventEmitter = require('events');
 const defaultTo = require('lodash/defaultTo');
 const reduce = require('lodash/reduce');
 
-const configureLayer = function(group, layer) {
-	layer.hidden = group.hidden;
-	layer.muted = group.muted;
-	layer.zIndex = group.zIndex;
+const broadcast = function(swap, type) {
+	const handler = event => {
+		swap.layers.forEach(layer => {
+			layer.emit(type, event);
+		});
+	};
+	swap.on(type, handler);
+	swap.broadcasts.set(type, handler);
 };
 
-class Group extends EventEmitter {
+const unbroadcast = function(swap, type) {
+	const handler = swap.broadcasts.get(type);
+	swap.removeListener(type, handler);
+	swap.broadcasts.delete(type);
+};
 
-	constructor(options = {}) {
+class Swap extends EventEmitter {
+
+	constructor(swap, options = {}) {
 		super();
+		if (!swap) {
+			throw '\'swap\' argument is missing';
+		}
+		this.swap = swap;
 		this.hidden = defaultTo(options.hidden, false);
 		this.muted = defaultTo(options.muted, false);
 		this.opacity = defaultTo(options.opacity, 1.0);
 		this.zIndex = defaultTo(options.zIndex, 0);
 		this.layers = defaultTo(options.layers, []);
-		this.layers.forEach(layer => {
-			configureLayer(this, layer);
-		});
+		this.layers.unshift(swap);
+		this.broadcasts = new Map();
 	}
 
 	onAdd(plot) {
@@ -30,8 +44,14 @@ class Group extends EventEmitter {
 		}
 		this.plot = plot;
 		this.layers.forEach(layer => {
-			plot.addLayer(layer);
+			layer.onAdd(this.plot);
 		});
+		broadcast(this, lumo.PAN_START);
+		broadcast(this, lumo.PAN);
+		broadcast(this, lumo.PAN_END);
+		broadcast(this, lumo.ZOOM_START);
+		broadcast(this, lumo.ZOOM);
+		broadcast(this, lumo.ZOOM_END);
 		return this;
 	}
 
@@ -39,41 +59,58 @@ class Group extends EventEmitter {
 		if (!plot) {
 			throw 'No plot argument provided';
 		}
+		unbroadcast(this, lumo.PAN_START);
+		unbroadcast(this, lumo.PAN);
+		unbroadcast(this, lumo.PAN_END);
+		unbroadcast(this, lumo.ZOOM_START);
+		unbroadcast(this, lumo.ZOOM);
+		unbroadcast(this, lumo.ZOOM_END);
 		this.layers.forEach(layer => {
-			plot.removeLayer(layer);
+			layer.onRemove(plot);
 		});
 		this.plot = null;
 		return this;
 	}
 
-	add(layer) {
+	add(id, layer) {
 		if (!layer) {
 			throw 'No layer argument provided';
 		}
 		if (this.layers.indexOf(layer) !== -1) {
-			throw 'Provided layer is already attached to the group';
+			throw 'Provided layer is already attached to the swap';
 		}
-		configureLayer(this, layer);
 		this.layers.push(layer);
 		if (this.plot) {
-			this.plot.addLayer(layer);
+			layer.onAdd(this.plot);
 		}
 		return this;
 	}
 
-	remove(layer) {
+	remove(id, layer) {
 		if (!layer) {
 			throw 'No layer argument provided';
 		}
 		const index = this.layers.indexOf(layer);
 		if (index === -1) {
-			throw 'Provided layer is not attached to the group';
+			throw 'Provided layer is not attached to the swap';
 		}
 		this.layers.splice(index, 1);
 		if (this.plot) {
-			this.plot.removeLayer(layer);
+			layer.onRemove(this.plot);
 		}
 		return this;
+	}
+
+	setSwapFunc(func) {
+		if (this.swapFunc) {
+			this.swap.removeListener('load', this.swapFunc);
+			this.swap.removeListener('zoomend', this.swapFunc);
+			this.swap.removeListener('panend', this.swapFunc);
+		}
+		this.swapFunc = func;
+		this.swap.on('load', func);
+		this.swap.on('zoomend', func);
+		this.swap.on('panend', func);
 	}
 
 	has(layer) {
@@ -103,25 +140,17 @@ class Group extends EventEmitter {
 
 	mute() {
 		this.muted = true;
-		this.layers.forEach(layer => {
-			layer.mute();
-		});
 		return this;
 	}
 
 	unmute() {
 		if (this.muted) {
 			this.muted = false;
-			this.layers.forEach(layer => {
-				layer.unmute();
-			});
 			if (this.plot) {
 				// get visible coords
 				const coords = this.plot.getTargetVisibleCoords();
 				// request tiles
-				this.layers.forEach(layer => {
-					layer.requestTiles(coords);
-				});
+				this.requestTiles(coords);
 			}
 		}
 		return this;
@@ -197,19 +226,36 @@ class Group extends EventEmitter {
 		});
 	}
 
+	draw(timestamp) {
+		if (this.hidden) {
+			this.layers.forEach(layer => {
+				if (layer.renderer && layer.renderer.clear) {
+					// clear DOM based renderer
+					layer.renderer.clear();
+				}
+			});
+			return this;
+		}
+		this.layers.forEach(layer => {
+			layer.draw(timestamp);
+		});
+		return this;
+	}
+
 	refresh() {
 		this.layers.forEach(layer => {
 			layer.refresh();
 		});
 	}
 
-	draw() {
-		// no-op
-	}
-
-	requestTiles() {
-		// no-op
+	requestTiles(coords) {
+		if (this.muted) {
+			return this;
+		}
+		this.layers.forEach(layer => {
+			layer.requestTiles(coords);
+		});
 	}
 }
 
-module.exports = Group;
+module.exports = Swap;

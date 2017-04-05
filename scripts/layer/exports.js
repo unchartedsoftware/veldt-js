@@ -9,6 +9,8 @@ module.exports = {
 	Live: require('./core/Live'),
 	// group
 	Group: require('./core/Group'),
+	// swap
+	Swap: require('./core/Swap'),
 	// live-result pair
 	LivePair: require('./core/LivePair'),
 	// types
