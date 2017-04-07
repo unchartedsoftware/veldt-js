@@ -25,6 +25,23 @@ class LivePair extends Group {
 		this.temporaryFilters = new Map();
 	}
 
+	enable() {
+		this.hidden = false;
+		this.muted = false;
+
+		if (this.temporaryFilters.size === 0 || !this.hideParentWhenFiltered) {
+			this.parent.show();
+			this.parent.unmute();
+		}
+
+		if (this.temporaryFilters.size > 0) {
+			this.child.show();
+			this.child.unmute();
+		}
+
+		return this;
+	}
+
 	addFilter(id, filter, isTemporary = false) {
 		if (!isTemporary) {
 			super.addFilter(id, filter);
