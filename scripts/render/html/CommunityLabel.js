@@ -15,6 +15,7 @@ class CommunityLabel extends lumo.HTMLRenderer {
 		this.transform = defaultTo(options.transform, 'log10');
 		this.minFontSize = defaultTo(options.minFontSize, 10);
 		this.maxFontSize = defaultTo(options.maxFontSize, 24);
+		this.fontFamily = defaultTo(options.fontFamily, 'ariel');
 		this.minOpacity = defaultTo(options.minOpacity, 0.6);
 		this.maxOpacity = defaultTo(options.maxOpacity, 1.0);
 		this.labelMaxLength = defaultTo(options.labelMaxLength, 256);
@@ -156,9 +157,10 @@ class CommunityLabel extends lumo.HTMLRenderer {
 			const fontSize = this.minFontSize + (rnval * (this.maxFontSize - this.minFontSize));
 			const opacity = this.minOpacity + (rnval * (this.maxOpacity - this.minOpacity));
 			const height = fontSize + HEIGHT_BUFFER; // add buffer to prevent cutoff of some letters
+			const width = Math.min(this.getTextWidth(label, fontSize, this.fontFamily, 10), this.labelMaxLength);
 
 			// get position
-			const x = points[index*2] - (this.labelMaxLength / 2);
+			const x = points[index*2] - (width / 2);
 			const y = points[index*2+1] - (height / 2);
 
 			const div = $(`
@@ -167,9 +169,9 @@ class CommunityLabel extends lumo.HTMLRenderer {
 					bottom: ${y}px;
 					opacity: ${opacity};
 					z-index: ${zIndex};
-					width: ${this.labelMaxLength}px;
+					width: ${width}px;
 					height: ${height}px;
-					font-size: ${fontSize}px;
+					font-size: ${fontSize}pt;
 					line-height: ${fontSize}px;">${label}</div>
 				`);
 
@@ -177,6 +179,17 @@ class CommunityLabel extends lumo.HTMLRenderer {
 			divs = divs.add(div);
 		});
 		$(element).empty().append(divs);
+	}
+
+	getTextWidth(text, fontSize, fontFamily, buffer) {
+		const font = `${fontSize}pt ${fontFamily}`;
+		// re-use canvas object for better performance
+		const canvas = this.getTextWidth.canvas ||
+			(this.getTextWidth.canvas = document.createElement("canvas"));
+		const context = canvas.getContext("2d");
+		context.font = font;
+		var metrics = context.measureText(text);
+		return Math.floor(metrics.width) + 1 + buffer;
 	}
 }
 
