@@ -26,6 +26,7 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	transition: 0s color, opacity;
 }
 
 .community-hidden {
@@ -35,4 +36,5 @@
 	color: #ff80ff;
 	opacity: 1 !important;
 	z-index: 1000 !important;
+	transition-delay: 0.3s;
 }
