@@ -124,7 +124,7 @@ class Micro extends InteractiveRenderer {
 			this.color);
 
 		// render selected
-		this.selected.forEach(selected => {
+		layer.selected.forEach(selected => {
 			this.point.drawIndividual(
 				selected,
 				this.radius + POINT_RADIUS_INC * 2,
@@ -132,10 +132,9 @@ class Micro extends InteractiveRenderer {
 		});
 
 		// render highlighted
-		if (this.highlighted &&
-			this.selected.indexOf(this.highlighted) === -1) {
+		if (layer.highlighted && !layer.isSelected(layer.highlighted)) {
 			this.point.drawIndividual(
-				this.highlighted,
+				layer.highlighted,
 				this.radius + POINT_RADIUS_INC,
 				this.color);
 		}

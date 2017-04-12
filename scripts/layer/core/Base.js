@@ -12,14 +12,13 @@ class Base extends lumo.Layer {
 		super(options);
 		this.transform = defaultTo(options.transform, null);
 		this.redrawDebounce = null;
-		this.handlers = new Map();
 		// set extrema / cache
 		this.clearExtrema();
 	}
 
 	onAdd(plot) {
 		// create handler
-		const add = event => {
+		this[TILE_ADD] = event => {
 			if (this.transform) {
 				event.tile.data = this.transform(event.tile.data);
 			}
@@ -38,9 +37,7 @@ class Base extends lumo.Layer {
 		// attach handler
 		// NOTE: add this BEFORE calling super, this NEEDS to be the first
 		// `TILE_ADD` callback.
-		this.on(lumo.TILE_ADD, add);
-		// store handler
-		this.handlers.set(TILE_ADD, add);
+		this.on(lumo.TILE_ADD, this[TILE_ADD]);
 		super.onAdd(plot);
 		return this;
 	}
@@ -50,9 +47,9 @@ class Base extends lumo.Layer {
 		clearTimeout(this.redrawDebounce);
 		this.redrawDebounce = null;
 		// detach handler
-		this.removeListener(lumo.TILE_ADD, this.handlers.get(TILE_ADD));
+		this.removeListener(lumo.TILE_ADD, this[TILE_ADD]);
 		// delete handler
-		this.handlers.delete(TILE_ADD);
+		this[TILE_ADD] = null;
 		super.onRemove(plot);
 		return this;
 	}
@@ -88,14 +85,6 @@ class Base extends lumo.Layer {
 			current.max = extrema.max;
 		}
 		return changed;
-	}
-
-	setZIndex(index) {
-		this.zIndex = index;
-	}
-
-	setOpacity(opacity) {
-		this.opacity = Math.max(0, Math.min(opacity, 1.0)); //[0,1]
 	}
 
 	extractExtrema() {

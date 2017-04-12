@@ -3,6 +3,7 @@
 const lumo = require('lumo');
 const EventEmitter = require('events');
 const defaultTo = require('lodash/defaultTo');
+const maxBy = require('lodash/maxBy');
 const reduce = require('lodash/reduce');
 
 const broadcast = function(swap, type) {
@@ -21,6 +22,22 @@ const unbroadcast = function(swap, type) {
 	swap.broadcasts.delete(type);
 };
 
+const getTopLayer = function(swap) {
+	const active = swap.layers.filter(layer => {
+		return layer !== swap.swap && !layer.isDisabled();
+	});
+	return maxBy(active, layer => {
+		return layer.getZIndex();
+	});
+};
+
+/**
+ * Swap layer acts as an interface for swapping between multiple layers or layer
+ * properties based on the asynchronous results of the particular swap layer.
+ *
+ * The child layers of a swap laeyr are intended to share properties and will be
+ * treated as a single cohesive layer.
+ */
 class Swap extends EventEmitter {
 
 	constructor(swap, options = {}) {
@@ -46,6 +63,15 @@ class Swap extends EventEmitter {
 		this.layers.forEach(layer => {
 			layer.onAdd(this.plot);
 		});
+		broadcast(this, lumo.CLICK);
+		broadcast(this, lumo.DBL_CLICK);
+		broadcast(this, lumo.MOUSE_OVER);
+		broadcast(this, lumo.MOUSE_OUT);
+		broadcast(this, lumo.MOUSE_MOVE);
+		broadcast(this, lumo.MOUSE_UP);
+		broadcast(this, lumo.MOUSE_DOWN);
+		broadcast(this, lumo.DBL_CLICK);
+		broadcast(this, lumo.DBL_CLICK);
 		broadcast(this, lumo.PAN_START);
 		broadcast(this, lumo.PAN);
 		broadcast(this, lumo.PAN_END);
@@ -59,6 +85,13 @@ class Swap extends EventEmitter {
 		if (!plot) {
 			throw 'No plot argument provided';
 		}
+		unbroadcast(this, lumo.CLICK);
+		unbroadcast(this, lumo.DBL_CLICK);
+		unbroadcast(this, lumo.MOUSE_OVER);
+		unbroadcast(this, lumo.MOUSE_OUT);
+		unbroadcast(this, lumo.MOUSE_MOVE);
+		unbroadcast(this, lumo.MOUSE_UP);
+		unbroadcast(this, lumo.MOUSE_DOWN);
 		unbroadcast(this, lumo.PAN_START);
 		unbroadcast(this, lumo.PAN);
 		unbroadcast(this, lumo.PAN_END);
@@ -120,18 +153,10 @@ class Swap extends EventEmitter {
 
 	show() {
 		this.hidden = false;
-		this.layers.forEach(layer => {
-			layer.show();
-		});
-		return this;
 	}
 
 	hide() {
 		this.hidden = true;
-		this.layers.forEach(layer => {
-			layer.hide();
-		});
-		return this;
 	}
 
 	isHidden() {
@@ -140,7 +165,6 @@ class Swap extends EventEmitter {
 
 	mute() {
 		this.muted = true;
-		return this;
 	}
 
 	unmute() {
@@ -153,7 +177,6 @@ class Swap extends EventEmitter {
 				this.requestTiles(coords);
 			}
 		}
-		return this;
 	}
 
 	isMuted() {
@@ -163,13 +186,11 @@ class Swap extends EventEmitter {
 	enable() {
 		this.show();
 		this.unmute();
-		return this;
 	}
 
 	disable() {
 		this.hide();
 		this.mute();
-		return this;
 	}
 
 	isDisabled() {
@@ -183,8 +204,72 @@ class Swap extends EventEmitter {
 		});
 	}
 
+	highlight(data) {
+		this.layers.forEach(layer => {
+			layer.highlight(data);
+		});
+	}
+
+	unhighlight() {
+		this.layers.forEach(layer => {
+			layer.unhighlight();
+		});
+	}
+
+	getHighlight() {
+		const top = getTopLayer(this);
+		if (top) {
+			return top.highlighted;
+		}
+		return null;
+	}
+
+	isHighlighted(data) {
+		return this.getHighlight() === data;
+	}
+
+	select(data, multiSelect) {
+		this.layers.forEach(layer => {
+			layer.select(data, multiSelect);
+		});
+	}
+
+	unselect() {
+		this.layers.forEach(layer => {
+			layer.unselect();
+		});
+	}
+
+	getSelected() {
+		const top = getTopLayer(this);
+		if (top) {
+			return top.selected;
+		}
+		return null;
+	}
+
+	isSelected(data) {
+		return this.getSelected().indexOf(data) !== -1;
+	}
+
+	clear() {
+		this.layers.forEach(layer => {
+			layer.clear();
+		});
+	}
+
+	getZIndex() {
+		return this.zIndex;
+	}
+
+	setZIndex(zIndex) {
+		this.zIndex = zIndex;
+		this.layers.forEach(layer => {
+			layer.setZIndex(zIndex);
+		});
+	}
+
 	setOpacity(opacity) {
-		this.opacity = Math.max(0, Math.min(opacity, 1.0)); //[0,1];
 		this.layers.forEach(layer => {
 			layer.setOpacity(opacity);
 		});
@@ -227,15 +312,6 @@ class Swap extends EventEmitter {
 	}
 
 	draw(timestamp) {
-		if (this.hidden) {
-			this.layers.forEach(layer => {
-				if (layer.renderer && layer.renderer.clear) {
-					// clear DOM based renderer
-					layer.renderer.clear();
-				}
-			});
-			return this;
-		}
 		this.layers.forEach(layer => {
 			layer.draw(timestamp);
 		});
@@ -255,6 +331,14 @@ class Swap extends EventEmitter {
 		this.layers.forEach(layer => {
 			layer.requestTiles(coords);
 		});
+	}
+
+	pick(pos) {
+		const top = getTopLayer(this);
+		if (top) {
+			return top.pick(pos);
+		}
+		return null;
 	}
 }
 
