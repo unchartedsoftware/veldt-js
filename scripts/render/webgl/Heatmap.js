@@ -299,18 +299,13 @@ class Heatmap extends TextureRenderer {
 		// bind quad
 		quad.bind();
 
-		// bind colo ramp
+		// bind color ramp
 		ramp.bind(1);
 
-		let last;
 		// for each renderable
 		renderables.forEach(renderable => {
-			const hash = renderable.hash;
-			if (last !== hash) {
-				// bind texture
-				array.bind(hash, 0);
-				last = hash;
-			}
+			// bind texture
+			array.bind(renderable.hash, 0);
 			// set tile uniforms
 			shader.setUniform('uScale', renderable.scale);
 			shader.setUniform('uTileOffset', renderable.tileOffset);
