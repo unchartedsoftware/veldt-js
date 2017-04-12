@@ -3,6 +3,11 @@
 const _ = require('lodash');
 const Group = require('./Group');
 
+/**
+ * LivePair layer acts as an extension of the Group layer in which there are 
+ * two layers, a parent and a child. Any temporary filters applied will be
+ * applied only to the child layer.
+ */
 class LivePair extends Group {
 
 	constructor(parent, child, options = {}) {
@@ -77,6 +82,30 @@ class LivePair extends Group {
 				}
 			}
 		}
+	}
+
+	isHidden() {
+		return this.parent.isHidden();
+	}
+
+	isMuted() {
+		return this.parent.isMuted();
+	}
+
+	isDisabled() {
+		return this.parent.isDisabled();
+	}
+
+	getZIndex() {
+		return this.parent.getZIndex();
+	}
+
+	getOpacity() {
+		return this.parent.getOpacity();
+	}
+
+	isFiltered() {
+		return this.parent.isFiltered() || this.child.isFiltered;
 	}
 
 }

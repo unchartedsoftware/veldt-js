@@ -6,8 +6,8 @@ const EventType = require('../event/EventType');
 const CELL_UPDATE = Symbol();
 const DRAW_TIMEOUT = Symbol();
 const ERASE_TIMEOUT = Symbol();
-const DRAW_DEBOUNCE_MS = 400;
-const ERASE_DEBOUNCE_MS = 400;
+const DRAW_DEBOUNCE_MS = 4000;
+const ERASE_DEBOUNCE_MS = 4000;
 const OPACITY_TIMEOUT_MS = 40;
 const OPACITY_FADE_IN_MS = 400;
 
@@ -264,7 +264,8 @@ class DOMRenderer extends lumo.Renderer {
 		const delta = plot.cell.project(plot.viewport, plot.zoom);
 
 		// scale on difference between current zoom and tile zoom.
-		const scale = Math.pow(2, plot.zoom - Math.round(plot.getTargetZoom()));
+		const tileZoom = Math.round(plot.getTargetZoom());
+		const scale = Math.pow(2, tileZoom - plot.zoom);
 
 		// update container
 		container.style.transform = `translate3d(${-delta.x}px,${delta.y}px,0) scale(${scale})`;

@@ -2,26 +2,21 @@
 
 const EventEmitter = require('events');
 const defaultTo = require('lodash/defaultTo');
-const reduce = require('lodash/reduce');
 
-const configureLayer = function(group, layer) {
-	layer.hidden = group.hidden;
-	layer.muted = group.muted;
-	layer.zIndex = group.zIndex;
-};
-
+/**
+ * Group layer acts as an interface for making changes across multiple layers
+ * in unison. The group layer itself is empty and acts as a proxy interface. all
+ * layers will still be individually added to the map.
+ *
+ * While individual properties of each child layer may differ (zIndex,
+ * visibility, etc), any setter / getter methods of the group will be applied
+ * to all children.
+ */
 class Group extends EventEmitter {
 
 	constructor(options = {}) {
 		super();
-		this.hidden = defaultTo(options.hidden, false);
-		this.muted = defaultTo(options.muted, false);
-		this.opacity = defaultTo(options.opacity, 1.0);
-		this.zIndex = defaultTo(options.zIndex, 0);
 		this.layers = defaultTo(options.layers, []);
-		this.layers.forEach(layer => {
-			configureLayer(this, layer);
-		});
 	}
 
 	onAdd(plot) {
@@ -30,7 +25,7 @@ class Group extends EventEmitter {
 		}
 		this.plot = plot;
 		this.layers.forEach(layer => {
-			plot.addLayer(layer);
+			plot.add(layer);
 		});
 		return this;
 	}
@@ -40,7 +35,7 @@ class Group extends EventEmitter {
 			throw 'No plot argument provided';
 		}
 		this.layers.forEach(layer => {
-			plot.removeLayer(layer);
+			plot.remove(layer);
 		});
 		this.plot = null;
 		return this;
@@ -53,7 +48,6 @@ class Group extends EventEmitter {
 		if (this.layers.indexOf(layer) !== -1) {
 			throw 'Provided layer is already attached to the group';
 		}
-		configureLayer(this, layer);
 		this.layers.push(layer);
 		if (this.plot) {
 			this.plot.addLayer(layer);
@@ -82,89 +76,73 @@ class Group extends EventEmitter {
 	}
 
 	show() {
-		this.hidden = false;
 		this.layers.forEach(layer => {
 			layer.show();
 		});
-		return this;
 	}
 
 	hide() {
-		this.hidden = true;
 		this.layers.forEach(layer => {
 			layer.hide();
 		});
-		return this;
 	}
 
 	isHidden() {
-		return this.hidden;
+		return true;
 	}
 
 	mute() {
-		this.muted = true;
 		this.layers.forEach(layer => {
 			layer.mute();
 		});
-		return this;
 	}
 
 	unmute() {
-		if (this.muted) {
-			this.muted = false;
-			this.layers.forEach(layer => {
-				layer.unmute();
-			});
-			if (this.plot) {
-				// get visible coords
-				const coords = this.plot.getTargetVisibleCoords();
-				// request tiles
-				this.layers.forEach(layer => {
-					layer.requestTiles(coords);
-				});
-			}
-		}
-		return this;
+		this.layers.forEach(layer => {
+			layer.unmute();
+		});
 	}
 
 	isMuted() {
-		return this.muted;
+		return true;
 	}
 
 	enable() {
 		this.show();
 		this.unmute();
-		return this;
 	}
 
 	disable() {
 		this.hide();
 		this.mute();
-		return this;
 	}
 
 	isDisabled() {
-		return this.muted && this.hidden;
+		return true;
 	}
 
 	setZIndex(index) {
-		this.zIndex = index;
 		this.layers.forEach(layer => {
 			layer.setZIndex(index);
 		});
 	}
 
+	getZIndex() {
+		return 0.0;
+	}
+
 	setOpacity(opacity) {
-		this.opacity = Math.max(0, Math.min(opacity, 1.0)); //[0,1];
 		this.layers.forEach(layer => {
 			layer.setOpacity(opacity);
 		});
 	}
 
+	getOpacity() {
+		return 0.0;
+	}
+
 	isFiltered() {
-		return reduce(this.layers, (result, layer) => {
-			return result || layer.isFiltered();
-		}, false);
+		return false;
 	}
 
 	addFilter(id, filter) {
@@ -204,6 +182,10 @@ class Group extends EventEmitter {
 	}
 
 	draw() {
+		// no-op
+	}
+
+	pick() {
 		// no-op
 	}
 

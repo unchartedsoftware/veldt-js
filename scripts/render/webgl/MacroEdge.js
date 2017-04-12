@@ -45,12 +45,12 @@ class MacroEdge extends VertexRenderer {
 	draw() {
 
 		const gl = this.gl;
-		const layer = this.layer;
-		const plot = layer.plot;
+		//const layer = this.layer;
+		//const plot = layer.plot;
 
-		// bind render target
-		plot.renderBuffer.bind();
-		plot.renderBuffer.clear();
+		// // bind render target
+		// plot.renderBuffer.bind();
+		// plot.renderBuffer.clear();
 
 		// set blending func
 		gl.enable(gl.BLEND);
@@ -62,10 +62,11 @@ class MacroEdge extends VertexRenderer {
 			this.color);
 
 		// unbind render target
-		plot.renderBuffer.unbind();
+		// plot.renderBuffer.unbind();
 
 		// render framebuffer to the backbuffer
-		plot.renderBuffer.blitToScreen(this.layer.opacity);
+		// plot.renderBuffer.blitToScreen(this.layer.opacity);
+
 		return this;
 	}
 

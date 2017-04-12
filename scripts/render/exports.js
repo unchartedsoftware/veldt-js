@@ -4,9 +4,9 @@ const lumo = require('lumo');
 
 // core renderers
 const Core = {
-	DOM: require('dom/DOMRenderer'),
-	HTML: require('dom/HTMLRenderer'),
-	SVG: require('dom/SVGRenderer'),
+	DOM: require('./dom/DOMRenderer'),
+	HTML: require('./dom/HTMLRenderer'),
+	SVG: require('./dom/SVGRenderer'),
 	WebGL: lumo.WebGLRenderer
 };
 

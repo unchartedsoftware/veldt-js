@@ -18,9 +18,9 @@ const DECONFLICT = Symbol();
 
 const getTextWidth = function(text, fontSize, fontFamily, buffer) {
 	const font = `${fontSize}pt ${fontFamily}`;
-	const context = MEASURE_CANVAS.getContext('2');
+	const context = MEASURE_CANVAS.getContext('2d');
 	context.font = font;
-	var metrics = context.measureText(text);
+	const metrics = context.measureText(text);
 	return Math.floor(metrics.width) + 1 + buffer;
 };
 
@@ -30,8 +30,8 @@ class CommunityLabel extends HTMLRenderer {
 		super(options);
 		this.transform = defaultTo(options.transform, 'log10');
 		this.minFontSize = defaultTo(options.minFontSize, 10);
-		this.maxFontSize = defaultTo(options.maxFontSize, 24);
-		this.fontFamily = defaultTo(options.fontFamily, 'ariel');
+		this.maxFontSize = defaultTo(options.maxFontSize, 18);
+		this.fontFamily = defaultTo(options.fontFamily, '\'Helvetica Neue\',sans-serif');
 		this.minOpacity = defaultTo(options.minOpacity, 0.6);
 		this.maxOpacity = defaultTo(options.maxOpacity, 1.0);
 		this.labelMaxLength = defaultTo(options.labelMaxLength, 256);
@@ -89,7 +89,7 @@ class CommunityLabel extends HTMLRenderer {
 					}
 				});
 			};
-			this.on(EventType.DOM_POST_DRAW, this.deconflict);
+			this.on(EventType.DOM_POST_DRAW, this[DECONFLICT]);
 		}
 		$(this.container).on('mouseover', this[MOUSE_OVER]);
 		$(this.container).on('mouseout', this[MOUSE_OUT]);
@@ -174,9 +174,10 @@ class CommunityLabel extends HTMLRenderer {
 					opacity: ${opacity};
 					z-index: ${zIndex};
 					width: ${width}px;
-					height: ${height}px;
+					height: ${height}pt;
 					font-size: ${fontSize}pt;
-					line-height: ${fontSize}px;">${label}</div>
+					font-family: ${this.fontFamily};
+					line-height: ${fontSize}pt;">${label}</div>
 				`);
 
 			div.data('community', community);
