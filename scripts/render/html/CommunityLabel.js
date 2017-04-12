@@ -47,15 +47,6 @@ class CommunityLabel extends HTMLRenderer {
 	onAdd(layer) {
 		super.onAdd(layer);
 		this[MOUSE_OVER] = event => {
-			const data = $(event.target).data('community');
-			if (data) {
-				this[PICK] = data;
-			}
-		};
-		this[MOUSE_OUT] = () => {
-			this[PICK] = null;
-		};
-		this[MOUSE_OVER] = event => {
 			this.onMouseOver(event);
 		};
 		this[MOUSE_OUT] = event => {
@@ -130,11 +121,7 @@ class CommunityLabel extends HTMLRenderer {
 		this[PICK] = null;
 	}
 
-	onClick(event) {
-		const data = $(event.target).data('community');
-		if (data) {
-			this[PICK] = data;
-		}
+	onClick() {
 	}
 
 	pick() {

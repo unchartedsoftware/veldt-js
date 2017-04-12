@@ -1,7 +1,6 @@
 'use strict';
 
 const $ = require('jquery');
-const lumo = require('lumo');
 const map = require('lodash/map');
 const defaultTo = require('lodash/defaultTo');
 const HTMLRenderer = require('../dom/HTMLRenderer');
@@ -212,28 +211,13 @@ class WordCloud extends HTMLRenderer {
 		if (word) {
 			// highlight all instances of the word
 			$(`.word-cloud-label[data-word="${word}"]`).addClass('hover');
-			// emit mouseover event
-			this.emit(lumo.MOUSE_OVER, new lumo.MouseEvent(
-				this.layer,
-				this.getMouseButton(event),
-				this.mouseToPlot(event),
-				word
-			));
+			this[PICK] = word;
 		}
 	}
 
-	onMouseOut(event) {
+	onMouseOut() {
 		$('.word-cloud-label').removeClass('hover');
-		const word = $(event.target).attr('data-word');
-		if (word) {
-			// emit click event
-			this.emit(lumo.MOUSE_OUT, new lumo.MouseEvent(
-				this.layer,
-				this.getMouseButton(event),
-				this.mouseToPlot(event),
-				word
-			));
-		}
+		this[PICK] = null;
 	}
 
 	onClick(event) {
@@ -244,12 +228,6 @@ class WordCloud extends HTMLRenderer {
 		if (word) {
 			// set highlight
 			this.setHighlight(word);
-			// emit click event
-			this.emit(lumo.CLICK, new lumo.ClickEvent(
-				this.layer,
-				this.getMouseButton(event),
-				this.mouseToPlot(event),
-				word));
 		} else {
 			this.clearSelection();
 		}
