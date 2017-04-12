@@ -1,9 +1,9 @@
 'use strict';
 
 const $ = require('jquery');
-const lumo = require('lumo');
+const HTMLRenderer = require('../dom/HTMLRenderer');
 
-class Debug extends lumo.HTMLRenderer {
+class Debug extends HTMLRenderer {
 
 	constructor(options = {}) {
 		super(options);
