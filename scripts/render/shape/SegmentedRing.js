@@ -10,9 +10,7 @@ const INDIVIDUAL_SHADER = {
 	common: BrightnessTransform.common,
 	vert:
 		`
-		precision highp float;
 		attribute vec3 aPosition;
-
 		uniform float uPercentages[NUM_SEGMENTS];
 		uniform vec4 uColors[NUM_SEGMENTS];
 		uniform float uRadius;
@@ -31,7 +29,7 @@ const INDIVIDUAL_SHADER = {
 			float percentage = aPosition.z;
 			for (int i = 0; i<NUM_SEGMENTS; i++) {
 				if (percentage <= uPercentages[i]) {
-					vColor = uColors[i];
+					vColor = brightnessTransform(vec4(uColor.rgb, uColor.a * uOpacity));
 					break;
 				}
 			}
@@ -39,7 +37,6 @@ const INDIVIDUAL_SHADER = {
 		`,
 	frag:
 		`
-		precision highp float;
 		uniform float uOpacity;
 		varying vec4 vColor;
 		void main() {
@@ -53,7 +50,6 @@ const INSTANCED_SHADER = {
 	common: BrightnessTransform.common,
 	vert:
 		`
-		precision highp float;
 		attribute vec3 aPosition;
 		attribute vec2 aOffset;
 		attribute float aRadius;
@@ -141,7 +137,6 @@ const INSTANCED_SHADER = {
 		`,
 	frag:
 		`
-		precision highp float;
 		uniform float uOpacity;
 		varying vec4 vColor;
 		uniform float uDimColor;

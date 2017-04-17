@@ -7,25 +7,25 @@ const INDIVIDUAL_SHADER = {
 	common: BrightnessTransform.common,
 	vert:
 		`
-		precision highp float;
 		attribute vec2 aPosition;
 		uniform vec2 uTileOffset;
 		uniform vec2 uOffset;
 		uniform float uScale;
 		uniform mat4 uProjectionMatrix;
+		uniform vec4 uColor;
+		uniform float uOpacity;
+		varying vec4 vColor;
 		void main() {
 			vec2 wPosition = (aPosition * uScale) + uTileOffset + uOffset;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
+			vColor = brightnessTransform(vec4(uColor.rgb, uColor.a * uOpacity));
 		}
 		`,
 	frag:
 		`
-		precision highp float;
-		uniform vec4 uColor;
-		uniform float uOpacity;
+		varying vec4 vColor;
 		void main() {
-			vec4 color = brightnessTransform(uColor);
-			gl_FragColor = vec4(color.rgb, color.a * uOpacity);
+			gl_FragColor = vColor;
 		}
 		`
 };
@@ -34,26 +34,26 @@ const INSTANCED_SHADER = {
 	common: BrightnessTransform.common,
 	vert:
 		`
-		precision highp float;
 		attribute vec2 aPosition;
 		attribute vec2 aOffset;
 		uniform vec2 uTileOffset;
 		uniform vec2 uOffset;
 		uniform float uScale;
 		uniform mat4 uProjectionMatrix;
+		uniform vec4 uColor;
+		uniform float uOpacity;
+		varying vec4 vColor;
 		void main() {
 			vec2 wPosition = ((aPosition + aOffset) * uScale) + uTileOffset + uOffset;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
+			vColor = brightnessTransform(vec4(uColor.rgb, uColor.a * uOpacity));
 		}
 		`,
 	frag:
 		`
-		precision highp float;
-		uniform float uOpacity;
-		uniform vec4 uColor;
+		varying vec4 vColor;
 		void main() {
-			vec4 color = brightnessTransform(uColor);
-			gl_FragColor = vec4(color.rgb, color.a * uOpacity);
+			gl_FragColor = vColor;
 		}
 		`
 };

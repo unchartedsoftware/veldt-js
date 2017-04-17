@@ -8,24 +8,25 @@ const INSTANCED_SHADER = {
 	common: BrightnessTransform.common,
 	vert:
 		`
-		precision highp float;
 		attribute vec2 aPosition;
 		uniform vec2 uTileOffset;
 		uniform float uScale;
 		uniform vec2 uLODOffset;
 		uniform float uLODScale;
 		uniform mat4 uProjectionMatrix;
+		uniform vec4 uColor;
+		varying vColor;
 		void main() {
 			vec2 wPosition = (aPosition * uScale * uLODScale) + (uTileOffset + (uScale * uLODOffset));
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
+			vColor = brightnessTransform(uColor);
 		}
 		`,
 	frag:
 		`
-		precision highp float;
-		uniform vec4 uColor;
+		varying vColor;
 		void main() {
-			gl_FragColor = brightnessTransform(uColor);
+			gl_FragColor = vColor;
 		}
 		`
 };
@@ -34,13 +35,14 @@ const INDIVIDUAL_SHADER = {
 	common: BrightnessTransform.common,
 	vert:
 		`
-		precision highp float;
 		attribute vec2 aPosition;
 		uniform vec2 uTileOffset;
 		uniform float uScale;
 		uniform mat4 uProjectionMatrix;
 		uniform vec2 uPointA;
 		uniform vec2 uPointB;
+		uniform vec4 uColor;
+		varying vec4 vColor;
 		void main() {
 			vec2 wPosition;
 			if (aPosition.x > 0.0) {
@@ -49,14 +51,14 @@ const INDIVIDUAL_SHADER = {
 				wPosition = (uPointB * uScale) + uTileOffset;
 			}
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
+			vColor = brightnessTransform(uColor);
 		}
 		`,
 	frag:
 		`
-		precision highp float;
-		uniform vec4 uColor;
+		varying vColor;
 		void main() {
-			gl_FragColor = brightnessTransform(uColor);
+			gl_FragColor = vColor;
 		}
 		`
 };
@@ -115,7 +117,7 @@ const drawLOD = function(shader, atlas, plot, lod, renderables) {
 		const dist = Math.abs(renderable.tile.coord.z - zoom);
 
 		if (dist > lod) {
-			// not even lod to support it
+			// not enough lod to support it
 			return;
 		}
 

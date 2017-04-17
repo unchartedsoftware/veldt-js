@@ -7,7 +7,6 @@ const INSTANCED_SHADER = {
 	common: BrightnessTransform.common,
 	vert:
 		`
-		precision highp float;
 		attribute vec2 aPosition;
 		attribute vec2 aOffset;
 		attribute float aRadius;
@@ -15,6 +14,9 @@ const INSTANCED_SHADER = {
 		uniform vec2 uTileOffset;
 		uniform float uScale;
 		uniform mat4 uProjectionMatrix;
+		uniform vec4 uColor;
+		uniform float uOpacity;
+		varying vec4 vColor;
 		void main() {
 			float s = sin(uRotation);
 			float c = cos(uRotation);
@@ -22,16 +24,14 @@ const INSTANCED_SHADER = {
 			vec2 radiusOffset = aRadius * vec2(0.0, 1.0);
 			vec2 wPosition = ((rotation * (aPosition + radiusOffset)) + aOffset) * uScale + uTileOffset;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
+			vColor = brightnessTransform(vec4(uColor.rgb, uColor.a * uOpacity));
 		}
 		`,
 	frag:
 		`
-		precision highp float;
-		uniform float uOpacity;
-		uniform vec4 uColor;
+		varying vec4 vColor;
 		void main() {
-			vec4 color = brightnessTransform(uColor);
-			gl_FragColor = vec4(color.rgb, color.a * uOpacity);
+			gl_FragColor = vColor;
 		}
 		`
 };

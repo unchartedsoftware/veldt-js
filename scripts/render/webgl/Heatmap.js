@@ -5,12 +5,12 @@ const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
 const TextureRenderer = require('./TextureRenderer');
 const ColorRamp = require('../color/ColorRamp');
+const ColorRampGLSL = require('../shader/ColorRamp');
 
 const SHADER = {
+	common: ColorRampGLSL.common,
 	vert:
 		`
-		precision highp float;
-
 		attribute vec2 aPosition;
 		attribute vec2 aTextureCoord;
 		uniform vec2 uTileOffset;
@@ -27,16 +27,8 @@ const SHADER = {
 		`,
 	frag:
 		`
-		precision highp float;
-
 		uniform float uOpacity;
-		uniform float uRangeMin;
-		uniform float uRangeMax;
-		uniform float uMin;
-		uniform float uMax;
 		uniform sampler2D uTextureSampler;
-		uniform sampler2D uColorRampSampler;
-		uniform float uColorRampSize;
 
 		varying vec2 vTextureCoord;
 
@@ -48,75 +40,13 @@ const SHADER = {
 				(v.w * 255.0 * 16777216.0);
 		}
 
-		float log10(float val) {
-			return log(val) / log(10.0);
-		}
-
-		float log10Transform(float val, float minVal, float maxVal) {
-			if (minVal < 1.0) { minVal = 1.0; }
-			if (maxVal < 1.0) { maxVal = 1.0; }
-			if (val < 1.0) { val = 1.0; }
-			float logMin = log10(minVal);
-			float logMax = log10(maxVal);
-			float logVal = log10(val);
-			float range = logMax - logMin;
-			if (range == 0.0) { range = 1.0; }
-			return (logVal - logMin) / range;
-		}
-
-		float sigmoidTransform(float val, float minVal, float maxVal) {
-			minVal = abs(minVal);
-			maxVal = abs(maxVal);
-			float dist = max(minVal, maxVal);
-			float SIGMOID_SCALE = 0.15;
-			float scaledVal = val / (SIGMOID_SCALE * dist);
-			return 1.0 / (1.0 + exp(-scaledVal));
-		}
-
-		float linearTransform(float val, float minVal, float maxVal) {
-			float range = maxVal - minVal;
-			if (range == 0.0) { range = 1.0; }
-			return (val - minVal) / range;
-		}
-
-		float transform(float val) {
-			val = clamp(val, uMin, uMax);
-			#ifdef LINEAR_TRANSFORM
-				return linearTransform(val, uMin, uMax);
-			#else
-				#ifdef SIGMOID_TRANSFORM
-					return sigmoidTransform(val, uMin, uMax);
-				#else
-					return log10Transform(val, uMin, uMax);
-				#endif
-			#endif
-		}
-
-		float interpolateToRange(float nval) {
-			float rval = (nval - uRangeMin) / (uRangeMax - uRangeMin);
-			return clamp(rval, 0.0, 1.0);
-		}
-
-		vec4 colorRamp(float value) {
-			float maxIndex = uColorRampSize * uColorRampSize - 1.0;
-			float lookup = value * maxIndex;
-			float x = mod(lookup, uColorRampSize);
-			float y = floor(lookup / uColorRampSize);
-			float pixel = 1.0 / uColorRampSize;
-			float tx = (x / uColorRampSize) + (pixel * 0.5);
-			float ty = (y / uColorRampSize) + (pixel * 0.5);
-			return texture2D(uColorRampSampler, vec2(tx, ty));
-		}
-
 		void main() {
 			vec4 enc = texture2D(uTextureSampler, vTextureCoord);
 			float count = decodeRGBAToFloat(enc);
 			if (count == 0.0) {
 				discard;
 			}
-			float nval = transform(count);
-			float rval = interpolateToRange(nval);
-			vec4 color = colorRamp(rval);
+			vec4 color = colorRampLookup(count);
 			gl_FragColor = vec4(color.rgb, color.a * uOpacity);
 		}
 		`
@@ -159,36 +89,9 @@ const createQuad = function(gl, min, max) {
 		});
 };
 
-const addTransformDefine = function(shader ,transform) {
-	const define = {};
-	switch (transform) {
-		case 'linear':
-			define.LINEAR_TRANSFORM = 1;
-
-		case 'sigmoid':
-			define.SIGMOID_TRANSFORM = 1;
-
-		default:
-			define.LOG_TRANSFORM = 1;
-	}
-	shader.define = define;
-	return shader;
-};
-
-const createRampTexture = function(gl, type) {
-	const table = ColorRamp.getTable(type);
-	const size = Math.sqrt(table.length / 4);
-	const texture = new lumo.Texture(gl, null, {
-		filter: 'NEAREST'
-	});
-	texture.bufferData(table, size, size);
-	return texture;
-};
-
 class Heatmap extends TextureRenderer {
 
 	constructor(options = {}) {
-		options.filter = 'NEAREST';
 		super(options);
 		this.transform = defaultTo(options.transform, 'log10');
 		this.range = defaultTo(options.range, [0, 1]);
@@ -214,10 +117,9 @@ class Heatmap extends TextureRenderer {
 	onAdd(layer) {
 		super.onAdd(layer);
 		this.quad = createQuad(this.gl, 0, layer.plot.tileSize);
-		this.shader = this.createShader(
-			addTransformDefine(SHADER, this.transform));
 		this.array = this.createTextureArray(layer.resolution);
-		this.ramp = createRampTexture(this.gl, this.colorRamp);
+		this.setTransform(this.transform);
+		this.setColorRamp(this.colorRamp);
 		return this;
 	}
 
@@ -234,7 +136,7 @@ class Heatmap extends TextureRenderer {
 		this.transform = transform;
 		// re-compile shader
 		this.shader = this.createShader(
-			addTransformDefine(SHADER, this.transform));
+			ColorRampGLSL.addTransformDefine(SHADER, this.transform));
 	}
 
 	getTransform() {
@@ -257,7 +159,7 @@ class Heatmap extends TextureRenderer {
 
 	setColorRamp(colorRamp) {
 		this.colorRamp = colorRamp;
-		this.ramp = createRampTexture(this.gl, this.colorRamp);
+		this.ramp = ColorRampGLSL.createRampTexture(this.gl, this.colorRamp);
 	}
 
 	getColorRamp() {
