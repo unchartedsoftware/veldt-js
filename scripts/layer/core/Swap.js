@@ -313,7 +313,9 @@ class Swap extends EventEmitter {
 
 	draw(timestamp) {
 		this.layers.forEach(layer => {
-			layer.draw(timestamp);
+			if (!layer.isHidden()) {
+				layer.draw(timestamp);
+			}
 		});
 		return this;
 	}
