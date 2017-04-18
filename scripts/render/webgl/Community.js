@@ -20,6 +20,7 @@ class Community extends InteractiveRenderer {
 		this.ringOffset = defaultTo(options.ringOffset, 0);
 		this.outlineWidth = defaultTo(options.outlineWidth, 1);
 		this.radiusField = defaultTo(options.radiusField, 'radius');
+		this.hideUntilHover = defaultTo(options.hideUntilHover, false);
 	}
 
 	onAdd(layer) {
@@ -122,17 +123,20 @@ class Community extends InteractiveRenderer {
 		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-		// draw outline
-		this.ringOutline.drawInstanced(
-			this.atlas,
-			this.outlineColor,
-			opacity);
+		if (!this.hideUntilHover) {
 
-		// draw fill
-		this.ringFill.drawInstanced(
-			this.atlas,
-			this.color,
-			opacity);
+			// draw outline
+			this.ringOutline.drawInstanced(
+				this.atlas,
+				this.outlineColor,
+				opacity);
+
+			// draw fill
+			this.ringFill.drawInstanced(
+				this.atlas,
+				this.color,
+				opacity);
+		}
 
 		// render selected
 		layer.selected.forEach(selected => {
