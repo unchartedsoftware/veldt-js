@@ -212,7 +212,7 @@ class CommunityBucket extends InteractiveRenderer {
 		layer.selected.forEach(selected => {
 			this.ringFill.drawIndividual(
 				selected,
-				this.selectedColor,
+				this.selectedColors,
 				opacity);
 		});
 
