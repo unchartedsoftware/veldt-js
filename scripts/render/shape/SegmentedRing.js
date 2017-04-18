@@ -18,6 +18,8 @@ const INDIVIDUAL_SHADER = {
 		uniform float uScale;
 		uniform float uRadiusOffset;
 		uniform mat4 uProjectionMatrix;
+		uniform vec4 uColor;
+		uniform float uOpacity;
 
 		varying vec4 vColor;
 
@@ -25,11 +27,10 @@ const INDIVIDUAL_SHADER = {
 			vec2 radiusOffset = normalize(aPosition.xy) * (uRadius - uRadiusOffset);
 			vec2 wPosition = ((aPosition.xy + radiusOffset) * uScale) + uTileOffset;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
-
 			float percentage = aPosition.z;
 			for (int i = 0; i<NUM_SEGMENTS; i++) {
 				if (percentage <= uPercentages[i]) {
-					vColor = brightnessTransform(vec4(uColor.rgb, uColor.a * uOpacity));
+					vColor = brightnessTransform(vec4(uColors[i].rgb, uColors[i].a * uOpacity));
 					break;
 				}
 			}
@@ -37,11 +38,9 @@ const INDIVIDUAL_SHADER = {
 		`,
 	frag:
 		`
-		uniform float uOpacity;
 		varying vec4 vColor;
 		void main() {
-			vec4 color = brightnessTransform(uColor);
-			gl_FragColor = vec4(color.rgb, color.a * uOpacity);
+			gl_FragColor = vColor;
 		}
 		`
 };
@@ -139,12 +138,8 @@ const INSTANCED_SHADER = {
 		`
 		uniform float uOpacity;
 		varying vec4 vColor;
-		uniform float uDimColor;
 		void main() {
-			vec4 color = vColor;
-			if (uDimColor > 0.0) {
-				color =	transformColor(vColor);
-			}
+			vec4 color = brightnessTransform(vColor);
 			gl_FragColor = vec4(color.rgb, color.a * uOpacity);
 		}
 		`
@@ -204,6 +199,7 @@ class SegmentedRing {
 				define: {
 					NUM_SEGMENTS: numSegments
 				},
+				common: INSTANCED_SHADER.common,
 				vert: INSTANCED_SHADER.vert,
 				frag: INSTANCED_SHADER.frag
 			}),
@@ -211,6 +207,7 @@ class SegmentedRing {
 				define: {
 					NUM_SEGMENTS: numSegments
 				},
+				common: INDIVIDUAL_SHADER.common,
 				vert: INDIVIDUAL_SHADER.vert,
 				frag: INDIVIDUAL_SHADER.frag
 			})
