@@ -76,7 +76,6 @@ class Repeat extends lumo.WebGLRenderer {
 		super(options);
 		this.quad = null;
 		this.texture = null;
-		this.handlers = new Map();
 	}
 
 	onAdd(layer) {
@@ -84,30 +83,27 @@ class Repeat extends lumo.WebGLRenderer {
 		this.quad = createQuad(this.gl, 0, layer.plot.tileSize);
 		this.shader = this.createShader(SHADER_GLSL);
 		// create handlers
-	 	const add = event => {
+	 	this[TILE_ADD] = event => {
 			if (!this.texture) {
 				this.texture = new lumo.Texture(this.gl, event.tile.data);
 			}
 		};
-		const remove = () => {
+		this[TILE_REMOVE] = () => {
 			this.texture = null;
 		};
 		// attach handlers
-		this.layer.on(lumo.TILE_ADD, add);
-		this.layer.on(lumo.TILE_REMOVE, remove);
-		// store handlers
-		this.handlers.set(TILE_ADD, add);
-		this.handlers.set(TILE_REMOVE, remove);
+		this.layer.on(lumo.TILE_ADD, this[TILE_ADD]);
+		this.layer.on(lumo.TILE_REMOVE, this[TILE_REMOVE]);
 		return this;
 	}
 
 	onRemove(layer) {
 		// detach handlers
-		this.layer.removeListener(lumo.TILE_ADD, this.handlers.get(TILE_ADD));
-		this.layer.removeListener(lumo.TILE_REMOVE, this.handlers.get(TILE_REMOVE));
+		this.layer.removeListener(lumo.TILE_ADD, this[TILE_ADD]);
+		this.layer.removeListener(lumo.TILE_REMOVE, this[TILE_REMOVE]);
 		// delete handlers
-		this.handlers.delete(TILE_ADD);
-		this.handlers.delete(TILE_REMOVE);
+		this[TILE_ADD] = null;
+		this[TILE_REMOVE] = null;
 		this.texture = null;
 		this.quad = null;
 		this.shader = null;
@@ -125,6 +121,7 @@ class Repeat extends lumo.WebGLRenderer {
 		const quad = this.quad;
 		const proj = this.getOrthoMatrix();
 		const plot = this.layer.plot;
+		const viewport = plot.getViewportPixelOffset();
 
 		// bind shader
 		shader.use();
@@ -144,18 +141,14 @@ class Repeat extends lumo.WebGLRenderer {
 		quad.bind();
 
 		// get all currently visible tile coords
-		const coords = plot.viewport.getVisibleCoords(
-			plot.tileSize,
-			plot.zoom,
-			Math.round(plot.zoom), // get tiles closest to current zoom
-			plot.wraparound);
+		const coords = plot.getVisibleCoords();
 
 		// draw the tile
 		coords.forEach(coord => {
 			const scale = Math.pow(2, plot.zoom - coord.z);
 			const tileOffset = [
-				(coord.x * scale * plot.tileSize) - plot.viewport.x,
-				(coord.y * scale * plot.tileSize) - plot.viewport.y
+				(coord.x * scale * plot.tileSize) - viewport.x,
+				(coord.y * scale * plot.tileSize) - viewport.y
 			];
 			// set tile uniforms
 			shader.setUniform('uScale', scale);

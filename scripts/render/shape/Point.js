@@ -8,7 +8,6 @@ const SHADER = {
 	common: BrightnessTransform.common,
 	vert:
 		`
-		precision highp float;
 		attribute vec2 aPosition;
 		uniform float uRadius;
 		uniform vec2 uTileOffset;
@@ -17,19 +16,21 @@ const SHADER = {
 		uniform float uLODScale;
 		uniform float uPixelRatio;
 		uniform mat4 uProjectionMatrix;
+		uniform vec4 uColor;
+		varying vec4 vColor;
 		void main() {
 			vec2 wPosition = (aPosition * uScale * uLODScale) + (uTileOffset + (uScale * uLODOffset));
 			gl_PointSize = uRadius * 2.0 * uPixelRatio;
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
+			vColor = brightnessTransform(uColor);
 		}
 		`,
 	frag:
 		`
-		precision highp float;
 		#ifdef GL_OES_standard_derivatives
 			#extension GL_OES_standard_derivatives : enable
 		#endif
-		uniform vec4 uColor;
+		varying vec4 vColor;
 		void main() {
 			vec2 cxy = 2.0 * gl_PointCoord - 1.0;
 			float radius = dot(cxy, cxy);
@@ -42,7 +43,7 @@ const SHADER = {
 					discard;
 				}
 			#endif
-			gl_FragColor = brightnessTransform(uColor*alpha);
+			gl_FragColor = vec4(vColor.rgb, vColor.a * alpha);
 		}
 		`
 };
@@ -99,7 +100,7 @@ const drawLOD = function(shader, atlas, plot, lod, renderables) {
 		const dist = Math.abs(renderable.tile.coord.z - zoom);
 
 		if (dist > lod) {
-			// not even lod to support it
+			// not enough lod to support it
 			return;
 		}
 
@@ -195,13 +196,14 @@ class Point {
 		const renderer = this.renderer;
 		const plot = renderer.layer.plot;
 		const projection = renderer.getOrthoMatrix();
+		const viewport = plot.getViewportPixelOffset();
 
 		// get tile offset
 		const coord = target.tile.coord;
 		const scale = Math.pow(2, plot.zoom - coord.z);
 		const tileOffset = [
-			(coord.x * scale * plot.tileSize) + (scale * target.x) - plot.viewport.x,
-			(coord.y * scale * plot.tileSize) + (scale * target.y) - plot.viewport.y
+			(coord.x * scale * plot.tileSize) + (scale * target.x) - viewport.x,
+			(coord.y * scale * plot.tileSize) + (scale * target.y) - viewport.y
 		];
 
 		// bind shader

@@ -3,12 +3,16 @@
 const $ = require('jquery');
 const map = require('lodash/map');
 const defaultTo = require('lodash/defaultTo');
-const lumo = require('lumo');
+const HTMLRenderer = require('../dom/HTMLRenderer');
 const Transform = require('../transform/Transform');
 
 const VERTICAL_OFFSET = 24;
 const HORIZONTAL_OFFSET = 10;
 const NUM_ATTEMPTS = 1;
+const MOUSE_OVER = Symbol();
+const MOUSE_OUT = Symbol();
+const CLICK = Symbol();
+const PICK = Symbol();
 
 /**
  * Given an initial position, return a new position, incrementally spiralled
@@ -73,16 +77,6 @@ const intersectWord = function(position, word, cloud, bb) {
 		return true;
 	}
 	return false;
-};
-
-const getMouseButton = function(event) {
-	if (event.which === 1) {
-		return 'left';
-	} else if (event.which === 2) {
-		return 'middle';
-	} else if (event.which === 3) {
-		return 'right';
-	}
 };
 
 const measureWords = function(renderer, wordCounts, extrema) {
@@ -160,7 +154,7 @@ const createWordCloud = function(renderer, wordCounts, extrema) {
 	return cloud;
 };
 
-class WordCloud extends lumo.HTMLRenderer {
+class WordCloud extends HTMLRenderer {
 
 	constructor(options = {}) {
 		super(options);
@@ -168,31 +162,33 @@ class WordCloud extends lumo.HTMLRenderer {
 		this.maxNumWords = defaultTo(options.maxNumWords, 10);
 		this.minFontSize = defaultTo(options.minFontSize, 10);
 		this.maxFontSize = defaultTo(options.maxFontSize, 24);
+		this[MOUSE_OVER] = null;
+		this[MOUSE_OUT] = null;
 	}
 
 	onAdd(layer) {
 		super.onAdd(layer);
-		this.mouseover = event => {
+		this[MOUSE_OVER] = event => {
 			this.onMouseOver(event);
 		};
-		this.mouseout = event => {
+		this[MOUSE_OUT] = event => {
 			this.onMouseOut(event);
 		};
-		this.click = event => {
+		this[CLICK] = event => {
 			this.onClick(event);
 		};
-		$(this.container).on('mouseover', this.mouseover);
-		$(this.container).on('mouseout', this.mouseout);
-		$(this.container).on('click', this.click);
+		$(this.container).on('mouseover', this[MOUSE_OVER]);
+		$(this.container).on('mouseout', this[MOUSE_OUT]);
+		$(this.container).on('click', this[CLICK]);
 	}
 
 	onRemove(layer) {
-		$(this.container).off('mouseover', this.mouseover);
-		$(this.container).off('mouseout', this.mouseout);
-		$(this.container).off('click', this.click);
-		this.mouseover = null;
-		this.mouseout = null;
-		this.click = null;
+		$(this.container).off('mouseover', this[MOUSE_OVER]);
+		$(this.container).off('mouseout', this[MOUSE_OUT]);
+		$(this.container).off('click', this[CLICK]);
+		this[MOUSE_OVER] = null;
+		this[MOUSE_OUT] = null;
+		this[CLICK] = null;
 		super.onRemove(layer);
 	}
 
@@ -215,32 +211,13 @@ class WordCloud extends lumo.HTMLRenderer {
 		if (word) {
 			// highlight all instances of the word
 			$(`.word-cloud-label[data-word="${word}"]`).addClass('hover');
-			// emit mouseover event
-			const plot = this.layer.plot;
-			this.emit(lumo.MOUSE_OVER, new lumo.MouseEvent(
-				this.layer,
-				getMouseButton(event),
-				plot.mouseToViewPx(event),
-				plot.mouseToPlotPx(event),
-				word
-			));
+			this[PICK] = word;
 		}
 	}
 
-	onMouseOut(event) {
+	onMouseOut() {
 		$('.word-cloud-label').removeClass('hover');
-		const word = $(event.target).attr('data-word');
-		if (word) {
-			// emit click event
-			const plot = this.layer.plot;
-			this.emit(lumo.MOUSE_OUT, new lumo.MouseEvent(
-				this.layer,
-				getMouseButton(event),
-				plot.mouseToViewPx(event),
-				plot.mouseToPlotPx(event),
-				word
-			));
-		}
+		this[PICK] = null;
 	}
 
 	onClick(event) {
@@ -251,17 +228,13 @@ class WordCloud extends lumo.HTMLRenderer {
 		if (word) {
 			// set highlight
 			this.setHighlight(word);
-			// emit click event
-			const plot = this.layer.plot;
-			this.emit(lumo.CLICK, new lumo.ClickEvent(
-				this.layer,
-				getMouseButton(event),
-				plot.mouseToViewPx(event),
-				plot.mouseToPlotPx(event),
-				word));
 		} else {
 			this.clearSelection();
 		}
+	}
+
+	pick() {
+		return this[PICK];
 	}
 
 	drawTile(element, tile) {
@@ -279,7 +252,7 @@ class WordCloud extends lumo.HTMLRenderer {
 		const halfSize = layer.plot.tileSize / 2;
 		// create html for tile
 		const divs = [];
-		// for each word int he cloud
+		// for each word in the cloud
 		cloud.forEach(word => {
 			const highlight = (word.text === this.highlight) ? 'highlight' : '';
 			// create element for word

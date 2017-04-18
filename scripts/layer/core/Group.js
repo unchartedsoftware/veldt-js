@@ -1,36 +1,22 @@
 'use strict';
 
-const lumo = require('lumo');
 const EventEmitter = require('events');
 const defaultTo = require('lodash/defaultTo');
 
-const broadcast = function(group, type) {
-	const handler = event => {
-		group.layers.forEach(layer => {
-			layer.emit(type, event);
-		});
-	};
-	group.on(type, handler);
-	group.broadcasts.set(type, handler);
-};
-
-const unbroadcast = function(group, type) {
-	group.removeListener(type, event => {
-		group.layers.forEach(layer => {
-			layer.emit(type, event);
-		});
-	});
-	group.broadcasts.delete(type);
-};
-
+/**
+ * Group layer acts as an interface for making changes across multiple layers
+ * in unison. The group layer itself is empty and acts as a proxy interface. all
+ * layers will still be individually added to the map.
+ *
+ * While individual properties of each child layer may differ (zIndex,
+ * visibility, etc), any setter / getter methods of the group will be applied
+ * to all children.
+ */
 class Group extends EventEmitter {
 
 	constructor(options = {}) {
 		super();
-		this.hidden = defaultTo(options.hidden, false);
-		this.muted = defaultTo(options.muted, false);
 		this.layers = defaultTo(options.layers, []);
-		this.broadcasts = new Map();
 	}
 
 	onAdd(plot) {
@@ -39,14 +25,8 @@ class Group extends EventEmitter {
 		}
 		this.plot = plot;
 		this.layers.forEach(layer => {
-			layer.onAdd(this.plot);
+			plot.add(layer);
 		});
-		broadcast(this, lumo.PAN_START);
-		broadcast(this, lumo.PAN);
-		broadcast(this, lumo.PAN_END);
-		broadcast(this, lumo.ZOOM_START);
-		broadcast(this, lumo.ZOOM);
-		broadcast(this, lumo.ZOOM_END);
 		return this;
 	}
 
@@ -54,14 +34,8 @@ class Group extends EventEmitter {
 		if (!plot) {
 			throw 'No plot argument provided';
 		}
-		unbroadcast(this, lumo.PAN_START);
-		unbroadcast(this, lumo.PAN);
-		unbroadcast(this, lumo.PAN_END);
-		unbroadcast(this, lumo.ZOOM_START);
-		unbroadcast(this, lumo.ZOOM);
-		unbroadcast(this, lumo.ZOOM_END);
 		this.layers.forEach(layer => {
-			layer.onRemove(plot);
+			plot.remove(layer);
 		});
 		this.plot = null;
 		return this;
@@ -76,7 +50,7 @@ class Group extends EventEmitter {
 		}
 		this.layers.push(layer);
 		if (this.plot) {
-			layer.onAdd(this.plot);
+			this.plot.addLayer(layer);
 		}
 		return this;
 	}
@@ -91,7 +65,7 @@ class Group extends EventEmitter {
 		}
 		this.layers.splice(index, 1);
 		if (this.plot) {
-			layer.onRemove(this.plot);
+			this.plot.removeLayer(layer);
 		}
 		return this;
 	}
@@ -102,55 +76,73 @@ class Group extends EventEmitter {
 	}
 
 	show() {
-		this.hidden = false;
-		return this;
+		this.layers.forEach(layer => {
+			layer.show();
+		});
 	}
 
 	hide() {
-		this.hidden = true;
-		return this;
+		this.layers.forEach(layer => {
+			layer.hide();
+		});
 	}
 
 	isHidden() {
-		return this.hidden;
+		return true;
 	}
 
 	mute() {
-		this.muted = true;
-		return this;
+		this.layers.forEach(layer => {
+			layer.mute();
+		});
 	}
 
 	unmute() {
-		if (this.muted) {
-			this.muted = false;
-			if (this.plot) {
-				// get visible coords
-				const coords = this.plot.getVisibleCoords();
-				// request tiles
-				this.requestTiles(coords);
-			}
-		}
-		return this;
+		this.layers.forEach(layer => {
+			layer.unmute();
+		});
 	}
 
 	isMuted() {
-		return this.muted;
+		return true;
 	}
 
 	enable() {
 		this.show();
 		this.unmute();
-		return this;
 	}
 
 	disable() {
 		this.hide();
 		this.mute();
-		return this;
 	}
 
 	isDisabled() {
-		return this.muted && this.hidden;
+		return true;
+	}
+
+	setZIndex(index) {
+		this.layers.forEach(layer => {
+			layer.setZIndex(index);
+		});
+	}
+
+	getZIndex() {
+		return 0.0;
+	}
+
+	setOpacity(opacity) {
+		this.layers.forEach(layer => {
+			layer.setOpacity(opacity);
+		});
+	}
+
+	getOpacity() {
+		return 0.0;
+	}
+
+	isFiltered() {
+		return false;
 	}
 
 	addFilter(id, filter) {
@@ -183,35 +175,22 @@ class Group extends EventEmitter {
 		});
 	}
 
-	draw(timestamp) {
-		if (this.hidden) {
-			this.layers.forEach(layer => {
-				if (layer.renderer && layer.renderer.clear) {
-					// clear DOM based renderer
-					layer.renderer.clear();
-				}
-			});
-			return this;
-		}
-		this.layers.forEach(layer => {
-			layer.draw(timestamp);
-		});
-		return this;
-	}
-
 	refresh() {
 		this.layers.forEach(layer => {
 			layer.refresh();
 		});
 	}
 
-	requestTiles(coords) {
-		if (this.muted) {
-			return this;
-		}
-		this.layers.forEach(layer => {
-			layer.requestTiles(coords);
-		});
+	draw() {
+		// no-op
+	}
+
+	pick() {
+		// no-op
+	}
+
+	requestTiles() {
+		// no-op
 	}
 }
 

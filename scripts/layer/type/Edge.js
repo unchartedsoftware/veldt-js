@@ -20,6 +20,7 @@ class Edge extends Live {
 		this.srcYField = defaultTo(options.srcYField, 'srcYField');
 		this.dstXField = defaultTo(options.dstXField, 'dstXField');
 		this.dstYField = defaultTo(options.dstYField, 'dstYField');
+		this.weightField = defaultTo(options.weightField, 'weightField');
 		const left = defaultTo(options.left, 0);
 		const right = defaultTo(options.right, Math.pow(2, 32));
 		const bottom = defaultTo(options.bottom, 0);
@@ -41,6 +42,10 @@ class Edge extends Live {
 
 	setDstYField(field) {
 		setStringField(this, 'dstYField', field);
+	}
+
+	setWeightField(field) {
+		setStringField(this, 'weightField', field);
 	}
 
 	setBounds(left, right, bottom, top) {

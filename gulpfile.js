@@ -30,7 +30,8 @@ gulp.task('clean', () => {
 gulp.task('lint', () => {
 	return gulp.src(paths.scripts)
 		.pipe(eslint())
-		.pipe(eslint.format());
+		.pipe(eslint.format())
+		.pipe(eslint.failAfterError());
 });
 
 gulp.task('build-scripts', () => {

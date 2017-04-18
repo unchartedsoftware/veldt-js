@@ -189,7 +189,8 @@ class CommunityBucket extends InteractiveRenderer {
 	draw() {
 
 		const gl = this.gl;
-		const opacity = this.layer.opacity;
+		const layer = this.layer;
+		const opacity = layer.opacity;
 
 		// set blending func
 		gl.enable(gl.BLEND);
@@ -208,7 +209,7 @@ class CommunityBucket extends InteractiveRenderer {
 			opacity);
 
 		// render selected
-		this.selected.forEach(selected => {
+		layer.selected.forEach(selected => {
 			this.ringFill.drawIndividual(
 				selected,
 				this.selectedColor,
@@ -216,10 +217,9 @@ class CommunityBucket extends InteractiveRenderer {
 		});
 
 		// render highlighted
-		if (this.highlighted &&
-			this.selected.indexOf(this.highlighted) === -1) {
+		if (layer.highlighted && !layer.isSelected(layer.highlighted)) {
 			this.ringFill.drawIndividual(
-				this.highlighted,
+				layer.highlighted,
 				this.highlightedColors,
 				opacity);
 		}

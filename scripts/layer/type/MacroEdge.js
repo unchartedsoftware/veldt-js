@@ -27,6 +27,24 @@ class MacroEdge extends Edge {
 		};
 	}
 
+	extractExtrema(data) {
+		let min = Infinity;
+		let max = -Infinity;
+		for (let i=0; i<data.length; i+=3) {
+			const weight = data[i];
+			if (weight < min) {
+				min = weight;
+			}
+			if (weight > max) {
+				max = weight;
+			}
+		}
+		return {
+			min: min,
+			max: max
+		};
+	}
+
 	setLOD(lod) {
 		this.lod = lod;
 	}
@@ -49,6 +67,7 @@ class MacroEdge extends Edge {
 			srcYField: this.srcYField,
 			dstXField: this.dstXField,
 			dstYField: this.dstYField,
+			weightField: this.weightField,
 			left: this.left,
 			right: this.right,
 			bottom: this.bottom,

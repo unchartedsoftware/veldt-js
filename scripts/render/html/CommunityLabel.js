@@ -1,51 +1,62 @@
 'use strict';
 
 const $ = require('jquery');
+const lumo = require('lumo');
 const get = require('lodash/get');
 const defaultTo = require('lodash/defaultTo');
-const lumo = require('lumo');
+const HTMLRenderer = require('../dom/HTMLRenderer');
+const EventType = require('../event/EventType');
 const Transform = require('../transform/Transform');
 
 const HEIGHT_BUFFER = 4;
+const MEASURE_CANVAS = document.createElement('canvas');
+const PICK = Symbol();
+const MOUSE_OVER = Symbol();
+const MOUSE_OUT = Symbol();
+const CLICK = Symbol();
+const DECONFLICT = Symbol();
 
-const getMouseButton = function(event) {
-	if (event.which === 1) {
-		return 'left';
-	} else if (event.which === 2) {
-		return 'middle';
-	} else if (event.which === 3) {
-		return 'right';
-	}
+const getTextWidth = function(text, fontSize, fontFamily, buffer) {
+	const font = `${fontSize}pt ${fontFamily}`;
+	const context = MEASURE_CANVAS.getContext('2d');
+	context.font = font;
+	const metrics = context.measureText(text);
+	return Math.floor(metrics.width) + 1 + buffer;
 };
 
-class CommunityLabel extends lumo.HTMLRenderer {
+class CommunityLabel extends HTMLRenderer {
 
 	constructor(options = {}) {
 		super(options);
 		this.transform = defaultTo(options.transform, 'log10');
 		this.minFontSize = defaultTo(options.minFontSize, 10);
-		this.maxFontSize = defaultTo(options.maxFontSize, 24);
+		this.maxFontSize = defaultTo(options.maxFontSize, 18);
+		this.fontFamily = defaultTo(options.fontFamily, '\'Helvetica Neue\',sans-serif');
 		this.minOpacity = defaultTo(options.minOpacity, 0.6);
 		this.maxOpacity = defaultTo(options.maxOpacity, 1.0);
 		this.labelMaxLength = defaultTo(options.labelMaxLength, 256);
 		this.labelThreshold = defaultTo(options.labelThreshold, 0.6);
 		this.labelField = defaultTo(options.labelField, 'metadata');
 		this.labelDeconflict = defaultTo(options.labelDeconflict, true);
+		this[PICK] = null;
+		this[MOUSE_OVER] = null;
+		this[MOUSE_OUT] = null;
+		this[DECONFLICT] = null;
 	}
 
 	onAdd(layer) {
 		super.onAdd(layer);
-		this.mouseover = event => {
+		this[MOUSE_OVER] = event => {
 			this.onMouseOver(event);
 		};
-		this.mouseout = event => {
+		this[MOUSE_OUT] = event => {
 			this.onMouseOut(event);
 		};
-		this.click = event => {
+		this[CLICK] = event => {
 			this.onClick(event);
 		};
 		if (this.labelDeconflict) {
-			this.deconflict = () => {
+			this[DECONFLICT] = () => {
 				const tree = new lumo.RTree({
 					collisionType: lumo.RECTANGLE,
 					nodeCapacity: 64
@@ -78,65 +89,43 @@ class CommunityLabel extends lumo.HTMLRenderer {
 					}
 				});
 			};
-			this.on(lumo.POST_DRAW, this.deconflict);
+			this.on(EventType.DOM_POST_DRAW, this[DECONFLICT]);
 		}
-		$(this.container).on('mouseover', this.mouseover);
-		$(this.container).on('mouseout', this.mouseout);
-		$(this.container).on('click', this.click);
+		$(this.container).on('mouseover', this[MOUSE_OVER]);
+		$(this.container).on('mouseout', this[MOUSE_OUT]);
+		$(this.container).on('click', this[CLICK]);
 	}
 
 	onRemove(layer) {
-		$(this.container).off('mouseover', this.mouseover);
-		$(this.container).off('mouseout', this.mouseout);
-		$(this.container).off('click', this.click);
+		$(this.container).off('mouseover', this[MOUSE_OVER]);
+		$(this.container).off('mouseout', this[MOUSE_OUT]);
+		$(this.container).off('click', this[CLICK]);
 		if (this.labelDeconflict) {
-			this.removeListener(lumo.POST_DRAW, this.deconflict);
+			this.removeListener(lumo.POST_DRAW, this[DECONFLICT]);
+			this[DECONFLICT] = null;
 		}
-		this.mouseover = null;
-		this.mouseout = null;
-		this.click = null;
+		this[MOUSE_OVER] = null;
+		this[MOUSE_OUT] = null;
+		this[CLICK] = null;
 		super.onRemove(layer);
 	}
 
 	onMouseOver(event) {
 		const data = $(event.target).data('community');
 		if (data) {
-			const plot = this.layer.plot;
-			this.emit(lumo.MOUSE_OVER, new lumo.MouseEvent(
-				this.layer,
-				getMouseButton(event),
-				plot.mouseToViewPx(event),
-				plot.mouseToPlotPx(event),
-				data
-			));
+			this[PICK] = data;
 		}
 	}
 
-	onMouseOut(event) {
-		const data = $(event.target).data('community');
-		if (data) {
-			const plot = this.layer.plot;
-			this.emit(lumo.MOUSE_OUT, new lumo.MouseEvent(
-				this.layer,
-				getMouseButton(event),
-				plot.mouseToViewPx(event),
-				plot.mouseToPlotPx(event)
-			));
-		}
+	onMouseOut() {
+		this[PICK] = null;
 	}
 
-	onClick(event) {
-		const data = $(event.target).data('community');
-		if (data) {
-			const plot = this.layer.plot;
-			this.emit(lumo.CLICK, new lumo.MouseEvent(
-				this.layer,
-				getMouseButton(event),
-				plot.mouseToViewPx(event),
-				plot.mouseToPlotPx(event),
-				data
-			));
-		}
+	onClick() {
+	}
+
+	pick() {
+		return this[PICK];
 	}
 
 	drawTile(element, tile) {
@@ -172,9 +161,10 @@ class CommunityLabel extends lumo.HTMLRenderer {
 			const fontSize = this.minFontSize + (rnval * (this.maxFontSize - this.minFontSize));
 			const opacity = this.minOpacity + (rnval * (this.maxOpacity - this.minOpacity));
 			const height = fontSize + HEIGHT_BUFFER; // add buffer to prevent cutoff of some letters
+			const width = Math.min(getTextWidth(label, fontSize, this.fontFamily, 10), this.labelMaxLength);
 
 			// get position
-			const x = points[index*2] - (this.labelMaxLength / 2);
+			const x = points[index*2] - (width / 2);
 			const y = points[index*2+1] - (height / 2);
 
 			const div = $(`
@@ -183,10 +173,11 @@ class CommunityLabel extends lumo.HTMLRenderer {
 					bottom: ${y}px;
 					opacity: ${opacity};
 					z-index: ${zIndex};
-					width: ${this.labelMaxLength}px;
-					height: ${height}px;
-					font-size: ${fontSize}px;
-					line-height: ${fontSize}px;">${label}</div>
+					width: ${width}px;
+					height: ${height}pt;
+					font-size: ${fontSize}pt;
+					font-family: ${this.fontFamily};
+					line-height: ${fontSize}pt;">${label}</div>
 				`);
 
 			div.data('community', community);

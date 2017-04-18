@@ -1,16 +1,20 @@
 'use strict';
 
+const clamp = require('lodash/clamp');
 const defaultTo = require('lodash/defaultTo');
 const VertexRenderer = require('./VertexRenderer');
-const Line = require('../shape/Line');
+const Edge = require('../shape/Edge');
+const ColorRamp = require('../color/ColorRamp');
 
 class MacroEdge extends VertexRenderer {
 
 	constructor(options = {}) {
 		super(options);
-		this.line = null;
+		this.edge = null;
 		this.atlas = null;
-		this.color = defaultTo(options.color, [ 1.0, 0.4, 0.1, 0.8 ]);
+		this.transform = defaultTo(options.transform, 'log10');
+		this.range = defaultTo(options.range, [0, 1]);
+		this.colorRamp = defaultTo(options.colorRamp, 'cool');
 	}
 
 	addTile(atlas, tile) {
@@ -23,11 +27,16 @@ class MacroEdge extends VertexRenderer {
 
 	onAdd(layer) {
 		super.onAdd(layer);
-		this.line = new Line(this);
+		this.edge = new Edge(this, this.transform, this.colorRamp);
 		this.atlas = this.createVertexAtlas({
 			// position
 			0: {
 				size: 2,
+				type: 'FLOAT'
+			},
+			// weight
+			1: {
+				size: 1,
 				type: 'FLOAT'
 			}
 		});
@@ -37,35 +46,58 @@ class MacroEdge extends VertexRenderer {
 	onRemove(layer) {
 		this.destroyVertexAtlas(this.atlas);
 		this.atlas = null;
-		this.line = null;
+		this.edge = null;
 		super.onRemove(layer);
 		return this;
+	}
+
+	setTransform(transform) {
+		this.transform = transform;
+		this.edge.setTransform(this.transform);
+	}
+
+	getTransform() {
+		return this.transform;
+	}
+
+	setValueRange(min, max) {
+		this.range = [
+			clamp(min, 0, 1),
+			clamp(max, 0, 1)
+		];
+	}
+
+	getValueRange() {
+		return [
+			this.range[0],
+			this.range[1]
+		];
+	}
+
+	setColorRamp(colorRamp) {
+		this.colorRamp = colorRamp;
+		this.edge.setTransform(colorRamp);
+	}
+
+	getColorRamp() {
+		return this.colorRamp;
+	}
+
+	getColorRampFunc() {
+		return ColorRamp.getFunc(this.colorRamp);
 	}
 
 	draw() {
 
 		const gl = this.gl;
-		const layer = this.layer;
-		const plot = layer.plot;
-
-		// bind render target
-		plot.renderBuffer.bind();
-		plot.renderBuffer.clear();
 
 		// set blending func
 		gl.enable(gl.BLEND);
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
 		// draw instances
-		this.line.drawInstanced(
-			this.atlas,
-			this.color);
+		this.edge.drawInstanced(this.atlas);
 
-		// unbind render target
-		plot.renderBuffer.unbind();
-
-		// render framebuffer to the backbuffer
-		plot.renderBuffer.blitToScreen(this.layer.opacity);
 		return this;
 	}
 
