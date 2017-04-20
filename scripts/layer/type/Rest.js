@@ -8,7 +8,7 @@ const ImageRenderer = require('../../render/webgl/Image');
 class Rest extends Base {
 
 	constructor(endpoint, options = {}) {
-		super(null, options);
+		super(options);
 		this.ext = defaultTo(options.ext, 'png');
 		this.scheme = defaultTo(options.scheme, 'http');
 		this.endpoint = endpoint;
