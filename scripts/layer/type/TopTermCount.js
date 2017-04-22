@@ -6,8 +6,8 @@ const Bivariate = require('./Bivariate');
 
 class TopTermCount extends Bivariate {
 
-	constructor(meta, options = {}) {
-		super(meta, options);
+	constructor(options = {}) {
+		super(options);
 		this.termsField = options.termsField;
 		this.termsCount = defaultTo(options.termsCount, 10);
 	}

@@ -4,8 +4,8 @@ const Bivariate = require('./Bivariate');
 
 class Count extends Bivariate {
 
-	constructor(meta, options = {}) {
-		super(meta, options);
+	constructor(options = {}) {
+		super(options);
 	}
 
 	getTile(name = 'count') {

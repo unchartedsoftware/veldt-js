@@ -6,8 +6,8 @@ const Bivariate = require('./Bivariate');
 
 class Heatmap extends Bivariate {
 
-	constructor(meta, options = {}) {
-		super(meta, options);
+	constructor(options = {}) {
+		super(options);
 	}
 
 	extractExtrema(data) {

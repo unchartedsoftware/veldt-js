@@ -2,7 +2,7 @@
 
 const lumo = require('lumo');
 
-class Debug extends lumo.Layer {
+class Debug extends lumo.TileLayer {
 
 	constructor(options) {
 		super(options);

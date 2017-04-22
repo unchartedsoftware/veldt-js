@@ -5,8 +5,8 @@ const Bivariate = require('./Bivariate');
 
 class Macro extends Bivariate {
 
-	constructor(meta, options = {}) {
-		super(meta, options);
+	constructor(options = {}) {
+		super(options);
 		this.lod = defaultTo(options.lod, 4);
 		this.transform = data => {
 			if (this.lod > 0) {

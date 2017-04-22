@@ -15,6 +15,7 @@ class MacroEdge extends VertexRenderer {
 		this.transform = defaultTo(options.transform, 'log10');
 		this.range = defaultTo(options.range, [0, 1]);
 		this.colorRamp = defaultTo(options.colorRamp, 'cool');
+		this.ext = null;
 	}
 
 	addTile(atlas, tile) {
@@ -27,6 +28,7 @@ class MacroEdge extends VertexRenderer {
 
 	onAdd(layer) {
 		super.onAdd(layer);
+		this.ext = this.gl.getExtension('EXT_blend_minmax');
 		this.edge = new Edge(this, this.transform, this.colorRamp);
 		this.atlas = this.createVertexAtlas({
 			// position
@@ -95,8 +97,18 @@ class MacroEdge extends VertexRenderer {
 		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
+		if (this.ext) {
+			// set max blend equation
+			gl.blendEquation(this.ext.MIN_EXT);
+		}
+
 		// draw instances
 		this.edge.drawInstanced(this.atlas);
+
+		// revert to default blend equation
+		if (this.ext) {
+			gl.blendEquation(gl.FUNC_ADD);
+		}
 
 		return this;
 	}
