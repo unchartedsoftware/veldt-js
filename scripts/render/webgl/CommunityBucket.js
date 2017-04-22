@@ -190,7 +190,7 @@ class CommunityBucket extends InteractiveRenderer {
 
 		const gl = this.gl;
 		const layer = this.layer;
-		const opacity = layer.opacity;
+		const opacity = layer.getOpacity();
 
 		// set blending func
 		gl.enable(gl.BLEND);
