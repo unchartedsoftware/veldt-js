@@ -13,7 +13,7 @@ class Image extends lumo.TextureRenderer {
 		this.brightness = brightness;
 
 		if (this.plot) {
-			this.plot.setDirty();
+			this.layer.plot.setDirty();
 		}
 	}
 

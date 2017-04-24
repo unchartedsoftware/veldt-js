@@ -59,7 +59,7 @@ class MacroEdge extends VertexRenderer {
 		this.edge.setTransform(this.transform);
 
 		if (this.plot) {
-			this.plot.setDirty();
+			this.layer.plot.setDirty();
 		}
 		return this;
 	}
@@ -75,7 +75,7 @@ class MacroEdge extends VertexRenderer {
 		];
 
 		if (this.plot) {
-			this.plot.setDirty();
+			this.layer.plot.setDirty();
 		}
 	}
 
@@ -91,7 +91,7 @@ class MacroEdge extends VertexRenderer {
 		this.edge.setTransform(colorRamp);
 
 		if (this.plot) {
-			this.plot.setDirty();
+			this.layer.plot.setDirty();
 		}
 	}
 

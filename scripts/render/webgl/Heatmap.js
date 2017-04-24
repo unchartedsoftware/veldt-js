@@ -140,7 +140,7 @@ class Heatmap extends TextureRenderer {
 			ColorRampGLSL.addTransformDefine(SHADER, this.transform));
 
 		if (this.plot) {
-			this.plot.setDirty();
+			this.layer.plot.setDirty();
 		}
 	}
 
@@ -155,7 +155,7 @@ class Heatmap extends TextureRenderer {
 		];
 
 		if (this.plot) {
-			this.plot.setDirty();
+			this.layer.plot.setDirty();
 		}
 	}
 
@@ -171,7 +171,7 @@ class Heatmap extends TextureRenderer {
 		this.ramp = ColorRampGLSL.createRampTexture(this.gl, this.colorRamp);
 
 		if (this.plot) {
-			this.plot.setDirty();
+			this.layer.plot.setDirty();
 		}
 	}
 
