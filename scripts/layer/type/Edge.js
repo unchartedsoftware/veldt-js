@@ -21,6 +21,8 @@ class Edge extends Live {
 		this.dstXField = defaultTo(options.dstXField, 'dstXField');
 		this.dstYField = defaultTo(options.dstYField, 'dstYField');
 		this.weightField = defaultTo(options.weightField, 'weightField');
+		this.requireSrc = defaultTo(options.requireSrc, true); // By default, query for the src point only.
+		this.requireDst = defaultTo(options.requireDst, false);
 		const left = defaultTo(options.left, 0);
 		const right = defaultTo(options.right, Math.pow(2, 32));
 		const bottom = defaultTo(options.bottom, 0);
@@ -46,6 +48,14 @@ class Edge extends Live {
 
 	setWeightField(field) {
 		setStringField(this, 'weightField', field);
+	}
+
+	setRequireSrc(boolVal) {
+		this.requireSrc = !!boolVal;
+	}
+
+	setRequireDst(boolVal) {
+		this.requireDst = !!boolVal;
 	}
 
 	setBounds(left, right, bottom, top) {

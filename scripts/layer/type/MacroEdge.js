@@ -67,6 +67,8 @@ class MacroEdge extends Edge {
 			srcYField: this.srcYField,
 			dstXField: this.dstXField,
 			dstYField: this.dstYField,
+			requireSrc: this.requireSrc,
+			requireDst: this.requireDst,
 			weightField: this.weightField,
 			left: this.left,
 			right: this.right,

@@ -16,13 +16,24 @@ const INSTANCED_SHADER = {
 		uniform vec2 uLODOffset;
 		uniform float uLODScale;
 		uniform mat4 uProjectionMatrix;
+		uniform vec4 uViewport;
 		uniform float uOpacity;
 		varying vec4 vColor;
 		void main() {
 			vec2 wPosition = (aPosition * uScale * uLODScale) + (uTileOffset + (uScale * uLODOffset));
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
-			vec4 color = brightnessTransform(colorRampLookup(aWeight));
-			vColor = vec4(color.rgb, color.a * uOpacity);
+
+			vec4 color;
+			float x = wPosition[0];
+			float y = wPosition[1];
+			if (x >= uViewport[0] && x <= uViewport[2] && y >= uViewport[1] && y <= uViewport[3]) {
+				color = brightnessTransform(colorRampLookup(aWeight));
+				color.a = color.a * uOpacity;
+			} else {
+				color = vec4(0.0, 0.0, 0.0, 0.0);
+			}
+
+			vColor = color;
 		}
 		`,
 	frag:
@@ -168,12 +179,14 @@ const drawLOD = function(shader, atlas, plot, lod, renderables) {
 };
 
 class Edge {
+
 	constructor(renderer, transform, colorRamp) {
 		this.renderer = renderer;
 		this.setTransform(transform);
 		this.setColorRamp(colorRamp);
 		this.line = createLine(renderer.gl);
 	}
+
 	setTransform(transform) {
 		// re-compile shaders
 		this.shader = {
@@ -183,9 +196,11 @@ class Edge {
 				ColorRampGLSL.addTransformDefine(INDIVIDUAL_SHADER, transform))
 		};
 	}
+
 	setColorRamp(colorRamp) {
 		this.ramp = ColorRampGLSL.createRampTexture(this.renderer.gl, colorRamp);
 	}
+
 	drawInstanced(atlas) {
 
 		const shader = this.shader.instanced;
@@ -195,6 +210,8 @@ class Edge {
 		const ramp = this.ramp;
 		const extrema = layer.getExtrema();
 		const projection = renderer.getOrthoMatrix();
+		const viewportSize = plot.getTargetViewportPixelSize();
+
 
 		// bind shader
 		shader.use();
@@ -212,6 +229,12 @@ class Edge {
 		shader.setUniform('uRangeMax', renderer.range[1]);
 		shader.setUniform('uMin', extrema.min);
 		shader.setUniform('uMax', extrema.max);
+		shader.setUniform('uViewport', [
+			0,
+			0,
+			viewportSize.width,
+			viewportSize.height
+		]);
 
 		// binds the vertex atlas
 		atlas.bind();
@@ -235,6 +258,7 @@ class Edge {
 		// unbind
 		atlas.unbind();
 	}
+
 	drawIndividual(target) {
 
 		const shader = this.shader.individual;
@@ -245,14 +269,14 @@ class Edge {
 		const ramp = this.ramp;
 		const extrema = layer.getExtrema();
 		const projection = renderer.getOrthoMatrix();
-		const viewport = plot.getViewportPixelOffset();
+		const viewportOffset = plot.getViewportPixelOffset();
 
 		// get tile offset
 		const coord = target.tile.coord;
 		const scale = Math.pow(2, plot.zoom - coord.z);
 		const tileOffset = [
-			(coord.x * scale * plot.tileSize) - viewport.x,
-			(coord.y * scale * plot.tileSize) - viewport.y
+			(coord.x * scale * plot.tileSize) - viewportOffset.x,
+			(coord.y * scale * plot.tileSize) - viewportOffset.y
 		];
 
 		// bind shader
