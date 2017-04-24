@@ -66,7 +66,7 @@ class Macro extends VertexRenderer {
 		plot.renderBuffer.unbind();
 
 		// render framebuffer to the backbuffer
-		plot.renderBuffer.blitToScreen(layer.opacity);
+		plot.renderBuffer.blitToScreen(layer.getOpacity());
 
 		return this;
 	}

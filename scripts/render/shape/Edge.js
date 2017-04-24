@@ -200,8 +200,7 @@ class Edge {
 	setColorRamp(colorRamp) {
 		this.ramp = ColorRampGLSL.createRampTexture(this.renderer.gl, colorRamp);
 	}
-
-	drawInstanced(atlas) {
+	drawInstanced(atlas, opacity) {
 
 		const shader = this.shader.instanced;
 		const renderer = this.renderer;
@@ -224,7 +223,7 @@ class Edge {
 		shader.setUniform('uBrightness', renderer.brightness);
 		shader.setUniform('uColorRampSampler', 0);
 		shader.setUniform('uColorRampSize', ramp.width);
-		shader.setUniform('uOpacity', layer.opacity);
+		shader.setUniform('uOpacity', opacity);
 		shader.setUniform('uRangeMin', renderer.range[0]);
 		shader.setUniform('uRangeMax', renderer.range[1]);
 		shader.setUniform('uMin', extrema.min);
@@ -258,8 +257,7 @@ class Edge {
 		// unbind
 		atlas.unbind();
 	}
-
-	drawIndividual(target) {
+	drawIndividual(target, opacity) {
 
 		const shader = this.shader.individual;
 		const line = this.line;
@@ -294,7 +292,7 @@ class Edge {
 		shader.setUniform('uBrightness', renderer.brightness);
 		shader.setUniform('uColorRampSampler', 0);
 		shader.setUniform('uColorRampSize', ramp.width);
-		shader.setUniform('uOpacity', layer.opacity);
+		shader.setUniform('uOpacity', opacity);
 		shader.setUniform('uRangeMin', renderer.range[0]);
 		shader.setUniform('uRangeMax', renderer.range[1]);
 		shader.setUniform('uMin', extrema.min);

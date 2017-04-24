@@ -270,9 +270,14 @@ class Swap extends EventEmitter {
 	}
 
 	setOpacity(opacity) {
+		this.opacity = opacity;
 		this.layers.forEach(layer => {
 			layer.setOpacity(opacity);
 		});
+	}
+
+	getOpacity() {
+		return this.opacity;
 	}
 
 	isFiltered() {

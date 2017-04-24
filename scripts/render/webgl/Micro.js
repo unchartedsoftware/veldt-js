@@ -143,7 +143,7 @@ class Micro extends InteractiveRenderer {
 		plot.renderBuffer.unbind();
 
 		// render framebuffer to the backbuffer
-		plot.renderBuffer.blitToScreen(this.layer.opacity);
+		plot.renderBuffer.blitToScreen(this.layer.getOpacity());
 		return this;
 	}
 

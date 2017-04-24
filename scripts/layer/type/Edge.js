@@ -14,8 +14,8 @@ const setStringField = function(layer, property, value) {
 
 class Edge extends Live {
 
-	constructor(meta, options = {}) {
-		super(meta, options);
+	constructor(options = {}) {
+		super(options);
 		this.srcXField = defaultTo(options.srcXField, 'srcXField');
 		this.srcYField = defaultTo(options.srcYField, 'srcYField');
 		this.dstXField = defaultTo(options.dstXField, 'dstXField');

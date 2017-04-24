@@ -128,7 +128,7 @@ class Repeat extends lumo.WebGLRenderer {
 		// set global uniforms
 		shader.setUniform('uProjectionMatrix', proj);
 		shader.setUniform('uTextureSampler', 0);
-		shader.setUniform('uOpacity', this.layer.opacity);
+		shader.setUniform('uOpacity', this.layer.getOpacity());
 
 		// set blending func
 		gl.enable(gl.BLEND);

@@ -7,8 +7,8 @@ const Micro = require('./Micro');
 
 class Community extends Micro {
 
-	constructor(meta, options = {}) {
-		super(meta, options);
+	constructor(options = {}) {
+		super(options);
 		this.lod = 0;
 	}
 

@@ -189,7 +189,7 @@ class Heatmap extends TextureRenderer {
 		shader.setUniform('uTextureSampler', 0);
 		shader.setUniform('uColorRampSampler', 1);
 		shader.setUniform('uColorRampSize', ramp.width);
-		shader.setUniform('uOpacity', this.layer.opacity);
+		shader.setUniform('uOpacity', this.layer.getOpacity());
 		shader.setUniform('uRangeMin', this.range[0]);
 		shader.setUniform('uRangeMax', this.range[1]);
 		shader.setUniform('uMin', extrema.min);

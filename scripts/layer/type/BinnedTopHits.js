@@ -5,8 +5,8 @@ const Bivariate = require('./Bivariate');
 
 class BinnedTopHits extends Bivariate {
 
-	constructor(meta, options = {}) {
-		super(meta, options);
+	constructor(options = {}) {
+		super(options);
 		this.sortField = defaultTo(options.sortField, null);
 		this.sortOrder = defaultTo(options.sortOrder, 'desc');
 		this.hitsCount = defaultTo(options.hitsCount, 10);

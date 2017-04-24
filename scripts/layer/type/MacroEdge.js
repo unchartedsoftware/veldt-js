@@ -5,8 +5,8 @@ const Edge = require('./Edge');
 
 class MacroEdge extends Edge {
 
-	constructor(meta, options = {}) {
-		super(meta, options);
+	constructor(options = {}) {
+		super(options);
 		this.lod = defaultTo(options.lod, 4);
 		this.sortField = defaultTo(options.sortField, null);
 		this.sortOrder = defaultTo(options.sortOrder, 'desc');
