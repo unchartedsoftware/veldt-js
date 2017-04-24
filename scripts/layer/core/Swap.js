@@ -153,10 +153,20 @@ class Swap extends EventEmitter {
 
 	show() {
 		this.hidden = false;
+
+		if (this.plot) {
+			this.plot.setDirty();
+		}
+		return this;
 	}
 
 	hide() {
 		this.hidden = true;
+
+		if (this.plot) {
+			this.plot.setDirty();
+		}
+		return this;
 	}
 
 	isHidden() {
