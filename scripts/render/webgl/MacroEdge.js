@@ -112,12 +112,8 @@ class MacroEdge extends VertexRenderer {
 
 		if (this.ext) {
 			// set max blend equation for color
-			gl.blendFuncSeparate(
-				gl.SRC_COLOR, gl.DST_COLOR, // rgb
-				gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); // alpha
-			gl.blendEquationSeparate(
-				this.ext.MAX_EXT, // rgb
-				gl.FUNC_ADD); // alpha
+			gl.blendEquation(this.ext.MAX_EXT);
+			gl.blendFunc(gl.SRC_ALPHA, gl.DST_ALPHA);
 		} else {
 			gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		}
@@ -127,12 +123,7 @@ class MacroEdge extends VertexRenderer {
 
 		// revert to default blend equation
 		if (this.ext) {
-			gl.blendFuncSeparate(
-				gl.ONE, gl.ZERO, // rgb
-				gl.ONE, gl.ZERO); // alpha
-			gl.blendEquationSeparate(
-				gl.FUNC_ADD, // rgb
-				gl.FUNC_ADD); // alpha
+			gl.blendEquation(gl.FUNC_ADD);
 		}
 
 		return this;
