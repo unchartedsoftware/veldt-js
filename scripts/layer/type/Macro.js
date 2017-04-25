@@ -19,8 +19,7 @@ class Macro extends Bivariate {
 				const offsets = new Uint32Array(data, 8 + pointsByteLength, numOffsets);
 				return {
 					points: points,
-					offsets: offsets,
-					lod: Math.log(numOffsets) / Math.log(4)
+					offsets: offsets
 				};
 			}
 			return new Float32Array(data);
