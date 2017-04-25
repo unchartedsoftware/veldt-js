@@ -50,11 +50,11 @@ function isTileStale(layer, coord) {
 	return (coord.z !== zoom || !viewport.isInView(coord, plot.wraparound));
 }
 
-function liveRequest(requestor, pipeline, index, type, xyz) {
+function liveRequest(requestor, pipeline, uri, type, xyz) {
 	return function(coord, done) {
 		const req = {
 			pipeline: pipeline,
-			uri: index,
+			uri: uri,
 			coord: {
 				z: coord.z,
 				x: coord.x,
@@ -103,12 +103,12 @@ function liveRequest(requestor, pipeline, index, type, xyz) {
 
 class TileRequestor extends Requestor {
 
-	requestJSON(pipeline, index, xyz = false) {
-		return liveRequest(this, pipeline, index, 'json', xyz);
+	requestJSON(pipeline, uri, xyz = false) {
+		return liveRequest(this, pipeline, uri, 'json', xyz);
 	}
 
-	requestArrayBuffer(pipeline, index, xyz = false) {
-		return liveRequest(this, pipeline, index, 'arraybuffer', xyz);
+	requestArrayBuffer(pipeline, uri, xyz = false) {
+		return liveRequest(this, pipeline, uri, 'arraybuffer', xyz);
 	}
 }
 
