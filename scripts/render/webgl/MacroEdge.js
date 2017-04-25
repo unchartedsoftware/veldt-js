@@ -57,6 +57,11 @@ class MacroEdge extends VertexRenderer {
 	setTransform(transform) {
 		this.transform = transform;
 		this.edge.setTransform(this.transform);
+
+		if (this.layer.plot) {
+			this.layer.plot.setDirty();
+		}
+		return this;
 	}
 
 	getTransform() {
@@ -68,6 +73,10 @@ class MacroEdge extends VertexRenderer {
 			clamp(min, 0, 1),
 			clamp(max, 0, 1)
 		];
+
+		if (this.layer.plot) {
+			this.layer.plot.setDirty();
+		}
 	}
 
 	getValueRange() {
@@ -80,6 +89,10 @@ class MacroEdge extends VertexRenderer {
 	setColorRamp(colorRamp) {
 		this.colorRamp = colorRamp;
 		this.edge.setTransform(colorRamp);
+
+		if (this.layer.plot) {
+			this.layer.plot.setDirty();
+		}
 	}
 
 	getColorRamp() {
