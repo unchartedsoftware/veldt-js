@@ -250,6 +250,12 @@ class Swap extends EventEmitter {
 		});
 	}
 
+	unselectAll() {
+		this.layers.forEach(layer => {
+			layer.unselectAll();
+		});
+	}
+
 	getSelected() {
 		const top = getTopLayer(this);
 		if (top) {
