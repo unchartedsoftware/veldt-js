@@ -153,10 +153,20 @@ class Swap extends EventEmitter {
 
 	show() {
 		this.hidden = false;
+
+		if (this.plot) {
+			this.plot.setDirty();
+		}
+		return this;
 	}
 
 	hide() {
 		this.hidden = true;
+
+		if (this.plot) {
+			this.plot.setDirty();
+		}
+		return this;
 	}
 
 	isHidden() {
@@ -216,16 +226,16 @@ class Swap extends EventEmitter {
 		});
 	}
 
-	getHighlight() {
+	getHighlighted() {
 		const top = getTopLayer(this);
 		if (top) {
-			return top.highlighted;
+			return top.getHighlighted();
 		}
 		return null;
 	}
 
 	isHighlighted(data) {
-		return this.getHighlight() === data;
+		return this.getHighlighted() === data;
 	}
 
 	select(data, multiSelect) {
@@ -234,16 +244,16 @@ class Swap extends EventEmitter {
 		});
 	}
 
-	unselect() {
+	unselect(data) {
 		this.layers.forEach(layer => {
-			layer.unselect();
+			layer.unselect(data);
 		});
 	}
 
 	getSelected() {
 		const top = getTopLayer(this);
 		if (top) {
-			return top.selected;
+			return top.getSelected();
 		}
 		return null;
 	}
