@@ -222,6 +222,10 @@ const getFunc = function(type) {
 	return colorRamps[type];
 };
 
+const hasRamp = function(type) {
+	return !!colorRamps[type];
+};
+
 const createRamp = function(type, baseColors) {
 	colorTables[type] = buildPerceptualLookupTable(baseColors);
 	colorRamps[type] = buildLookupFunction(colorTables[type]);
@@ -245,6 +249,7 @@ const getBuckets = function(type, numBuckets) {
 };
 
 module.exports = {
+	hasRamp: hasRamp,
 	getTable: getTable,
 	getFunc: getFunc,
 	getBuckets: getBuckets,
