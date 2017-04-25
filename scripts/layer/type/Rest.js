@@ -7,12 +7,12 @@ const ImageRenderer = require('../../render/webgl/Image');
 
 class Rest extends Base {
 
-	constructor(endpoint, options = {}) {
+	constructor(options = {}) {
 		super(options);
 		this.ext = defaultTo(options.ext, 'png');
 		this.scheme = defaultTo(options.scheme, 'http');
-		this.endpoint = endpoint;
-		if(_.isNil(this.renderer)) {
+		this.endpoint = defaultTo(options.endpoint, 'endpoint');
+		if (_.isNil(this.renderer)) {
 			this.setRenderer(new ImageRenderer());
 		}
 	}
@@ -23,10 +23,6 @@ class Rest extends Base {
 
 	setScheme(scheme) {
 		this.scheme = scheme;
-	}
-
-	setSubDomains(subdomains) {
-		this.subdomains = subdomains;
 	}
 
 	setEndpoint(endpoint) {
