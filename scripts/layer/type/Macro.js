@@ -13,11 +13,14 @@ class Macro extends Bivariate {
 				const view = new DataView(data);
 				const pointsByteLength = view.getUint32(0, true /* little endian */);
 				const offsetsByteLength = view.getUint32(4, true  /* little endian */);
-				const points = data.slice(8, 8+pointsByteLength);
-				const offsets = data.slice(8+pointsByteLength, 8+pointsByteLength+offsetsByteLength);
+				const numPoints = pointsByteLength / 4;
+				const numOffsets = offsetsByteLength / 4;
+				const points = new Float32Array(data, 8, numPoints);
+				const offsets = new Uint32Array(data, 8 + pointsByteLength, numOffsets);
 				return {
-					points: new Float32Array(points),
-					offsets: new Uint32Array(offsets)
+					points: points,
+					offsets: offsets,
+					lod: Math.log(numOffsets) / Math.log(4)
 				};
 			}
 			return new Float32Array(data);
