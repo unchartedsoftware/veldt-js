@@ -107,12 +107,6 @@ class Community extends InteractiveRenderer {
 		atlas.set(coord.hash, vertices, points.length);
 	}
 
-	removeTile(atlas, tile) {
-		const coord = tile.coord;
-		atlas.delete(coord.hash);
-		this.removePoints(coord);
-	}
-
 	draw() {
 
 		const gl = this.gl;
@@ -137,7 +131,9 @@ class Community extends InteractiveRenderer {
 		}
 
 		// render selected
-		layer.selected.forEach(selected => {
+		const selection = layer.getSelected();
+		for (let i=0; i<selection.length; i++) {
+			const selected = selection[i];
 			// draw outline
 			this.ringOutline.drawIndividual(
 				selected,
@@ -148,7 +144,7 @@ class Community extends InteractiveRenderer {
 				selected,
 				this.selectedColor,
 				opacity);
-		});
+		}
 
 		// render highlighted
 		if (layer.highlighted && !layer.isSelected(layer.highlighted)) {

@@ -144,7 +144,8 @@ class Repeat extends lumo.WebGLRenderer {
 		const coords = plot.getVisibleCoords();
 
 		// draw the tile
-		coords.forEach(coord => {
+		for (let i=0; i<coords.length; i++) {
+			const coord = coords[i];
 			const scale = Math.pow(2, plot.zoom - coord.z);
 			const tileOffset = [
 				(coord.x * scale * plot.tileSize) - viewport.x,
@@ -155,7 +156,7 @@ class Repeat extends lumo.WebGLRenderer {
 			shader.setUniform('uTileOffset', tileOffset);
 			// draw
 			quad.draw();
-		});
+		}
 
 		// unbind quad
 		quad.unbind();

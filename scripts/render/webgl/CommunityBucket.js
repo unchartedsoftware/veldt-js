@@ -179,13 +179,7 @@ class CommunityBucket extends InteractiveRenderer {
 		this.addPoints(coord, points);
 		atlas.set(coord.hash, vertices, points.length);
 	}
-
-	removeTile(atlas, tile) {
-		const coord = tile.coord;
-		atlas.delete(coord.hash);
-		this.removePoints(coord);
-	}
-
+	
 	draw() {
 
 		const gl = this.gl;
@@ -209,12 +203,14 @@ class CommunityBucket extends InteractiveRenderer {
 			opacity);
 
 		// render selected
-		layer.selected.forEach(selected => {
+		const selection = layer.getSelected();
+		for (let i=0; i<selection.length; i++) {
+			const selected = selection[i];
 			this.ringFill.drawIndividual(
 				selected,
 				this.selectedColors,
 				opacity);
-		});
+		}
 
 		// render highlighted
 		if (layer.highlighted && !layer.isSelected(layer.highlighted)) {

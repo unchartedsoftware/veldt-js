@@ -79,17 +79,20 @@ const intersectWord = function(position, word, cloud, bb) {
 	return false;
 };
 
+const sortWords = function(a, b) {
+	return b.count - a.count;
+};
+
 const measureWords = function(renderer, wordCounts, extrema) {
 	// sort words by frequency
-	wordCounts = wordCounts.sort((a, b) => {
-		return b.count - a.count;
-	}).slice(0, renderer.maxNumWords);
+	wordCounts = wordCounts.sort(sortWords).slice(0, renderer.maxNumWords);
 	// build measurement html
 	const $html = $('<div style="height:256px; width:256px;"></div>');
 	const minFontSize = renderer.minFontSize;
 	const maxFontSize = renderer.maxFontSize;
 	const transform = renderer.transform;
-	wordCounts.forEach(word => {
+	for (let i=0; i<wordCounts.length; i++) {
+		const word = wordCounts[i];
 		word.percent = Transform.transform(word.count, transform, extrema);
 		word.fontSize = minFontSize + word.percent * (maxFontSize - minFontSize);
 		$html.append(
@@ -98,7 +101,7 @@ const measureWords = function(renderer, wordCounts, extrema) {
 				visibility:hidden;
 				font-size: ${word.fontSize}px;">${word.text}</div>;
 			`);
-	});
+	}
 	// append measurements
 	$('body').append($html);
 	$html.children().each((index, elem) => {
@@ -121,7 +124,8 @@ const createWordCloud = function(renderer, wordCounts, extrema) {
 	// sort words by frequency
 	wordCounts = measureWords(renderer, wordCounts, extrema);
 	// assemble word cloud
-	wordCounts.forEach(wordCount => {
+	for (let i=0; i<wordCounts.length; i++) {
+		const wordCount = wordCounts[i];
 		// starting spiral position
 		let pos = {
 			radius: 1,
@@ -150,7 +154,7 @@ const createWordCloud = function(renderer, wordCounts, extrema) {
 				break;
 			}
 		}
-	});
+	}
 	return cloud;
 };
 
@@ -253,7 +257,8 @@ class WordCloud extends HTMLRenderer {
 		// create html for tile
 		const divs = [];
 		// for each word in the cloud
-		cloud.forEach(word => {
+		for (let i=0; i<cloud.length; i++) {
+			const word = cloud[i];
 			const highlight = (word.text === this.highlight) ? 'highlight' : '';
 			// create element for word
 			divs.push(`
@@ -269,7 +274,7 @@ class WordCloud extends HTMLRenderer {
 						height: ${word.height}px;"
 					data-word="${word.text}">${word.text}</div>
 				`);
-		});
+		}
 		element.innerHTML = divs.join('');
 	}
 }

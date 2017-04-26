@@ -24,6 +24,45 @@ const getTextWidth = function(text, fontSize, fontFamily, buffer) {
 	return Math.floor(metrics.width) + 1 + buffer;
 };
 
+const sortLabel = function(a, b) {
+	return b.offsetHeight - a.offsetHeight;
+};
+
+const createDeconflictionFunc = function($container) {
+	return () => {
+		const tree = new lumo.RTree({
+			collisionType: lumo.RECTANGLE,
+			nodeCapacity: 64
+		});
+		// grab all labels
+		const $labels = $container.find('.community-label');
+		// sort based on size / importance
+		$labels.sort(sortLabel);
+		// check if they conflict, if so, hide them
+		for (let i=0; i<$labels.length; i++) {
+			const element = $labels[i];
+			const position = $(element).offset();
+			const point = {
+				minX: position.left,
+				maxX: position.left + element.offsetWidth,
+				minY: position.top,
+				maxY: position.top + element.offsetHeight
+			};
+			const collision = tree.searchRectangle(
+				point.minX,
+				point.maxX,
+				point.minY,
+				point.maxY);
+			if (collision) {
+				element.style.visibility = 'hidden';
+			} else {
+				element.style.visibility = 'visible';
+				tree.insert([ point ]);
+			}
+		}
+	};
+};
+
 class CommunityLabel extends HTMLRenderer {
 
 	constructor(options = {}) {
@@ -56,39 +95,7 @@ class CommunityLabel extends HTMLRenderer {
 			this.onClick(event);
 		};
 		if (this.labelDeconflict) {
-			this[DECONFLICT] = () => {
-				const tree = new lumo.RTree({
-					collisionType: lumo.RECTANGLE,
-					nodeCapacity: 64
-				});
-				// grab all labels
-				const $labels = $(this.container).find('.community-label');
-				// sort based on size / importance
-				$labels.sort((a, b) => {
-					return b.offsetHeight - a.offsetHeight;
-				});
-				// check if they conflict, if so, hide them
-				$labels.each((index, element) => {
-					const position = $(element).offset();
-					const point = {
-						minX: position.left,
-						maxX: position.left + element.offsetWidth,
-						minY: position.top,
-						maxY: position.top + element.offsetHeight
-					};
-					const collision = tree.searchRectangle(
-						point.minX,
-						point.maxX,
-						point.minY,
-						point.maxY);
-					if (collision) {
-						element.style.visibility = 'hidden';
-					} else {
-						element.style.visibility = 'visible';
-						tree.insert([ point ]);
-					}
-				});
-			};
+			this[DECONFLICT] = createDeconflictionFunc($(this.container));
 			this.on(EventType.DOM_POST_DRAW, this[DECONFLICT]);
 		}
 		$(this.container).on('mouseover', this[MOUSE_OVER]);
@@ -141,18 +148,19 @@ class CommunityLabel extends HTMLRenderer {
 		const extrema = layer.getExtrema(tile.coord.z);
 
 		let divs = $();
-		hits.forEach((community, index) => {
+		for (let i=0; i<hits.length; i++) {
+			const community = hits[i];
 
 			const label = get(community, this.labelField);
 			if (!label) {
-				return;
+				continue;
 			}
 
 			const val = get(community, sortField);
 			const nval = Transform.transform(val, this.transform, extrema);
 
 			if (nval < this.labelThreshold) {
-				return;
+				continue;
 			}
 
 			// normalize the nval as it is currently in the range [this.labelThreshold : 1]
@@ -164,8 +172,8 @@ class CommunityLabel extends HTMLRenderer {
 			const width = Math.min(getTextWidth(label, fontSize, this.fontFamily, 10), this.labelMaxLength);
 
 			// get position
-			const x = points[index*2] - (width / 2);
-			const y = points[index*2+1] - (height / 2);
+			const x = points[i*2] - (width / 2);
+			const y = points[i*2+1] - (height / 2);
 
 			const div = $(`
 				<div class="community-label" style="
@@ -182,7 +190,7 @@ class CommunityLabel extends HTMLRenderer {
 
 			div.data('community', community);
 			divs = divs.add(div);
-		});
+		}
 		$(element).empty().append(divs);
 	}
 }

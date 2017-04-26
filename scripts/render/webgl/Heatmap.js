@@ -110,11 +110,7 @@ class Heatmap extends TextureRenderer {
 		}
 		array.set(tile.coord.hash, new Uint8Array(tile.data));
 	}
-
-	removeTile(array, tile) {
-		array.delete(tile.coord.hash);
-	}
-
+	
 	onAdd(layer) {
 		super.onAdd(layer);
 		this.quad = createQuad(this.gl, 0, layer.plot.tileSize);
@@ -218,7 +214,8 @@ class Heatmap extends TextureRenderer {
 		ramp.bind(1);
 
 		// for each renderable
-		renderables.forEach(renderable => {
+		for (let i=0; i<renderables.length; i++) {
+			const renderable = renderables[i];
 			// bind texture
 			array.bind(renderable.hash, 0);
 			// set tile uniforms
@@ -227,7 +224,7 @@ class Heatmap extends TextureRenderer {
 			// draw
 			quad.draw();
 			// no need to unbind texture
-		});
+		}
 
 		// unbind quad
 		quad.unbind();

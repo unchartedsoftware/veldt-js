@@ -117,13 +117,14 @@ class Quad {
 		// binds instance offset buffer
 		atlas.bindInstanced();
 
-		renderables.forEach(renderable => {
+		for (let i=0; i<renderables.length; i++) {
+			const renderable = renderables[i];
 			// set tile uniforms
 			shader.setUniform('uScale', renderable.scale);
 			shader.setUniform('uTileOffset', renderable.tileOffset);
 			// draw the instances
 			atlas.drawInstanced(renderable.hash, ring.mode, ring.count);
-		});
+		}
 
 		// unbind instance offset buffer
 		atlas.unbindInstanced();

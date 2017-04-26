@@ -116,7 +116,8 @@ const getOffsetIndices = function(x, y, extent, lod) {
 
 const draw = function(shader, atlas, renderables) {
 	// for each renderable
-	renderables.forEach(renderable => {
+	for (let i=0; i<renderables.length; i++) {
+		const renderable = renderables[i];
 		// set tile uniforms
 		shader.setUniform('uScale', renderable.scale);
 		shader.setUniform('uTileOffset', renderable.tileOffset);
@@ -124,20 +125,21 @@ const draw = function(shader, atlas, renderables) {
 		shader.setUniform('uLODOffset', [0, 0]);
 		// draw the points
 		atlas.draw(renderable.hash, 'LINES');
-	});
+	}
 };
 
 const drawLOD = function(shader, atlas, plot, lod, renderables) {
 	const zoom = Math.round(plot.zoom);
 	// for each renderable
-	renderables.forEach(renderable => {
+	for (let i=0; i<renderables.length; i++) {
+		const renderable = renderables[i];
 
 		// distance between actual zoom and the LOD of tile
 		const dist = Math.abs(renderable.tile.coord.z - zoom);
 
 		if (dist > lod) {
 			// not enough lod to support it
-			return;
+			continue;
 		}
 
 		const xOffset = renderable.uvOffset[0];
@@ -175,7 +177,7 @@ const drawLOD = function(shader, atlas, plot, lod, renderables) {
 			// draw the edges
 			atlas.draw(renderable.hash, 'LINES', offset, count);
 		}
-	});
+	}
 };
 
 class Edge {
@@ -285,6 +287,8 @@ class Edge {
 
 		shader.setUniform('uProjectionMatrix', projection);
 		shader.setUniform('uTileOffset', tileOffset);
+		shader.setUniform('uLODScale', 1);
+		shader.setUniform('uLODOffset', [0, 0]);
 		shader.setUniform('uPointA', [ target.a.x, target.a.y ]);
 		shader.setUniform('uPointB', [ target.b.x, target.b.y ]);
 		shader.setUniform('uWeights', [ target.a.weight, target.b.weight ]);
