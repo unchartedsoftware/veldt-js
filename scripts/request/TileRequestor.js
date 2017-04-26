@@ -1,7 +1,7 @@
 'use strict';
 
 const $ = require('jquery');
-const _ = require('lodash');
+const forIn = require('lodash/forIn');
 const Requestor = require('./Requestor');
 
 $.ajaxTransport('+arraybuffer', options => {
@@ -26,7 +26,7 @@ $.ajaxTransport('+arraybuffer', options => {
 			});
 			xhr.open(type, url, async, username, password);
 			// setup custom headers
-			_.forIn(headers, (header, key) => {
+			forIn(headers, (header, key) => {
 				xhr.setRequestHeader(key, header);
 			});
 			xhr.responseType = dataType;
@@ -47,7 +47,7 @@ function isTileStale(layer, coord) {
 	const zoom = Math.round(plot.getTargetZoom());
 	const viewport = plot.getTargetViewport();
 	// check if tile is at correct zoom and is in view
-	return (coord.z !== zoom || !viewport.isInView(coord, plot.wraparound));
+	return (coord.z !== zoom) || !viewport.isInView(coord, plot.wraparound);
 }
 
 function liveRequest(requestor, pipeline, uri, type, xyz) {
@@ -65,7 +65,7 @@ function liveRequest(requestor, pipeline, uri, type, xyz) {
 		};
 		requestor
 			.get(req)
-			.done(url => {
+			.then(url => {
 				// if stale is tile don't bother pulling it down
 				if (isTileStale(this, coord)) {
 					done(new Error('stale tile'), null);
@@ -90,12 +90,12 @@ function liveRequest(requestor, pipeline, uri, type, xyz) {
 					} else {
 						err = new Error('Request failed');
 					}
-					console.error(err);
+					console.error(err.message);
 					done(err, null);
 				});
 			})
-			.fail(err => {
-				console.error(err);
+			.catch(err => {
+				console.error(err.message);
 				done(err, null);
 			});
 	};
