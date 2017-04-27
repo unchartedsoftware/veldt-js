@@ -15,6 +15,7 @@ class MacroEdge extends VertexRenderer {
 		this.transform = defaultTo(options.transform, 'log10');
 		this.range = defaultTo(options.range, [0, 1]);
 		this.colorRamp = defaultTo(options.colorRamp, 'cool');
+		this.ext = null;
 	}
 
 	addTile(atlas, tile) {
@@ -27,6 +28,8 @@ class MacroEdge extends VertexRenderer {
 
 	onAdd(layer) {
 		super.onAdd(layer);
+		// TODO: fix this
+		//this.ext = this.gl.getExtension('EXT_blend_minmax');
 		this.edge = new Edge(this, this.transform, this.colorRamp);
 		this.atlas = this.createVertexAtlas({
 			// position
@@ -54,6 +57,11 @@ class MacroEdge extends VertexRenderer {
 	setTransform(transform) {
 		this.transform = transform;
 		this.edge.setTransform(this.transform);
+
+		if (this.layer.plot) {
+			this.layer.plot.setDirty();
+		}
+		return this;
 	}
 
 	getTransform() {
@@ -65,6 +73,10 @@ class MacroEdge extends VertexRenderer {
 			clamp(min, 0, 1),
 			clamp(max, 0, 1)
 		];
+
+		if (this.layer.plot) {
+			this.layer.plot.setDirty();
+		}
 	}
 
 	getValueRange() {
@@ -77,6 +89,10 @@ class MacroEdge extends VertexRenderer {
 	setColorRamp(colorRamp) {
 		this.colorRamp = colorRamp;
 		this.edge.setTransform(colorRamp);
+
+		if (this.layer.plot) {
+			this.layer.plot.setDirty();
+		}
 	}
 
 	getColorRamp() {
@@ -93,10 +109,22 @@ class MacroEdge extends VertexRenderer {
 
 		// set blending func
 		gl.enable(gl.BLEND);
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+		if (this.ext) {
+			// set max blend equation for color
+			gl.blendEquation(this.ext.MAX_EXT);
+			gl.blendFunc(gl.SRC_ALPHA, gl.DST_ALPHA);
+		} else {
+			gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		}
 
 		// draw instances
-		this.edge.drawInstanced(this.atlas);
+		this.edge.drawInstanced(this.atlas, this.layer.getOpacity());
+
+		// revert to default blend equation
+		if (this.ext) {
+			gl.blendEquation(gl.FUNC_ADD);
+		}
 
 		return this;
 	}

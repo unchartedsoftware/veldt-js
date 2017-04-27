@@ -11,6 +11,8 @@ class Macro extends VertexRenderer {
 		this.atlas = null;
 		this.point = null;
 		this.color = defaultTo(options.color, [ 1.0, 0.4, 0.1, 0.8 ]);
+		this.outlineColor = defaultTo(options.outlineColor, [ 0.0, 0.0, 0.0, 1.0 ]);
+		this.outlineWidth = defaultTo(options.outlineWidth, 2.0);
 		this.radius = defaultTo(options.radius, 2);
 	}
 
@@ -60,13 +62,15 @@ class Macro extends VertexRenderer {
 		this.point.drawInstanced(
 			this.atlas,
 			this.radius,
-			this.color);
+			this.color,
+			this.outlineWidth,
+			this.outlineColor);
 
 		// unbind render target
 		plot.renderBuffer.unbind();
 
 		// render framebuffer to the backbuffer
-		plot.renderBuffer.blitToScreen(layer.opacity);
+		plot.renderBuffer.blitToScreen(layer.getOpacity());
 
 		return this;
 	}

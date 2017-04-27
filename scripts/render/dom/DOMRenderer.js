@@ -15,9 +15,10 @@ const getStaleCoords = function(plot, tiles) {
 	// get all currently visible tile coords
 	const coords = plot.getVisibleCoords();
 	const visible = new Map();
-	coords.forEach(coord => {
+	for (let i=0; i<coords.length; i++) {
+		const coord = coords[i];
 		visible.set(coord.hash, coord);
-	});
+	}
 	// flag any coord that is not in view as stale
 	const stale = new Map();
 	tiles.forEach((tile, hash) => {
@@ -32,18 +33,19 @@ const getRenderables = function(plot, pyramid) {
 	// get all currently visible tile coords
 	const coords = plot.getVisibleCoords();
 	// get available renderables
-	const renderables = new Map();
-	coords.forEach(coord => {
+	const renderables = [];
+	for (let i=0; i<coords.length; i++) {
+		const coord = coords[i];
 		const ncoord = coord.normalize();
 		// check if we have the tile
 		const tile = pyramid.get(ncoord);
 		if (tile) {
-			renderables.set(coord.hash, {
+			renderables.push({
 				coord: coord,
 				tile: tile
 			});
 		}
-	});
+	}
 	return renderables;
 };
 
@@ -54,9 +56,11 @@ const drawTiles = function(renderer, container, tiles, plot, pyramid, ignoreFade
 	const fragment = document.createDocumentFragment();
 	// add new tiles to the DOM
 	const renderables = getRenderables(plot, pyramid);
-	renderables.forEach((renderable, hash) => {
-		if (!tiles.has(hash)) {
-			const coord = renderable.coord;
+	for (let i=0; i<renderables.length; i++) {
+		const renderable = renderables[i];
+		const coord = renderable.coord;
+		// check that the tile hasn't been added in the meantime (occurs on refresh)
+		if (!tiles.has(coord.hash)) {
 			// create tile element
 			const elem = renderer.createTile(tileSize);
 			// get tile pixel position relative to the cell
@@ -74,17 +78,17 @@ const drawTiles = function(renderer, container, tiles, plot, pyramid, ignoreFade
 			fragment.append(elem);
 			if (!ignoreFade) {
 				// fade tile in
-				setTimeout(()=>{
+				setTimeout(() => {
 					elem.style.opacity = 1.0;
 				}, OPACITY_TIMEOUT_MS);
 			}
 			// add the tile
-			tiles.set(hash, {
+			tiles.set(coord.hash, {
 				coord: coord,
 				elem: elem
 			});
 		}
-	});
+	}
 	if (fragment.children.length > 0) {
 		// append all new tiles to the container
 		container.appendChild(fragment);
@@ -269,8 +273,8 @@ class DOMRenderer extends lumo.Renderer {
 
 		// update container
 		container.style.transform = `translate3d(${-delta.x}px,${delta.y}px,0) scale(${scale})`;
-		container.style.opacity = layer.opacity;
-		container.style.zIndex = layer.zIndex;
+		container.style.opacity = layer.getOpacity();
+		container.style.zIndex = layer.getZIndex();
 
 		return this;
 	}

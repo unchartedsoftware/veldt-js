@@ -11,6 +11,10 @@ class Image extends lumo.TextureRenderer {
 
 	brightness(brightness) {
 		this.brightness = brightness;
+
+		if (this.plot) {
+			this.layer.plot.setDirty();
+		}
 	}
 
 	addTile(array, tile) {

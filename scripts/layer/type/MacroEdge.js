@@ -5,8 +5,8 @@ const Edge = require('./Edge');
 
 class MacroEdge extends Edge {
 
-	constructor(meta, options = {}) {
-		super(meta, options);
+	constructor(options = {}) {
+		super(options);
 		this.lod = defaultTo(options.lod, 4);
 		this.sortField = defaultTo(options.sortField, null);
 		this.sortOrder = defaultTo(options.sortOrder, 'desc');
@@ -16,11 +16,13 @@ class MacroEdge extends Edge {
 				const view = new DataView(data);
 				const edgesByteLength = view.getUint32(0, true /* little endian */);
 				const offsetsByteLength = view.getUint32(4, true  /* little endian */);
-				const edges = data.slice(8, 8+edgesByteLength);
-				const offsets = data.slice(8+edgesByteLength, 8+edgesByteLength+offsetsByteLength);
+				const numPoints = edgesByteLength / 4;
+				const numOffsets = offsetsByteLength / 4;
+				const points = new Float32Array(data, 8, numPoints);
+				const offsets = new Uint32Array(data, 8 + edgesByteLength, numOffsets);
 				return {
-					edges: new Float32Array(edges),
-					offsets: new Uint32Array(offsets)
+					points: points,
+					offsets: offsets
 				};
 			}
 			return new Float32Array(data);
@@ -67,6 +69,8 @@ class MacroEdge extends Edge {
 			srcYField: this.srcYField,
 			dstXField: this.dstXField,
 			dstYField: this.dstYField,
+			requireSrc: this.requireSrc,
+			requireDst: this.requireDst,
 			weightField: this.weightField,
 			left: this.left,
 			right: this.right,

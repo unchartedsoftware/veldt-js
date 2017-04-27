@@ -11,8 +11,8 @@ function isPoT(n) {
 
 class Bivariate extends Live {
 
-	constructor(meta, options = {}) {
-		super(meta, options);
+	constructor(options = {}) {
+		super(options);
 		this.xField = defaultTo(options.xField, 'x');
 		this.yField = defaultTo(options.xField, 'y');
 		const left = defaultTo(options.left, 0);

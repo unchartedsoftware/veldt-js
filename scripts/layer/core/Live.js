@@ -6,9 +6,8 @@ const Base = require('./Base');
 
 class Live extends Base {
 
-	constructor(meta, options = {}) {
+	constructor(options = {}) {
 		super(options);
-		this.meta = meta;
 		this.query = null;
 		this.filters = new Map();
 	}
@@ -66,9 +65,6 @@ class Live extends Base {
 		this.clearExtrema();
 	}
 
-	getMeta() {
-		return this.meta;
-	}
 }
 
 module.exports = Live;

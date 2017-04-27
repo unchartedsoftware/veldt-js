@@ -6,7 +6,7 @@ const defaultTo = require('lodash/defaultTo');
 const TILE_ADD = Symbol();
 const REDRAW_TIMEOUT_MS = 800;
 
-class Base extends lumo.Layer {
+class Base extends lumo.TileLayer {
 
 	constructor(options = {}) {
 		super(options);

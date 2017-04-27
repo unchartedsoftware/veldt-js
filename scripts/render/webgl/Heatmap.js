@@ -110,11 +110,7 @@ class Heatmap extends TextureRenderer {
 		}
 		array.set(tile.coord.hash, new Uint8Array(tile.data));
 	}
-
-	removeTile(array, tile) {
-		array.delete(tile.coord.hash);
-	}
-
+	
 	onAdd(layer) {
 		super.onAdd(layer);
 		this.quad = createQuad(this.gl, 0, layer.plot.tileSize);
@@ -138,6 +134,10 @@ class Heatmap extends TextureRenderer {
 		// re-compile shader
 		this.shader = this.createShader(
 			ColorRampGLSL.addTransformDefine(SHADER, this.transform));
+
+		if (this.plot) {
+			this.layer.plot.setDirty();
+		}
 	}
 
 	getTransform() {
@@ -149,6 +149,10 @@ class Heatmap extends TextureRenderer {
 			clamp(min, 0, 1),
 			clamp(max, 0, 1)
 		];
+
+		if (this.plot) {
+			this.layer.plot.setDirty();
+		}
 	}
 
 	getValueRange() {
@@ -161,6 +165,10 @@ class Heatmap extends TextureRenderer {
 	setColorRamp(colorRamp) {
 		this.colorRamp = colorRamp;
 		this.ramp = ColorRampGLSL.createRampTexture(this.gl, this.colorRamp);
+
+		if (this.plot) {
+			this.layer.plot.setDirty();
+		}
 	}
 
 	getColorRamp() {
@@ -189,7 +197,7 @@ class Heatmap extends TextureRenderer {
 		shader.setUniform('uTextureSampler', 0);
 		shader.setUniform('uColorRampSampler', 1);
 		shader.setUniform('uColorRampSize', ramp.width);
-		shader.setUniform('uOpacity', this.layer.opacity);
+		shader.setUniform('uOpacity', this.layer.getOpacity());
 		shader.setUniform('uRangeMin', this.range[0]);
 		shader.setUniform('uRangeMax', this.range[1]);
 		shader.setUniform('uMin', extrema.min);
@@ -206,7 +214,8 @@ class Heatmap extends TextureRenderer {
 		ramp.bind(1);
 
 		// for each renderable
-		renderables.forEach(renderable => {
+		for (let i=0; i<renderables.length; i++) {
+			const renderable = renderables[i];
 			// bind texture
 			array.bind(renderable.hash, 0);
 			// set tile uniforms
@@ -215,7 +224,7 @@ class Heatmap extends TextureRenderer {
 			// draw
 			quad.draw();
 			// no need to unbind texture
-		});
+		}
 
 		// unbind quad
 		quad.unbind();

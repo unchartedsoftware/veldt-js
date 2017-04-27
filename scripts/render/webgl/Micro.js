@@ -4,7 +4,6 @@ const defaultTo = require('lodash/defaultTo');
 const InteractiveRenderer = require('./InteractiveRenderer');
 const Point = require('../shape/Point');
 
-const POINT_RADIUS = 8;
 const POINT_RADIUS_INC = 4;
 
 // const applyJitter = function(point, maxDist) {
@@ -21,7 +20,9 @@ class Micro extends InteractiveRenderer {
 		this.point = null;
 		this.atlas = null;
 		this.color = defaultTo(options.color, [ 1.0, 0.4, 0.1, 0.8 ]);
-		this.radius = defaultTo(options.radius, POINT_RADIUS);
+		this.radius = defaultTo(options.radius, 4);
+		this.outlineColor = defaultTo(options.outlineColor, [ 0.0, 0.0, 0.0, 1.0 ]);
+		this.outlineWidth = defaultTo(options.outlineWidth, 2.0);
 		// this.jitter = defaultTo(options.radius, true);
 		// this.jitterDistance = defaultTo(options.jitterDistance, 10);
 	}
@@ -35,7 +36,7 @@ class Micro extends InteractiveRenderer {
 		const tileSize = this.layer.plot.tileSize;
 		const xOffset = coord.x * tileSize;
 		const yOffset = coord.y * tileSize;
-		const radius = this.radius;
+		const radius = this.radius + this.outlineWidth;
 
 		const points = new Array(vertices.length / 2);
 
@@ -74,12 +75,6 @@ class Micro extends InteractiveRenderer {
 
 		this.addPoints(coord, points);
 		atlas.set(coord.hash, vertices, points.length);
-	}
-
-	removeTile(atlas, tile) {
-		const coord = tile.coord;
-		atlas.delete(coord.hash);
-		this.removePoints(coord);
 	}
 
 	onAdd(layer) {
@@ -121,29 +116,37 @@ class Micro extends InteractiveRenderer {
 		this.point.drawInstanced(
 			this.atlas,
 			this.radius,
-			this.color);
+			this.color,
+			this.outlineWidth,
+			this.outlineColor);
 
 		// render selected
-		layer.selected.forEach(selected => {
+		const selection = layer.getSelected();
+		for (let i=0; i<selection.length; i++) {
+			const selected = selection[i];
 			this.point.drawIndividual(
 				selected,
 				this.radius + POINT_RADIUS_INC * 2,
-				this.color);
-		});
+				this.color,
+				this.outlineWidth,
+				this.outlineColor);
+		}
 
 		// render highlighted
 		if (layer.highlighted && !layer.isSelected(layer.highlighted)) {
 			this.point.drawIndividual(
 				layer.highlighted,
 				this.radius + POINT_RADIUS_INC,
-				this.color);
+				this.color,
+				this.outlineWidth,
+				this.outlineColor);
 		}
 
 		// unbind render target
 		plot.renderBuffer.unbind();
 
 		// render framebuffer to the backbuffer
-		plot.renderBuffer.blitToScreen(this.layer.opacity);
+		plot.renderBuffer.blitToScreen(this.layer.getOpacity());
 		return this;
 	}
 
