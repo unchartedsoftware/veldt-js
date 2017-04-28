@@ -10,6 +10,10 @@ class Heatmap extends Bivariate {
 		super(options);
 	}
 
+	setRequestor(requestor) {
+		this.requestTile = requestor.requestArrayBuffer();
+	}
+
 	extractExtrema(data) {
 		const bins = new Uint32Array(data);
 		return {
@@ -19,18 +23,17 @@ class Heatmap extends Bivariate {
 	}
 
 	getTile(name = 'heatmap') {
-		const params = {
-			xField: this.xField,
-			yField: this.yField,
-			left: this.left,
-			right: this.right,
-			bottom: this.bottom,
-			top: this.top,
-			resolution: this.resolution
+		return {
+			[name]: {
+				xField: this.xField,
+				yField: this.yField,
+				left: this.left,
+				right: this.right,
+				bottom: this.bottom,
+				top: this.top,
+				resolution: this.resolution
+			}
 		};
-		const tile = {};
-		tile[name] = params;
-		return tile;
 	}
 
 }

@@ -40,19 +40,18 @@ class TopTermCount extends Bivariate {
 	}
 
 	getTile(name = 'top-term-count') {
-		const params = {
-			xField: this.xField,
-			yField: this.yField,
-			left: this.left,
-			right: this.right,
-			bottom: this.bottom,
-			top: this.top,
-			termsField: this.termsField,
-			termsCount: this.termsCount
+		return {
+			[name]: {
+				xField: this.xField,
+				yField: this.yField,
+				left: this.left,
+				right: this.right,
+				bottom: this.bottom,
+				top: this.top,
+				termsField: this.termsField,
+				termsCount: this.termsCount
+			}
 		};
-		const tile = {};
-		tile[name] = params;
-		return tile;
 	}
 }
 

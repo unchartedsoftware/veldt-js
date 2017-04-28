@@ -17,6 +17,10 @@ class Rest extends Base {
 		}
 	}
 
+	setRequestor(requestor) {
+		this.requestTile = requestor.requestArrayBuffer();
+	}
+
 	setExt(ext) {
 		this.ext = ext;
 	}
@@ -30,14 +34,13 @@ class Rest extends Base {
 	}
 
 	getTile(name = 'rest') {
-		const params = {
-			ext: this.ext,
-			endpoint: this.endpoint,
-			scheme: this.scheme
+		return {
+			[name]: {
+				ext: this.ext,
+				endpoint: this.endpoint,
+				scheme: this.scheme
+			}
 		};
-		const tile = {};
-		tile[name] = params;
-		return tile;
 	}
 }
 

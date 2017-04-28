@@ -4,6 +4,7 @@ const lumo = require('lumo');
 const defaultTo = require('lodash/defaultTo');
 
 const TILE_ADD = Symbol();
+const REDRAW_DEBOUNCE = Symbol();
 const REDRAW_TIMEOUT_MS = 800;
 
 class Base extends lumo.TileLayer {
@@ -11,9 +12,32 @@ class Base extends lumo.TileLayer {
 	constructor(options = {}) {
 		super(options);
 		this.transform = defaultTo(options.transform, null);
-		this.redrawDebounce = null;
+		this.pipeline = defaultTo(options.pipeline, '');
+		this.uri = defaultTo(options.uri, '');
+		this.xyz = defaultTo(options.xyz, false);
+		this[REDRAW_DEBOUNCE] = null;
 		// set extrema / cache
 		this.clearExtrema();
+	}
+
+	setPipeline(pipeline) {
+		this.pipeline = pipeline;
+	}
+
+	setURI(uri) {
+		this.uri = uri;
+	}
+
+	setRequestor(requestor) {
+		this.requestTile = requestor.requestJSON();
+	}
+
+	useXYZ() {
+		this.xyz = true;
+	}
+
+	useTMS() {
+		this.xyz = false;
 	}
 
 	onAdd(plot) {
@@ -24,13 +48,13 @@ class Base extends lumo.TileLayer {
 			}
 			const updated = this.updateExtrema(event.tile.coord, event.tile.data);
 			if (updated && this.renderer && this.renderer.redraw) {
-				clearTimeout(this.redrawDebounce);
-				this.redrawDebounce = setTimeout(() => {
+				clearTimeout(this[REDRAW_DEBOUNCE]);
+				this[REDRAW_DEBOUNCE] = setTimeout(() => {
 					if (this.renderer && this.renderer.redraw) {
 						this.renderer.redraw(true);
 					}
 					// clear debounce
-					this.redrawDebounce = null;
+					this[REDRAW_DEBOUNCE] = null;
 				}, REDRAW_TIMEOUT_MS);
 			}
 		};
@@ -44,8 +68,8 @@ class Base extends lumo.TileLayer {
 
 	onRemove(plot) {
 		// clear any pending timeout
-		clearTimeout(this.redrawDebounce);
-		this.redrawDebounce = null;
+		clearTimeout(this[REDRAW_DEBOUNCE]);
+		this[REDRAW_DEBOUNCE] = null;
 		// detach handler
 		this.removeListener(lumo.TILE_ADD, this[TILE_ADD]);
 		// delete handler

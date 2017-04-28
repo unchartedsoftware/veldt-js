@@ -26,24 +26,27 @@ class Macro extends Bivariate {
 		};
 	}
 
+	setRequestor(requestor) {
+		this.requestTile = requestor.requestArrayBuffer();
+	}
+
 	setLOD(lod) {
 		this.lod = lod;
 	}
 
 	getTile(name = 'macro') {
-		const params = {
-			xField: this.xField,
-			yField: this.yField,
-			left: this.left,
-			right: this.right,
-			bottom: this.bottom,
-			top: this.top,
-			resolution: this.resolution,
-			lod: this.lod
+		return {
+			[name]: {
+				xField: this.xField,
+				yField: this.yField,
+				left: this.left,
+				right: this.right,
+				bottom: this.bottom,
+				top: this.top,
+				resolution: this.resolution,
+				lod: this.lod
+			}
 		};
-		const tile = {};
-		tile[name] = params;
-		return tile;
 	}
 }
 

@@ -13,6 +13,10 @@ class BinnedTopHits extends Bivariate {
 		this.includeFields = defaultTo(options.includeFields, null);
 	}
 
+	setRequestor(requestor, xyz = false) {
+		this.requestTile = requestor.requestJSON(xyz);
+	}
+
 	setSortField(sortField) {
 		this.sortField = sortField;
 	}
@@ -30,22 +34,21 @@ class BinnedTopHits extends Bivariate {
 	}
 
 	getTile(name = 'binned-top-hits') {
-		const params = {
-			xField: this.xField,
-			yField: this.yField,
-			left: this.left,
-			right: this.right,
-			bottom: this.bottom,
-			top: this.top,
-			resolution: this.resolution,
-			sortField: this.sortField,
-			sortOrder: this.sortOrder,
-			hitsCount: this.hitsCount,
-			includeFields: this.includeFields,
+		return {
+			[name]: {
+				xField: this.xField,
+				yField: this.yField,
+				left: this.left,
+				right: this.right,
+				bottom: this.bottom,
+				top: this.top,
+				resolution: this.resolution,
+				sortField: this.sortField,
+				sortOrder: this.sortOrder,
+				hitsCount: this.hitsCount,
+				includeFields: this.includeFields
+			}
 		};
-		const tile = {};
-		tile[name] = params;
-		return tile;
 	}
 
 }
