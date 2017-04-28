@@ -2,7 +2,6 @@
 
 const $ = require('jquery');
 const forIn = require('lodash/forIn');
-const Requestor = require('./Requestor');
 
 $.ajaxTransport('+arraybuffer', options => {
 	let xhr;
@@ -101,15 +100,14 @@ function liveRequest(requestor, type) {
 	};
 }
 
-class TileRequestor extends Requestor {
+module.exports = {
 
-	requestJSON() {
-		return liveRequest(this, 'json');
+	requestJSON: function(requestor) {
+		return liveRequest(requestor, 'json');
+	},
+
+	requestArrayBuffer: function(requestor) {
+		return liveRequest(requestor, 'arraybuffer');
 	}
 
-	requestArrayBuffer() {
-		return liveRequest(this, 'arraybuffer');
-	}
-}
-
-module.exports = TileRequestor;
+};

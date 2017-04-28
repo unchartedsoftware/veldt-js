@@ -4,6 +4,7 @@ const _ = require('lodash');
 const defaultTo = require('lodash/defaultTo');
 const Base = require('../core/Base');
 const ImageRenderer = require('../../render/webgl/Image');
+const Request = require('../Request');
 
 class Rest extends Base {
 
@@ -18,7 +19,7 @@ class Rest extends Base {
 	}
 
 	setRequestor(requestor) {
-		this.requestTile = requestor.requestArrayBuffer();
+		this.requestTile = Request.requestArrayBuffer(requestor);
 	}
 
 	setExt(ext) {

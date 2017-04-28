@@ -2,6 +2,7 @@
 
 const defaultTo = require('lodash/defaultTo');
 const Bivariate = require('./Bivariate');
+const Request = require('../Request');
 
 class Macro extends Bivariate {
 
@@ -27,7 +28,7 @@ class Macro extends Bivariate {
 	}
 
 	setRequestor(requestor) {
-		this.requestTile = requestor.requestArrayBuffer();
+		this.requestTile = Request.requestArrayBuffer(requestor);
 	}
 
 	setLOD(lod) {

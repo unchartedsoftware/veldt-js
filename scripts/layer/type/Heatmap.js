@@ -11,7 +11,7 @@ class Heatmap extends Bivariate {
 	}
 
 	setRequestor(requestor) {
-		this.requestTile = requestor.requestArrayBuffer();
+		this.requestTile = Request.requestArrayBuffer(requestor);
 	}
 
 	extractExtrema(data) {

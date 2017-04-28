@@ -2,6 +2,7 @@
 
 const defaultTo = require('lodash/defaultTo');
 const Edge = require('./Edge');
+const Request = require('../Request');
 
 class MacroEdge extends Edge {
 
@@ -30,7 +31,7 @@ class MacroEdge extends Edge {
 	}
 
 	setRequestor(requestor) {
-		this.requestTile = requestor.requestArrayBuffer();
+		this.requestTile = Request.requestArrayBuffer(requestor);
 	}
 
 	extractExtrema(data) {

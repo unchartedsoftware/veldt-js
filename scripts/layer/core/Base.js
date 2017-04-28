@@ -2,6 +2,7 @@
 
 const lumo = require('lumo');
 const defaultTo = require('lodash/defaultTo');
+const Request = require('../Request');
 
 const TILE_ADD = Symbol();
 const REDRAW_DEBOUNCE = Symbol();
@@ -16,7 +17,6 @@ class Base extends lumo.TileLayer {
 		this.uri = defaultTo(options.uri, '');
 		this.xyz = defaultTo(options.xyz, false);
 		this[REDRAW_DEBOUNCE] = null;
-		// set extrema / cache
 		this.clearExtrema();
 	}
 
@@ -29,7 +29,7 @@ class Base extends lumo.TileLayer {
 	}
 
 	setRequestor(requestor) {
-		this.requestTile = requestor.requestJSON();
+		this.requestTile = Request.requestJSON(requestor);
 	}
 
 	useXYZ() {
