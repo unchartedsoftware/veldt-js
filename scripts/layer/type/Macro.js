@@ -2,6 +2,7 @@
 
 const defaultTo = require('lodash/defaultTo');
 const Bivariate = require('./Bivariate');
+const Request = require('../request/Request');
 
 class Macro extends Bivariate {
 
@@ -26,24 +27,27 @@ class Macro extends Bivariate {
 		};
 	}
 
+	setRequestor(requestor) {
+		this.requestTile = Request.requestArrayBuffer(requestor);
+	}
+
 	setLOD(lod) {
 		this.lod = lod;
 	}
 
 	getTile(name = 'macro') {
-		const params = {
-			xField: this.xField,
-			yField: this.yField,
-			left: this.left,
-			right: this.right,
-			bottom: this.bottom,
-			top: this.top,
-			resolution: this.resolution,
-			lod: this.lod
+		return {
+			[name]: {
+				xField: this.xField,
+				yField: this.yField,
+				left: this.left,
+				right: this.right,
+				bottom: this.bottom,
+				top: this.top,
+				resolution: this.resolution,
+				lod: this.lod
+			}
 		};
-		const tile = {};
-		tile[name] = params;
-		return tile;
 	}
 }
 
