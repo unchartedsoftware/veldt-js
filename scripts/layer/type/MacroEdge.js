@@ -2,7 +2,7 @@
 
 const defaultTo = require('lodash/defaultTo');
 const Edge = require('./Edge');
-const Request = require('../Request');
+const Request = require('../request/Request');
 
 class MacroEdge extends Edge {
 

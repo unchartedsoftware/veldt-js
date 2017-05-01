@@ -2,7 +2,7 @@
 
 const defaultTo = require('lodash/defaultTo');
 const Bivariate = require('./Bivariate');
-const Request = require('../Request');
+const Request = require('../request/Request');
 
 class Macro extends Bivariate {
 

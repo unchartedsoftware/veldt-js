@@ -35,8 +35,10 @@ const getTopLayer = function(swap) {
  * Swap layer acts as an interface for swapping between multiple layers or layer
  * properties based on the asynchronous results of the particular swap layer.
  *
- * The child layers of a swap laeyr are intended to share properties and will be
- * treated as a single cohesive layer.
+ * The swap layer is added to the plot instead of it's child layers. The plot
+ * will only interact with the swap layer.
+ * The child layers of a swap layer are intended to share the properties of the
+ * swap layer.
  */
 class Swap extends EventEmitter {
 

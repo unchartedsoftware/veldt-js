@@ -6,5 +6,5 @@ module.exports = {
 	Renderer: require('./render/exports'),
 	Requestor: require('./request/Requestor'),
 	ColorRamp: require('./render/color/ColorRamp'),
-	Request: require('./layer/Request')
+	Request: require('./layer/request/Request')
 };

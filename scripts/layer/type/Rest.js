@@ -4,7 +4,7 @@ const _ = require('lodash');
 const defaultTo = require('lodash/defaultTo');
 const Base = require('../core/Base');
 const ImageRenderer = require('../../render/webgl/Image');
-const Request = require('../Request');
+const Request = require('../request/Request');
 
 class Rest extends Base {
 
