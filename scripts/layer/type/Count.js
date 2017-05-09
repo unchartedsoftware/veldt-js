@@ -9,17 +9,16 @@ class Count extends Bivariate {
 	}
 
 	getTile(name = 'count') {
-		const params = {
-			xField: this.xField,
-			yField: this.yField,
-			left: this.left,
-			right: this.right,
-			bottom: this.bottom,
-			top: this.top
+		return {
+			[name]: {
+				xField: this.xField,
+				yField: this.yField,
+				left: this.left,
+				right: this.right,
+				bottom: this.bottom,
+				top: this.top
+			}
 		};
-		const tile = {};
-		tile[name] = params;
-		return tile;
 	}
 }
 

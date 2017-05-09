@@ -48,23 +48,21 @@ class Micro extends Bivariate {
 	}
 
 	getTile(name = 'micro') {
-		const params = {
-			xField: this.xField,
-			yField: this.yField,
-			left: this.left,
-			right: this.right,
-			bottom: this.bottom,
-			top: this.top,
-			lod: this.lod,
-			resolution: this.resolution,
-			sortField: this.sortField,
-			sortOrder: this.sortOrder,
-			hitsCount: this.hitsCount,
-			includeFields: this.includeFields,
+		return {
+			[name]: {
+				xField: this.xField,
+				yField: this.yField,
+				left: this.left,
+				right: this.right,
+				bottom: this.bottom,
+				top: this.top,
+				lod: this.lod,
+				sortField: this.sortField,
+				sortOrder: this.sortOrder,
+				hitsCount: this.hitsCount,
+				includeFields: this.includeFields,
+			}
 		};
-		const tile = {};
-		tile[name] = params;
-		return tile;
 	}
 }
 

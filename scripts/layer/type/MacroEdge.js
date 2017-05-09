@@ -2,6 +2,7 @@
 
 const defaultTo = require('lodash/defaultTo');
 const Edge = require('./Edge');
+const Request = require('../request/Request');
 
 class MacroEdge extends Edge {
 
@@ -27,6 +28,10 @@ class MacroEdge extends Edge {
 			}
 			return new Float32Array(data);
 		};
+	}
+
+	setRequestor(requestor) {
+		this.requestTile = Request.requestArrayBuffer(requestor);
 	}
 
 	extractExtrema(data) {
@@ -64,26 +69,25 @@ class MacroEdge extends Edge {
 	}
 
 	getTile(name = 'macro-edge') {
-		const params = {
-			srcXField: this.srcXField,
-			srcYField: this.srcYField,
-			dstXField: this.dstXField,
-			dstYField: this.dstYField,
-			requireSrc: this.requireSrc,
-			requireDst: this.requireDst,
-			weightField: this.weightField,
-			left: this.left,
-			right: this.right,
-			bottom: this.bottom,
-			top: this.top,
-			lod: this.lod,
-			sortField: this.sortField,
-			sortOrder: this.sortOrder,
-			hitsCount: this.hitsCount
+		return {
+			[name]: {
+				srcXField: this.srcXField,
+				srcYField: this.srcYField,
+				dstXField: this.dstXField,
+				dstYField: this.dstYField,
+				requireSrc: this.requireSrc,
+				requireDst: this.requireDst,
+				weightField: this.weightField,
+				left: this.left,
+				right: this.right,
+				bottom: this.bottom,
+				top: this.top,
+				lod: this.lod,
+				sortField: this.sortField,
+				sortOrder: this.sortOrder,
+				hitsCount: this.hitsCount
+			}
 		};
-		const tile = {};
-		tile[name] = params;
-		return tile;
 	}
 }
 
