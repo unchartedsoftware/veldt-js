@@ -4,6 +4,7 @@ const _ = require('lodash');
 const defaultTo = require('lodash/defaultTo');
 const Base = require('../core/Base');
 const ImageRenderer = require('../../render/webgl/Image');
+const Request = require('../request/Request');
 
 class Rest extends Base {
 
@@ -15,6 +16,10 @@ class Rest extends Base {
 		if (_.isNil(this.renderer)) {
 			this.setRenderer(new ImageRenderer());
 		}
+	}
+
+	setRequestor(requestor) {
+		this.requestTile = Request.requestArrayBuffer(requestor);
 	}
 
 	setExt(ext) {
@@ -30,14 +35,13 @@ class Rest extends Base {
 	}
 
 	getTile(name = 'rest') {
-		const params = {
-			ext: this.ext,
-			endpoint: this.endpoint,
-			scheme: this.scheme
+		return {
+			[name]: {
+				ext: this.ext,
+				endpoint: this.endpoint,
+				scheme: this.scheme
+			}
 		};
-		const tile = {};
-		tile[name] = params;
-		return tile;
 	}
 }
 
