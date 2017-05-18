@@ -37,7 +37,7 @@ class MacroEdge extends Edge {
 	extractExtrema(data) {
 		let min = Infinity;
 		let max = -Infinity;
-		for (let i=0; i<data.length; i+=3) {
+		for (let i=2; i<data.length; i+=3) {
 			const weight = data[i];
 			if (weight < min) {
 				min = weight;

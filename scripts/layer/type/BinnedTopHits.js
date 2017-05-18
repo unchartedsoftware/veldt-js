@@ -13,10 +13,6 @@ class BinnedTopHits extends Bivariate {
 		this.includeFields = defaultTo(options.includeFields, null);
 	}
 
-	setRequestor(requestor, xyz = false) {
-		this.requestTile = requestor.requestJSON(xyz);
-	}
-
 	setSortField(sortField) {
 		this.sortField = sortField;
 	}

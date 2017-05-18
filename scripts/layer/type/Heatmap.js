@@ -3,6 +3,7 @@
 const min = require('lodash/min');
 const max = require('lodash/max');
 const Bivariate = require('./Bivariate');
+const Request = require('../request/Request');
 
 class Heatmap extends Bivariate {
 
