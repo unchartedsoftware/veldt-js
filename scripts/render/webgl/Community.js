@@ -72,35 +72,41 @@ class Community extends InteractiveRenderer {
 			this.outlineWidth + // outline
 			this.ringOffset; // offset
 
-		const points = new Array(positions.length / 2);
-		const vertices = new Float32Array((positions.length / 2) * 3);
+		var points, vertices
+		if (hits && positions) {
+			points = new Array(positions.length / 2);
+			vertices = new Float32Array((positions.length / 2) * 3);
 
-		for (let i=0; i<positions.length/2; i++) {
+			for (let i=0; i<positions.length/2 && i < hits.length; i++) {
 
-			const hit = hits[i];
-			const x = positions[i*2];
-			const y = positions[i*2+1];
-			const radius = get(hit, radiusField) * radiusScale + ringOffset;
+				const hit = hits[i];
+				const x = positions[i*2];
+				const y = positions[i*2+1];
+				const radius = get(hit, radiusField) * radiusScale + ringOffset;
 
-			// plot pixel coords
-			const px = x + xOffset;
-			const py = y + yOffset;
+				// plot pixel coords
+				const px = x + xOffset;
+				const py = y + yOffset;
 
-			points[i] = {
-				x: x,
-				y: y,
-				radius: radius,
-				minX: px - (radius + totalOffset),
-				maxX: px + (radius + totalOffset),
-				minY: py - (radius + totalOffset),
-				maxY: py + (radius + totalOffset),
-				tile: tile,
-				data: hit
-			};
+				points[i] = {
+					x: x,
+					y: y,
+					radius: radius,
+					minX: px - (radius + totalOffset),
+					maxX: px + (radius + totalOffset),
+					minY: py - (radius + totalOffset),
+					maxY: py + (radius + totalOffset),
+					tile: tile,
+					data: hit
+				};
 
-			vertices[i*3] = x;
-			vertices[i*3+1] = y;
-			vertices[i*3+2] = radius;
+				vertices[i*3] = x;
+				vertices[i*3+1] = y;
+				vertices[i*3+2] = radius;
+			}
+		} else {
+			points = new Array(0);
+			vertices = new Float32Array(0);
 		}
 
 		this.addPoints(coord, points);
