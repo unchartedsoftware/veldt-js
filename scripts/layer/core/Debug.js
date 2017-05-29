@@ -3,7 +3,7 @@
 const lumo = require('lumo');
 
 /**
- * Simple debug layer for displayed tile coordnates.
+ * Simple debug layer for displayed tile coordinates.
  */
 class Debug extends lumo.TileLayer {
 
