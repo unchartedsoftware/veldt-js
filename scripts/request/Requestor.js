@@ -35,6 +35,7 @@ function establishConnection(requestor, callback) {
 		const hash = requestor.getHash(res, false);
 		if (!requestor.requests.has(hash)) {
 			console.error('Unrecognized response: ', res,  ', discarding');
+			return;
 		}
 		const wrapped = requestor.requests.get(hash);
 		requestor.requests.delete(hash);
