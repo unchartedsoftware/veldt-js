@@ -1,7 +1,7 @@
 'use strict';
 
 const lumo = require('lumo');
-const morton = require('../morton/Morton');
+const morton = require('../../morton/Morton');
 const BrightnessTransform = require('../shader/BrightnessTransform');
 
 const SHADER = {

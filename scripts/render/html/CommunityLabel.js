@@ -42,22 +42,22 @@ const createDeconflictionFunc = function($container) {
 		for (let i=0; i<$labels.length; i++) {
 			const element = $labels[i];
 			const position = $(element).offset();
-			const point = {
-				minX: position.left,
-				maxX: position.left + element.offsetWidth,
-				minY: position.top,
-				maxY: position.top + element.offsetHeight
-			};
 			const collision = tree.searchRectangle(
-				point.minX,
-				point.maxX,
-				point.minY,
-				point.maxY);
+				position.left,
+				position.left + element.offsetWidth,
+				position.top,
+				position.top + element.offsetHeight);
 			if (collision) {
 				element.style.visibility = 'hidden';
 			} else {
 				element.style.visibility = 'visible';
-				tree.insert([ point ]);
+				const collidable = new lumo.RectangleCollidable(
+					position.left,
+					position.left + element.offsetWidth,
+					position.top,
+					position.top + element.offsetHeight,
+					0, 0, null, null);
+				tree.insert([ collidable ]);
 			}
 		}
 	};

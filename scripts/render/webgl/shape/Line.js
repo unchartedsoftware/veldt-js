@@ -1,44 +1,30 @@
 'use strict';
 
 const lumo = require('lumo');
-const morton = require('../morton/Morton');
+const morton = require('../../morton/Morton');
 const BrightnessTransform = require('../shader/BrightnessTransform');
-const ColorRampGLSL = require('../shader/ColorRamp');
 
 const INSTANCED_SHADER = {
-	common: [ BrightnessTransform.common, ColorRampGLSL.common ].join('\n'),
+	common: BrightnessTransform.common,
 	vert:
 		`
 		attribute vec2 aPosition;
-		attribute float aWeight;
 		uniform vec2 uTileOffset;
 		uniform float uScale;
 		uniform vec2 uLODOffset;
 		uniform float uLODScale;
 		uniform mat4 uProjectionMatrix;
-		uniform vec4 uViewport;
-		uniform float uOpacity;
-		varying vec4 vColor;
+		uniform vec4 uColor;
+		varying vColor;
 		void main() {
 			vec2 wPosition = (aPosition * uScale * uLODScale) + (uTileOffset + (uScale * uLODOffset));
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
-
-			vec4 color;
-			float x = wPosition[0];
-			float y = wPosition[1];
-			if (x >= uViewport[0] && x <= uViewport[2] && y >= uViewport[1] && y <= uViewport[3]) {
-				color = brightnessTransform(colorRampLookup(aWeight));
-				color.a = color.a * uOpacity;
-			} else {
-				color = vec4(0.0, 0.0, 0.0, 0.0);
-			}
-
-			vColor = color;
+			vColor = brightnessTransform(uColor);
 		}
 		`,
 	frag:
 		`
-		varying vec4 vColor;
+		varying vColor;
 		void main() {
 			gl_FragColor = vColor;
 		}
@@ -46,7 +32,7 @@ const INSTANCED_SHADER = {
 };
 
 const INDIVIDUAL_SHADER = {
-	common: [ BrightnessTransform.common, ColorRampGLSL.common ].join('\n'),
+	common: BrightnessTransform.common,
 	vert:
 		`
 		attribute vec2 aPosition;
@@ -55,27 +41,22 @@ const INDIVIDUAL_SHADER = {
 		uniform mat4 uProjectionMatrix;
 		uniform vec2 uPointA;
 		uniform vec2 uPointB;
-		uniform vec2 uWeights;
-		uniform float uOpacity;
+		uniform vec4 uColor;
 		varying vec4 vColor;
 		void main() {
 			vec2 wPosition;
-			float wWeight;
 			if (aPosition.x > 0.0) {
 				wPosition = (uPointA * uScale) + uTileOffset;
-				wWeight = uWeights.x;
 			} else {
 				wPosition = (uPointB * uScale) + uTileOffset;
-				wWeight = uWeights.y;
 			}
 			gl_Position = uProjectionMatrix * vec4(wPosition, 0.0, 1.0);
-			vec4 color = brightnessTransform(colorRampLookup(wWeight));
-			vColor = vec4(color.rgb, color.a * uOpacity);
+			vColor = brightnessTransform(uColor);
 		}
 		`,
 	frag:
 		`
-		varying vec4 vColor;
+		varying vColor;
 		void main() {
 			gl_FragColor = vColor;
 		}
@@ -180,62 +161,30 @@ const drawLOD = function(shader, atlas, plot, lod, renderables) {
 	}
 };
 
-class Edge {
-
-	constructor(renderer, transform, colorRamp) {
+class Line {
+	constructor(renderer) {
 		this.renderer = renderer;
-		this.setTransform(transform);
-		this.setColorRamp(colorRamp);
+		this.shader = {
+			instanced: renderer.createShader(INSTANCED_SHADER),
+			individual: renderer.createShader(INDIVIDUAL_SHADER)
+		};
 		this.line = createLine(renderer.gl);
 	}
-
-	setTransform(transform) {
-		// re-compile shaders
-		this.shader = {
-			instanced: this.renderer.createShader(
-				ColorRampGLSL.addTransformDefine(INSTANCED_SHADER, transform)),
-			individual: this.renderer.createShader(
-				ColorRampGLSL.addTransformDefine(INDIVIDUAL_SHADER, transform))
-		};
-	}
-
-	setColorRamp(colorRamp) {
-		this.ramp = ColorRampGLSL.createRampTexture(this.renderer.gl, colorRamp);
-	}
-	drawInstanced(atlas, opacity) {
+	drawInstanced(atlas, color) {
 
 		const shader = this.shader.instanced;
 		const renderer = this.renderer;
 		const layer = renderer.layer;
 		const plot = layer.plot;
-		const ramp = this.ramp;
-		const extrema = layer.getExtrema();
 		const projection = renderer.getOrthoMatrix();
-		const viewportSize = plot.getTargetViewportPixelSize();
-
 
 		// bind shader
 		shader.use();
 
-		// bind color ramp
-		ramp.bind(0);
-
 		// set global uniforms
 		shader.setUniform('uProjectionMatrix', projection);
+		shader.setUniform('uColor', color);
 		shader.setUniform('uBrightness', renderer.brightness);
-		shader.setUniform('uColorRampSampler', 0);
-		shader.setUniform('uColorRampSize', ramp.width);
-		shader.setUniform('uOpacity', opacity);
-		shader.setUniform('uRangeMin', renderer.range[0]);
-		shader.setUniform('uRangeMax', renderer.range[1]);
-		shader.setUniform('uMin', extrema.min);
-		shader.setUniform('uMax', extrema.max);
-		shader.setUniform('uViewport', [
-			0,
-			0,
-			viewportSize.width,
-			viewportSize.height
-		]);
 
 		// binds the vertex atlas
 		atlas.bind();
@@ -259,31 +208,25 @@ class Edge {
 		// unbind
 		atlas.unbind();
 	}
-	drawIndividual(target, opacity) {
+	drawIndividual(target, color) {
 
 		const shader = this.shader.individual;
 		const line = this.line;
 		const renderer = this.renderer;
-		const layer = renderer.layer;
-		const plot = layer.plot;
-		const ramp = this.ramp;
-		const extrema = layer.getExtrema();
+		const plot = renderer.layer.plot;
 		const projection = renderer.getOrthoMatrix();
-		const viewportOffset = plot.getViewportPixelOffset();
+		const viewport = plot.getViewportPixelOffset();
 
 		// get tile offset
 		const coord = target.tile.coord;
 		const scale = Math.pow(2, plot.zoom - coord.z);
 		const tileOffset = [
-			(coord.x * scale * plot.tileSize) - viewportOffset.x,
-			(coord.y * scale * plot.tileSize) - viewportOffset.y
+			(coord.x * scale * plot.tileSize) - viewport.x,
+			(coord.y * scale * plot.tileSize) - viewport.y
 		];
 
 		// bind shader
 		shader.use();
-
-		// bind color ramp
-		ramp.bind(0);
 
 		shader.setUniform('uProjectionMatrix', projection);
 		shader.setUniform('uTileOffset', tileOffset);
@@ -291,16 +234,9 @@ class Edge {
 		shader.setUniform('uLODOffset', [0, 0]);
 		shader.setUniform('uPointA', [ target.a.x, target.a.y ]);
 		shader.setUniform('uPointB', [ target.b.x, target.b.y ]);
-		shader.setUniform('uWeights', [ target.a.weight, target.b.weight ]);
 		shader.setUniform('uScale', scale);
+		shader.setUniform('uColor', color);
 		shader.setUniform('uBrightness', renderer.brightness);
-		shader.setUniform('uColorRampSampler', 0);
-		shader.setUniform('uColorRampSize', ramp.width);
-		shader.setUniform('uOpacity', opacity);
-		shader.setUniform('uRangeMin', renderer.range[0]);
-		shader.setUniform('uRangeMax', renderer.range[1]);
-		shader.setUniform('uMin', extrema.min);
-		shader.setUniform('uMax', extrema.max);
 
 		// binds the buffer to instance
 		line.bind();
@@ -313,4 +249,4 @@ class Edge {
 	}
 }
 
-module.exports = Edge;
+module.exports = Line;

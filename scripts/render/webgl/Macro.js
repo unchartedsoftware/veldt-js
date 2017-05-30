@@ -1,10 +1,18 @@
 'use strict';
 
 const defaultTo = require('lodash/defaultTo');
-const VertexRenderer = require('./VertexRenderer');
-const Point = require('../shape/Point');
+const WebGLRenderer = require('./WebGLRenderer');
+const Point = require('./shape/Point');
 
-class Macro extends VertexRenderer {
+const addTile = function(atlas, tile) {
+	const bins = (this.layer.lod > 0) ? tile.data.points : tile.data;
+	atlas.set(
+		tile.coord.hash,
+		bins,
+		bins.length / atlas.stride);
+};
+
+class Macro extends WebGLRenderer {
 
 	constructor(options = {}) {
 		super(options);
@@ -16,23 +24,19 @@ class Macro extends VertexRenderer {
 		this.radius = defaultTo(options.radius, 2);
 	}
 
-	addTile(atlas, tile) {
-		const bins = (this.layer.lod > 0) ? tile.data.points : tile.data;
-		atlas.set(
-			tile.coord.hash,
-			bins,
-			bins.length / atlas.stride);
-	}
-
 	onAdd(layer) {
 		super.onAdd(layer);
 		this.point = new Point(this);
 		this.atlas = this.createVertexAtlas({
-			// position
-			0: {
-				size: 2,
-				type: 'FLOAT'
-			}
+			chunkSize: this.layer.resolution * this.layer.resolution,
+			attributePointers: {
+				// position
+				0: {
+					size: 2,
+					type: 'FLOAT'
+				}
+			},
+			onAdd: addTile.bind(this)
 		});
 		return this;
 	}
@@ -56,7 +60,8 @@ class Macro extends VertexRenderer {
 
 		// set blending func
 		gl.enable(gl.BLEND);
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+		//gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
 		// draw instanced points
 		this.point.drawInstanced(
