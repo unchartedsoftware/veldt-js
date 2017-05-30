@@ -61,7 +61,6 @@ const requestor = new veldt.Requestor('tile', err => {
 	macro.setBounds(0, Math.pow(2, 32), 0, Math.pow(2, 32));
 	macro.setRequestor(requestor);
 	macro.setRenderer(new veldt.Renderer.WebGL.Macro({
-		maxVertices: 256 * 256,
 		radius: 4,
 		color: [ 0.4, 0.8, 0.2, 0.8 ]
 	}));

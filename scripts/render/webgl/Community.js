@@ -117,8 +117,6 @@ class Community extends WebGLRenderer {
 		return this;
 	}
 
-
-
 	pick(pos) {
 		if (this.layer.plot.isZooming()) {
 			return null;
