@@ -3,11 +3,34 @@
 const lumo = require('lumo');
 const clamp = require('lodash/clamp');
 const defaultTo = require('lodash/defaultTo');
-const VertexRenderer = require('./VertexRenderer');
+const WebGLRenderer = require('./WebGLRenderer');
 const Edge = require('./shape/Edge');
 const ColorRamp = require('../color/ColorRamp');
 
-class MacroEdge extends VertexRenderer {
+const addTile = function(atlas, tile) {
+	const edges = (this.layer.lod > 0) ? tile.data.edges : tile.data;
+	const extent = Math.pow(2, 16);
+	const bounds = new lumo.Bounds(-extent, extent, -extent, extent);
+	for (let i=0; i<edges.length; i+=6) {
+		const ax = edges[i];
+		const ay = edges[i+1];
+		const bx = edges[i+3];
+		const by = edges[i+4];
+		const clipped = bounds.clipLine(
+			{ x: ax, y: ay, },
+			{ x: bx, y: by, });
+		edges[i] = clipped.a.x;
+		edges[i+1] = clipped.a.y;
+		edges[i+3] = clipped.b.x;
+		edges[i+4] = clipped.b.y;
+	}
+	atlas.set(
+		tile.coord.hash,
+		edges,
+		edges.length / atlas.stride);
+};
+
+class MacroEdge extends WebGLRenderer {
 
 	constructor(options = {}) {
 		super(options);
@@ -19,44 +42,25 @@ class MacroEdge extends VertexRenderer {
 		this.ext = null;
 	}
 
-	addTile(atlas, tile) {
-		const edges = (this.layer.lod > 0) ? tile.data.edges : tile.data;
-		const extent = Math.pow(2, 16);
-		const bounds = new lumo.Bounds(-extent, extent, -extent, extent);
-		for (let i=0; i<edges.length; i+=6) {
-			const ax = edges[i];
-			const ay = edges[i+1];
-			const bx = edges[i+3];
-			const by = edges[i+4];
-			const clipped = bounds.clipLine(
-				{ x: ax, y: ay, },
-				{ x: bx, y: by, });
-			edges[i] = clipped.a.x;
-			edges[i+1] = clipped.a.y;
-			edges[i+3] = clipped.b.x;
-			edges[i+4] = clipped.b.y;
-		}
-		atlas.set(
-			tile.coord.hash,
-			edges,
-			edges.length / atlas.stride);
-	}
-
 	onAdd(layer) {
 		super.onAdd(layer);
 		this.ext = null; // this.gl.getExtension('EXT_blend_minmax');
 		this.edge = new Edge(this, this.transform, this.colorRamp);
 		this.atlas = this.createVertexAtlas({
-			// position
-			0: {
-				size: 2,
-				type: 'FLOAT'
+			chunkSize: this.layer.hitsCount * 2,
+			attributePointers: {
+				// position
+				0: {
+					size: 2,
+					type: 'FLOAT'
+				},
+				// weight
+				1: {
+					size: 1,
+					type: 'FLOAT'
+				}
 			},
-			// weight
-			1: {
-				size: 1,
-				type: 'FLOAT'
-			}
+			onAdd: addTile.bind(this)
 		});
 		return this;
 	}

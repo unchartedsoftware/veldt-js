@@ -3,10 +3,61 @@
 const get = require('lodash/get');
 const lumo = require('lumo');
 const defaultTo = require('lodash/defaultTo');
-const VertexRenderer = require('./VertexRenderer');
+const WebGLRenderer = require('./WebGLRenderer');
 const Ring = require('./shape/Ring');
 
-class Community extends VertexRenderer {
+const addTile = function(atlas, tile) {
+	const coord = tile.coord;
+	const data = tile.data;
+	const hits = data.hits;
+	const points = data.points;
+	const numPoints = points.length / 2;
+	const radiusField = this.radiusField;
+	const radiusScale = Math.pow(2, coord.z);
+	const ringOffset = this.ringOffset;
+	const vertices = new Float32Array(numPoints * 3);
+	for (let i=0; i<numPoints; i++) {
+		const hit = hits[i];
+		const x = points[i*2];
+		const y = points[i*2+1];
+		const radius = get(hit, radiusField) * radiusScale + ringOffset;
+		vertices[i*3] = x;
+		vertices[i*3+1] = y;
+		vertices[i*3+2] = radius;
+	}
+	atlas.set(coord.hash, vertices, vertices.length / atlas.stride);
+};
+
+const createCollidables = function(tile, xOffset, yOffset) {
+	const data = tile.data;
+	const hits = data.hits;
+	const points = data.points;
+	const numHits = hits ? hits.length : 0;
+	const radiusScale = Math.pow(2, tile.coord.z);
+	const radiusField = this.radiusField;
+	const totalOffset =
+		(this.ringWidth / 2) + // width
+		this.outlineWidth + // outline
+		this.ringOffset; // offset
+	const collidables = new Array(numHits);
+	for (let i=0; i<numHits; i++) {
+		const hit = hits[i];
+		const x = points[i*2];
+		const y = points[i*2+1];
+		const radius = get(hit, radiusField) * radiusScale + totalOffset;
+		collidables[i] = new lumo.CircleCollidable(
+			x,
+			y,
+			radius,
+			xOffset,
+			yOffset,
+			tile,
+			hit);
+	}
+	return collidables;
+};
+
+class Community extends WebGLRenderer {
 
 	constructor(options = {}) {
 		super(options);
@@ -33,19 +84,25 @@ class Community extends VertexRenderer {
 		this.ringOutline = new Ring(this, this.ringWidth + (this.outlineWidth * 2));
 		// offset atlas
 		this.atlas = this.createVertexAtlas({
-			// offset
-			1: {
-				size: 2,
-				type: 'FLOAT'
+			chunkSize: this.layer.hitsCount,
+			attributePointers: {
+				// offset
+				1: {
+					size: 2,
+					type: 'FLOAT'
+				},
+				// radius
+				2: {
+					size: 1,
+					type: 'FLOAT'
+				}
 			},
-			// radius
-			2: {
-				size: 1,
-				type: 'FLOAT'
-			}
+			onAdd: addTile.bind(this)
 		});
 		// r-tree
-		this.tree = this.createRTreePyramid(32);
+		this.tree = this.createRTreePyramid({
+			createCollidables: createCollidables.bind(this)
+		});
 		return this;
 	}
 
@@ -60,34 +117,7 @@ class Community extends VertexRenderer {
 		return this;
 	}
 
-	createCollidables(tile, xOffset, yOffset) {
-		const data = tile.data;
-		const hits = data.hits;
-		const points = data.points;
-		const numHits = hits ? hits.length : 0;
-		const radiusScale = Math.pow(2, tile.coord.z);
-		const radiusField = this.radiusField;
-		const totalOffset =
-			(this.ringWidth / 2) + // width
-			this.outlineWidth + // outline
-			this.ringOffset; // offset
-		const collidables = new Array(numHits);
-		for (let i=0; i<numHits; i++) {
-			const hit = hits[i];
-			const x = points[i*2];
-			const y = points[i*2+1];
-			const radius = get(hit, radiusField) * radiusScale + totalOffset;
-			collidables[i] = new lumo.CircleCollidable(
-				x,
-				y,
-				radius,
-				xOffset,
-				yOffset,
-				tile,
-				hit);
-		}
-		return collidables;
-	}
+
 
 	pick(pos) {
 		if (this.layer.plot.isZooming()) {
@@ -98,28 +128,6 @@ class Community extends VertexRenderer {
 			pos.y,
 			this.layer.plot.zoom,
 			this.layer.plot.getPixelExtent());
-	}
-
-	addTile(atlas, tile) {
-		const coord = tile.coord;
-		const data = tile.data;
-		const hits = data.hits;
-		const points = data.points;
-		const numPoints = points.length / 2;
-		const radiusField = this.radiusField;
-		const radiusScale = Math.pow(2, coord.z);
-		const ringOffset = this.ringOffset;
-		const vertices = new Float32Array(numPoints * 3);
-		for (let i=0; i<numPoints; i++) {
-			const hit = hits[i];
-			const x = points[i*2];
-			const y = points[i*2+1];
-			const radius = get(hit, radiusField) * radiusScale + ringOffset;
-			vertices[i*3] = x;
-			vertices[i*3+1] = y;
-			vertices[i*3+2] = radius;
-		}
-		atlas.set(coord.hash, vertices, vertices.length / atlas.stride);
 	}
 
 	draw() {

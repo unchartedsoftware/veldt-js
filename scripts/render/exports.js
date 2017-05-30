@@ -17,15 +17,6 @@ const HTML = {
 	WordCloud: require('./html/WordCloud')
 };
 
-// canvas renderers
-const Canvas = {
-	Image: require('./canvas/Image'),
-	Macro: require('./canvas/Macro'),
-	Micro: require('./canvas/Micro'),
-	MacroEdge: require('./canvas/MacroEdge'),
-	Repeat: require('./canvas/Repeat')
-};
-
 // webgl renderers
 const WebGL = {
 	Community: require('./webgl/Community'),
@@ -41,6 +32,5 @@ const WebGL = {
 module.exports = {
 	Core: Core,
 	HTML: HTML,
-	Canvas: Canvas,
 	WebGL: WebGL
 };

@@ -87,7 +87,11 @@ const createQuad = function(gl, min, max) {
 		});
 };
 
-class Image extends lumo.WebGLTextureTileRenderer {
+const addTile = function(array, tile) {
+	array.set(tile.coord.hash, new Uint8Array(tile.data));
+};
+
+class Image extends lumo.WebGLTileRenderer {
 
 	constructor(options = {}) {
 		super(options);
@@ -101,7 +105,10 @@ class Image extends lumo.WebGLTextureTileRenderer {
 		super.onAdd(layer);
 		this.quad = createQuad(this.gl, 0, layer.plot.tileSize);
 		this.shader = this.createShader(SHADER_GLSL);
-		this.array = this.createTextureArray(layer.plot.tileSize);
+		this.array = this.createTextureArray({
+			chunkSize: layer.plot.tileSize,
+			onAdd: addTile.bind(this)
+		});
 		return this;
 	}
 
@@ -119,10 +126,6 @@ class Image extends lumo.WebGLTextureTileRenderer {
 		if (this.plot) {
 			this.layer.plot.setDirty();
 		}
-	}
-
-	addTile(array, tile) {
-		array.set(tile.coord.hash, new Uint8Array(tile.data));
 	}
 
 	draw() {

@@ -4,13 +4,105 @@ const get = require('lodash/get');
 const lumo = require('lumo');
 const flatten = require('lodash/flatten');
 const defaultTo = require('lodash/defaultTo');
-const VertexRenderer = require('./VertexRenderer');
+const WebGLRenderer = require('./WebGLRenderer');
 const Ring = require('./shape/Ring');
 const ColorRamp = require('../color/ColorRamp');
 const RadialQuad = require('./shape/RadialQuad');
 const SegmentedRing = require('./shape/SegmentedRing');
 
-class CommunityBucket extends VertexRenderer {
+const addTile = function(atlas, tile) {
+	const coord = tile.coord;
+	const data = tile.data;
+	const hits = data.hits;
+	const points = data.points;
+	const numPoints = points.length / 2;
+	const radiusField = this.radiusField;
+	const bucketsField = this.bucketsField;
+	const radiusScale = Math.pow(2, coord.z);
+	const ringOffset = this.ringOffset;
+	const stride = atlas.stride;
+	const vertices = new Float32Array(numPoints * stride);
+
+	for (let i=0; i<numPoints; i++) {
+		const hit = hits[i];
+		const x = points[i*2];
+		const y = points[i*2+1];
+		const radius = get(hit, radiusField) * radiusScale + ringOffset;
+		const buckets = get(hit, bucketsField);
+
+		// sum buckets
+		let sum = 0;
+		for (let j=0; j<buckets.length; j++) {
+			sum += buckets[j];
+		}
+
+		// get cumulative percentages
+		const percentages = [
+			0, 0, 0, 0,
+			0, 0, 0, 0,
+			0, 0, 0, 0,
+			0, 0, 0, 0
+		];
+		let current = 0;
+		for (let j=0; j<buckets.length; j++) {
+			percentages[j] = (current + buckets[j]) / sum;
+			current += buckets[j];
+		}
+
+		vertices[i*stride] = x;
+		vertices[i*stride+1] = y;
+		vertices[i*stride+2] = radius;
+		vertices[i*stride+3] = percentages[0];
+		vertices[i*stride+4] = percentages[1];
+		vertices[i*stride+5] = percentages[2];
+		vertices[i*stride+6] = percentages[3];
+		vertices[i*stride+7] = percentages[4];
+		vertices[i*stride+8] = percentages[5];
+		vertices[i*stride+9] = percentages[6];
+		vertices[i*stride+10] = percentages[7];
+		vertices[i*stride+11] = percentages[8];
+		vertices[i*stride+12] = percentages[9];
+		vertices[i*stride+13] = percentages[10];
+		vertices[i*stride+14] = percentages[11];
+		vertices[i*stride+15] = percentages[12];
+		vertices[i*stride+16] = percentages[13];
+		vertices[i*stride+17] = percentages[14];
+		vertices[i*stride+18] = percentages[15];
+	}
+
+	atlas.set(coord.hash, vertices, points.length);
+};
+
+const createCollidables = function(tile, xOffset, yOffset) {
+	const data = tile.data;
+	const hits = data.hits;
+	const points = data.points;
+	const numHits = hits ? hits.length : 0;
+	const radiusScale = Math.pow(2, tile.coord.z);
+	const radiusField = this.radiusField;
+	const totalOffset =
+		(this.ringWidth / 2) + // width
+		this.outlineWidth + // outline
+		this.ringOffset; // offset
+	const collidables = new Array(numHits);
+	for (let i=0; i<numHits; i++) {
+		const hit = hits[i];
+		const x = points[i*2];
+		const y = points[i*2+1];
+		const radius = get(hit, radiusField) * radiusScale + totalOffset;
+		collidables[i] = new lumo.CircleCollidable(
+			x,
+			y,
+			radius,
+			xOffset,
+			yOffset,
+			tile,
+			hit);
+	}
+	return collidables;
+};
+
+class CommunityBucket extends WebGLRenderer {
 
 	constructor(options = {}) {
 		super(options);
@@ -48,36 +140,42 @@ class CommunityBucket extends VertexRenderer {
 			this.tickHeight);
 		// vertex atlas for all tiles
 		this.atlas = this.createVertexAtlas({
-			// offset
-			1: {
-				type: 'FLOAT',
-				size: 2
+			chunkSize: this.layer.hitsCount,
+			attributePointers: {
+				// offset
+				1: {
+					type: 'FLOAT',
+					size: 2
+				},
+				// radius
+				2: {
+					type: 'FLOAT',
+					size: 1
+				},
+				// percentages
+				3: {
+					type: 'FLOAT',
+					size: 4
+				},
+				4: {
+					type: 'FLOAT',
+					size: 4
+				},
+				5: {
+					type: 'FLOAT',
+					size: 4
+				},
+				6: {
+					type: 'FLOAT',
+					size: 4
+				}
 			},
-			// radius
-			2: {
-				type: 'FLOAT',
-				size: 1
-			},
-			// percentages
-			3: {
-				type: 'FLOAT',
-				size: 4
-			},
-			4: {
-				type: 'FLOAT',
-				size: 4
-			},
-			5: {
-				type: 'FLOAT',
-				size: 4
-			},
-			6: {
-				type: 'FLOAT',
-				size: 4
-			}
+			onAdd: addTile.bind(this)
 		});
 		// r-tree
-		this.tree = this.createRTreePyramid(32);
+		this.tree = this.createRTreePyramid({
+			createCollidables: createCollidables.bind(this)
+		});
 		return this;
 	}
 
@@ -93,35 +191,6 @@ class CommunityBucket extends VertexRenderer {
 		return this;
 	}
 
-	createCollidables(tile, xOffset, yOffset) {
-		const data = tile.data;
-		const hits = data.hits;
-		const points = data.points;
-		const numHits = hits ? hits.length : 0;
-		const radiusScale = Math.pow(2, tile.coord.z);
-		const radiusField = this.radiusField;
-		const totalOffset =
-			(this.ringWidth / 2) + // width
-			this.outlineWidth + // outline
-			this.ringOffset; // offset
-		const collidables = new Array(numHits);
-		for (let i=0; i<numHits; i++) {
-			const hit = hits[i];
-			const x = points[i*2];
-			const y = points[i*2+1];
-			const radius = get(hit, radiusField) * radiusScale + totalOffset;
-			collidables[i] = new lumo.CircleCollidable(
-				x,
-				y,
-				radius,
-				xOffset,
-				yOffset,
-				tile,
-				hit);
-		}
-		return collidables;
-	}
-
 	pick(pos) {
 		if (this.layer.plot.isZooming()) {
 			return null;
@@ -133,71 +202,7 @@ class CommunityBucket extends VertexRenderer {
 			this.layer.plot.getPixelExtent());
 	}
 
-	addTile(atlas, tile) {
-		const coord = tile.coord;
-		const data = tile.data;
-		const hits = data.hits;
-		const points = data.points;
-		const numPoints = points.length / 2;
-		const radiusField = this.radiusField;
-		const bucketsField = this.bucketsField;
-		const radiusScale = Math.pow(2, coord.z);
-		const ringOffset = this.ringOffset;
-		const stride = atlas.stride;
-		const vertices = new Float32Array(numPoints * stride);
-
-		for (let i=0; i<numPoints; i++) {
-			const hit = hits[i];
-			const x = points[i*2];
-			const y = points[i*2+1];
-			const radius = get(hit, radiusField) * radiusScale + ringOffset;
-			const buckets = get(hit, bucketsField);
-
-			// sum buckets
-			let sum = 0;
-			for (let j=0; j<buckets.length; j++) {
-				sum += buckets[j];
-			}
-
-			// get cumulative percentages
-			const percentages = [
-				0, 0, 0, 0,
-				0, 0, 0, 0,
-				0, 0, 0, 0,
-				0, 0, 0, 0
-			];
-			let current = 0;
-			for (let j=0; j<buckets.length; j++) {
-				percentages[j] = (current + buckets[j]) / sum;
-				current += buckets[j];
-			}
-
-			vertices[i*stride] = x;
-			vertices[i*stride+1] = y;
-			vertices[i*stride+2] = radius;
-			vertices[i*stride+3] = percentages[0];
-			vertices[i*stride+4] = percentages[1];
-			vertices[i*stride+5] = percentages[2];
-			vertices[i*stride+6] = percentages[3];
-			vertices[i*stride+7] = percentages[4];
-			vertices[i*stride+8] = percentages[5];
-			vertices[i*stride+9] = percentages[6];
-			vertices[i*stride+10] = percentages[7];
-			vertices[i*stride+11] = percentages[8];
-			vertices[i*stride+12] = percentages[9];
-			vertices[i*stride+13] = percentages[10];
-			vertices[i*stride+14] = percentages[11];
-			vertices[i*stride+15] = percentages[12];
-			vertices[i*stride+16] = percentages[13];
-			vertices[i*stride+17] = percentages[14];
-			vertices[i*stride+18] = percentages[15];
-		}
-
-		atlas.set(coord.hash, vertices, points.length);
-	}
-
 	draw() {
-
 		const gl = this.gl;
 		const layer = this.layer;
 		const opacity = layer.getOpacity();

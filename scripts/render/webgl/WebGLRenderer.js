@@ -3,7 +3,7 @@
 const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
 
-class VertexRenderer extends lumo.WebGLVertexTileRenderer {
+class WebGLRenderer extends lumo.WebGLTileRenderer {
 
 	constructor(options = {}) {
 		super(options);
@@ -18,4 +18,4 @@ class VertexRenderer extends lumo.WebGLVertexTileRenderer {
 	}
 }
 
-module.exports = VertexRenderer;
+module.exports = WebGLRenderer;

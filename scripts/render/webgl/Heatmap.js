@@ -3,7 +3,7 @@
 const clamp = require('lodash/clamp');
 const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
-const TextureRenderer = require('./TextureRenderer');
+const WebGLRenderer = require('./WebGLRenderer');
 const ColorRamp = require('../color/ColorRamp');
 const ColorRampGLSL = require('./shader/ColorRamp');
 
@@ -89,7 +89,15 @@ const createQuad = function(gl, min, max) {
 		});
 };
 
-class Heatmap extends TextureRenderer {
+const addTile = function(array, tile) {
+	// update chunksize if layer resolution changes
+	if (this.array.chunkSize !== this.layer.resolution) {
+		this.array.chunkSize = this.layer.resolution;
+	}
+	array.set(tile.coord.hash, new Uint8Array(tile.data));
+};
+
+class Heatmap extends WebGLRenderer {
 
 	constructor(options = {}) {
 		options.filter = 'NEAREST'; // texture array filtering
@@ -102,19 +110,13 @@ class Heatmap extends TextureRenderer {
 		this.array = null;
 		this.ramp = null;
 	}
-
-	addTile(array, tile) {
-		// update chunksize if layer resolution changes
-		if (this.array.chunkSize !== this.layer.resolution) {
-			this.array.chunkSize = this.layer.resolution;
-		}
-		array.set(tile.coord.hash, new Uint8Array(tile.data));
-	}
-
 	onAdd(layer) {
 		super.onAdd(layer);
 		this.quad = createQuad(this.gl, 0, layer.plot.tileSize);
-		this.array = this.createTextureArray(layer.resolution);
+		this.array = this.createTextureArray({
+			chunkSize: layer.resolution,
+			onAdd: addTile.bind(this)
+		});
 		this.setTransform(this.transform);
 		this.setColorRamp(this.colorRamp);
 		return this;

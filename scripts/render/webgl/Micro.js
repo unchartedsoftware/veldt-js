@@ -2,12 +2,42 @@
 
 const lumo = require('lumo');
 const defaultTo = require('lodash/defaultTo');
-const VertexRenderer = require('./VertexRenderer');
+const WebGLRenderer = require('./WebGLRenderer');
 const Point = require('./shape/Point');
 
 const POINT_RADIUS_INC = 4;
 
-class Micro extends VertexRenderer {
+const addTile = function(atlas, tile) {
+	const bins = (this.layer.lod > 0) ? tile.data.points : tile.data;
+	atlas.set(
+		tile.coord.hash,
+		bins,
+		bins.length / atlas.stride);
+};
+
+const createCollidables = function(tile, xOffset, yOffset) {
+	const data = tile.data;
+	const points = data.points;
+	const hits = data.hits;
+	const numHits = hits ? hits.length : 0;
+	const radius = this.radius + this.outlineWidth;
+	const collidables = new Array(numHits);
+	for (let i=0; i<numHits; i++) {
+		const x = points[i*2];
+		const y = points[i*2+1];
+		collidables[i] = new lumo.CircleCollidable(
+			x,
+			y,
+			radius,
+			xOffset,
+			yOffset,
+			tile,
+			hits[i]);
+	}
+	return collidables;
+};
+
+class Micro extends WebGLRenderer {
 
 	constructor(options = {}) {
 		super(options);
@@ -24,13 +54,19 @@ class Micro extends VertexRenderer {
 		super.onAdd(layer);
 		this.point = new Point(this);
 		this.atlas = this.createVertexAtlas({
-			// position
-			0: {
-				size: 2,
-				type: 'FLOAT'
-			}
+			chunkSize: this.layer.hitsCount,
+			attributePointers: {
+				// position
+				0: {
+					size: 2,
+					type: 'FLOAT'
+				}
+			},
+			onAdd: addTile.bind(this)
 		});
-		this.tree = this.createRTreePyramid(32);
+		this.tree = this.createRTreePyramid({
+			createCollidables: createCollidables.bind(this)
+		});
 		return this;
 	}
 
@@ -44,27 +80,7 @@ class Micro extends VertexRenderer {
 		return this;
 	}
 
-	createCollidables(tile, xOffset, yOffset) {
-		const data = tile.data;
-		const points = data.points;
-		const hits = data.hits;
-		const numHits = hits ? hits.length : 0;
-		const radius = this.radius + this.outlineWidth;
-		const collidables = new Array(numHits);
-		for (let i=0; i<numHits; i++) {
-			const x = points[i*2];
-			const y = points[i*2+1];
-			collidables[i] = new lumo.CircleCollidable(
-				x,
-				y,
-				radius,
-				xOffset,
-				yOffset,
-				tile,
-				hits[i]);
-		}
-		return collidables;
-	}
+
 
 	pick(pos) {
 		if (this.layer.plot.isZooming()) {
@@ -75,14 +91,6 @@ class Micro extends VertexRenderer {
 			pos.y,
 			this.layer.plot.zoom,
 			this.layer.plot.getPixelExtent());
-	}
-
-	addTile(atlas, tile) {
-		const bins = (this.layer.lod > 0) ? tile.data.points : tile.data;
-		atlas.set(
-			tile.coord.hash,
-			bins,
-			bins.length / atlas.stride);
 	}
 
 	draw() {
