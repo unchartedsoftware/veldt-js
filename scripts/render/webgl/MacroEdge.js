@@ -4,7 +4,7 @@ const lumo = require('lumo');
 const clamp = require('lodash/clamp');
 const defaultTo = require('lodash/defaultTo');
 const VertexRenderer = require('./VertexRenderer');
-const Edge = require('../shape/Edge');
+const Edge = require('./shape/Edge');
 const ColorRamp = require('../color/ColorRamp');
 
 class MacroEdge extends VertexRenderer {
@@ -44,7 +44,7 @@ class MacroEdge extends VertexRenderer {
 
 	onAdd(layer) {
 		super.onAdd(layer);
-		this.ext = this.gl.getExtension('EXT_blend_minmax');
+		this.ext = null; // this.gl.getExtension('EXT_blend_minmax');
 		this.edge = new Edge(this, this.transform, this.colorRamp);
 		this.atlas = this.createVertexAtlas({
 			// position
@@ -72,7 +72,6 @@ class MacroEdge extends VertexRenderer {
 	setTransform(transform) {
 		this.transform = transform;
 		this.edge.setTransform(this.transform);
-
 		if (this.layer.plot) {
 			this.layer.plot.setDirty();
 		}
@@ -88,7 +87,6 @@ class MacroEdge extends VertexRenderer {
 			clamp(min, 0, 1),
 			clamp(max, 0, 1)
 		];
-
 		if (this.layer.plot) {
 			this.layer.plot.setDirty();
 		}
@@ -103,8 +101,7 @@ class MacroEdge extends VertexRenderer {
 
 	setColorRamp(colorRamp) {
 		this.colorRamp = colorRamp;
-		this.edge.setTransform(colorRamp);
-
+		this.edge.setColorRamp(colorRamp);
 		if (this.layer.plot) {
 			this.layer.plot.setDirty();
 		}
@@ -119,7 +116,6 @@ class MacroEdge extends VertexRenderer {
 	}
 
 	draw() {
-
 		const gl = this.gl;
 
 		// set blending func

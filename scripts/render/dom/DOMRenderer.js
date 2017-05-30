@@ -119,7 +119,7 @@ const resetTileOffset = function(renderer, cell) {
 /**
  * Class representing a DOM renderer.
  */
-class DOMRenderer extends lumo.Renderer {
+class DOMRenderer extends lumo.TileRenderer {
 
 	/**
 	 * Instantiates a new DOMRenderer object.

@@ -178,10 +178,10 @@ const FLAT = buildFlatLookupTable([0xff, 0xff, 0xff, 0xff]);
 const buildLookupFunction = function(RAMP) {
 	return function(scaledValue, inColor) {
 		const index = Math.floor(scaledValue * (RAMP.length / 4 - 1));
-		inColor[0] = RAMP[index * 4];
-		inColor[1] = RAMP[index * 4 + 1];
-		inColor[2] = RAMP[index * 4 + 2];
-		inColor[3] = RAMP[index * 4 + 3];
+		inColor[0] = RAMP[index * 4] / 255;
+		inColor[1] = RAMP[index * 4 + 1] / 255;
+		inColor[2] = RAMP[index * 4 + 2] / 255;
+		inColor[3] = RAMP[index * 4 + 3] / 255;
 		return inColor;
 	};
 };

@@ -164,6 +164,7 @@ class Ring {
 		const plot = renderer.layer.plot;
 		const projection = renderer.getOrthoMatrix();
 		const viewport = plot.getViewportPixelOffset();
+		const ringWidth = (renderer.ringWidth / 2) + renderer.outlineWidth;
 
 		// get tile offset
 		const coord = target.tile.coord;
@@ -180,7 +181,7 @@ class Ring {
 		shader.setUniform('uProjectionMatrix', projection);
 		shader.setUniform('uColor', color);
 		shader.setUniform('uOpacity', opacity);
-		shader.setUniform('uRadius', target.radius);
+		shader.setUniform('uRadius', target.radius - ringWidth);
 		shader.setUniform('uRadiusOffset', RADIUS_OFFSET);
 		shader.setUniform('uScale', scale);
 		shader.setUniform('uTileOffset', tileOffset);

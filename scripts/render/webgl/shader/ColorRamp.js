@@ -1,7 +1,7 @@
 'use strict';
 
 const lumo = require('lumo');
-const ColorRamp = require('../color/ColorRamp');
+const ColorRamp = require('../../color/ColorRamp');
 
 const addTransformDefine = function(shader ,transform) {
 	const define = shader.define || {};

@@ -5,7 +5,7 @@ const defaultTo = require('lodash/defaultTo');
 const lumo = require('lumo');
 const TextureRenderer = require('./TextureRenderer');
 const ColorRamp = require('../color/ColorRamp');
-const ColorRampGLSL = require('../shader/ColorRamp');
+const ColorRampGLSL = require('./shader/ColorRamp');
 
 const SHADER = {
 	common: ColorRampGLSL.common,
@@ -110,7 +110,7 @@ class Heatmap extends TextureRenderer {
 		}
 		array.set(tile.coord.hash, new Uint8Array(tile.data));
 	}
-	
+
 	onAdd(layer) {
 		super.onAdd(layer);
 		this.quad = createQuad(this.gl, 0, layer.plot.tileSize);
@@ -134,7 +134,6 @@ class Heatmap extends TextureRenderer {
 		// re-compile shader
 		this.shader = this.createShader(
 			ColorRampGLSL.addTransformDefine(SHADER, this.transform));
-
 		if (this.plot) {
 			this.layer.plot.setDirty();
 		}
@@ -149,7 +148,6 @@ class Heatmap extends TextureRenderer {
 			clamp(min, 0, 1),
 			clamp(max, 0, 1)
 		];
-
 		if (this.plot) {
 			this.layer.plot.setDirty();
 		}
@@ -165,7 +163,6 @@ class Heatmap extends TextureRenderer {
 	setColorRamp(colorRamp) {
 		this.colorRamp = colorRamp;
 		this.ramp = ColorRampGLSL.createRampTexture(this.gl, this.colorRamp);
-
 		if (this.plot) {
 			this.layer.plot.setDirty();
 		}

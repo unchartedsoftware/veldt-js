@@ -1,15 +1,16 @@
 'use strict';
 
 const get = require('lodash/get');
+const lumo = require('lumo');
 const flatten = require('lodash/flatten');
 const defaultTo = require('lodash/defaultTo');
-const InteractiveRenderer = require('./InteractiveRenderer');
-const Ring = require('../shape/Ring');
+const VertexRenderer = require('./VertexRenderer');
+const Ring = require('./shape/Ring');
 const ColorRamp = require('../color/ColorRamp');
-const RadialQuad = require('../shape/RadialQuad');
-const SegmentedRing = require('../shape/SegmentedRing');
+const RadialQuad = require('./shape/RadialQuad');
+const SegmentedRing = require('./shape/SegmentedRing');
 
-class CommunityBucket extends InteractiveRenderer {
+class CommunityBucket extends VertexRenderer {
 
 	constructor(options = {}) {
 		super(options);
@@ -17,6 +18,7 @@ class CommunityBucket extends InteractiveRenderer {
 		this.ringOutline = null;
 		this.quad = null;
 		this.atlas = null;
+		this.tree = null;
 		this.outlineWidth = defaultTo(options.outlineWidth, 1);
 		this.outlineColor = defaultTo(options.outlineColor, [0.0, 0.0, 0.0, 1.0]);
 		this.ringWidth = defaultTo(options.ringWidth, 3);
@@ -74,11 +76,15 @@ class CommunityBucket extends InteractiveRenderer {
 				size: 4
 			}
 		});
+		// r-tree
+		this.tree = this.createRTreePyramid(32);
 		return this;
 	}
 
 	onRemove(layer) {
 		this.destroyVertexAtlas(this.atlas);
+		this.destroyRTreePyramid(this.tree);
+		this.tree = null;
 		this.ringFill = null;
 		this.ringOutline = null;
 		this.quad = null;
@@ -87,40 +93,65 @@ class CommunityBucket extends InteractiveRenderer {
 		return this;
 	}
 
-	addTile(atlas, tile) {
-		const coord = tile.coord;
+	createCollidables(tile, xOffset, yOffset) {
 		const data = tile.data;
 		const hits = data.hits;
-		const positions = data.points;
-
-		const tileSize = this.layer.plot.tileSize;
-		const xOffset = coord.x * tileSize;
-		const yOffset = coord.y * tileSize;
+		const points = data.points;
+		const numHits = hits ? hits.length : 0;
+		const radiusScale = Math.pow(2, tile.coord.z);
 		const radiusField = this.radiusField;
-		const bucketsField = this.bucketsField;
-
-		const radiusScale = Math.pow(2, coord.z);
-		const ringOffset = this.ringOffset;
 		const totalOffset =
 			(this.ringWidth / 2) + // width
 			this.outlineWidth + // outline
 			this.ringOffset; // offset
-
-		const stride = atlas.stride;
-		const points = new Array(positions.length / 2);
-		const vertices = new Float32Array((positions.length / 2) * stride);
-
-		for (let i=0; i<positions.length/2; i++) {
-
+		const collidables = new Array(numHits);
+		for (let i=0; i<numHits; i++) {
 			const hit = hits[i];
-			const x = positions[i*2];
-			const y = positions[i*2+1];
+			const x = points[i*2];
+			const y = points[i*2+1];
+			const radius = get(hit, radiusField) * radiusScale + totalOffset;
+			collidables[i] = new lumo.CircleCollidable(
+				x,
+				y,
+				radius,
+				xOffset,
+				yOffset,
+				tile,
+				hit);
+		}
+		return collidables;
+	}
+
+	pick(pos) {
+		if (this.layer.plot.isZooming()) {
+			return null;
+		}
+		return this.tree.searchPoint(
+			pos.x,
+			pos.y,
+			this.layer.plot.zoom,
+			this.layer.plot.getPixelExtent());
+	}
+
+	addTile(atlas, tile) {
+		const coord = tile.coord;
+		const data = tile.data;
+		const hits = data.hits;
+		const points = data.points;
+		const numPoints = points.length / 2;
+		const radiusField = this.radiusField;
+		const bucketsField = this.bucketsField;
+		const radiusScale = Math.pow(2, coord.z);
+		const ringOffset = this.ringOffset;
+		const stride = atlas.stride;
+		const vertices = new Float32Array(numPoints * stride);
+
+		for (let i=0; i<numPoints; i++) {
+			const hit = hits[i];
+			const x = points[i*2];
+			const y = points[i*2+1];
 			const radius = get(hit, radiusField) * radiusScale + ringOffset;
 			const buckets = get(hit, bucketsField);
-
-			// plot pixel coords
-			const px = x + xOffset;
-			const py = y + yOffset;
 
 			// sum buckets
 			let sum = 0;
@@ -140,20 +171,6 @@ class CommunityBucket extends InteractiveRenderer {
 				percentages[j] = (current + buckets[j]) / sum;
 				current += buckets[j];
 			}
-
-			points[i] = {
-				x: x,
-				y: y,
-				radius: radius,
-				minX: px - (radius + totalOffset),
-				maxX: px + (radius + totalOffset),
-				minY: py - (radius + totalOffset),
-				maxY: py + (radius + totalOffset),
-				tile: tile,
-				data: hit,
-				buckets: buckets,
-				percentages: percentages
-			};
 
 			vertices[i*stride] = x;
 			vertices[i*stride+1] = y;
@@ -176,10 +193,9 @@ class CommunityBucket extends InteractiveRenderer {
 			vertices[i*stride+18] = percentages[15];
 		}
 
-		this.addPoints(coord, points);
 		atlas.set(coord.hash, vertices, points.length);
 	}
-	
+
 	draw() {
 
 		const gl = this.gl;

@@ -17,11 +17,21 @@ const HTML = {
 	WordCloud: require('./html/WordCloud')
 };
 
+// canvas renderers
+const Canvas = {
+	Image: require('./canvas/Image'),
+	Macro: require('./canvas/Macro'),
+	Micro: require('./canvas/Micro'),
+	MacroEdge: require('./canvas/MacroEdge'),
+	Repeat: require('./canvas/Repeat')
+};
+
 // webgl renderers
 const WebGL = {
 	Community: require('./webgl/Community'),
 	CommunityBucket: require('./webgl/CommunityBucket'),
 	Heatmap: require('./webgl/Heatmap'),
+	Image: require('./webgl/Image'),
 	Micro: require('./webgl/Micro'),
 	Macro: require('./webgl/Macro'),
 	MacroEdge: require('./webgl/MacroEdge'),
@@ -31,5 +41,6 @@ const WebGL = {
 module.exports = {
 	Core: Core,
 	HTML: HTML,
+	Canvas: Canvas,
 	WebGL: WebGL
 };

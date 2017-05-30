@@ -2,7 +2,7 @@
 
 const defaultTo = require('lodash/defaultTo');
 const VertexRenderer = require('./VertexRenderer');
-const Point = require('../shape/Point');
+const Point = require('./shape/Point');
 
 class Macro extends VertexRenderer {
 
@@ -56,7 +56,8 @@ class Macro extends VertexRenderer {
 
 		// set blending func
 		gl.enable(gl.BLEND);
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+		//gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
 		// draw instanced points
 		this.point.drawInstanced(
