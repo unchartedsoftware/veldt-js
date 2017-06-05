@@ -63,23 +63,11 @@ const createDeconflictionFunc = function($container) {
 	};
 };
 
-const isInteger = function (x) {
-	return (typeof x === 'number') && (x % 1 === 0);
-}
-
-const scaleColorEntry = function (n) {
-	if (isInteger(n)) {
-		return n;
-	} else {
-		return Math.round(n*255);
-	}
-}
-
 const getColorString = function (color) {
 	if (color) {
-		const red = scaleColorEntry(color[0]);
-		const green = scaleColorEntry(color[1]);
-		const blue = scaleColorEntry(color[2]);
+		const red   = Math.round(color[0] * 255);
+		const green = Math.round(color[1] * 255);
+		const blue  = Math.round(color[2] * 255);
 		return "rgb("+red+","+green+","+blue+")";
 	} else {
 		return "white";
