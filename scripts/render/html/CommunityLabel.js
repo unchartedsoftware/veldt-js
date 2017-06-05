@@ -63,6 +63,29 @@ const createDeconflictionFunc = function($container) {
 	};
 };
 
+const isInteger = function (x) {
+	return (typeof x === 'number') && (x % 1 === 0);
+}
+
+const scaleColorEntry = function (n) {
+	if (isInteger(n)) {
+		return n;
+	} else {
+		return Math.round(n*255);
+	}
+}
+
+const getColorString = function (color) {
+	if (color) {
+		const red = scaleColorEntry(color[0]);
+		const green = scaleColorEntry(color[1]);
+		const blue = scaleColorEntry(color[2]);
+		return "rgb("+red+","+green+","+blue+")";
+	} else {
+		return "white";
+	}
+}
+
 class CommunityLabel extends HTMLRenderer {
 
 	constructor(options = {}) {
@@ -71,6 +94,7 @@ class CommunityLabel extends HTMLRenderer {
 		this.minFontSize = defaultTo(options.minFontSize, 10);
 		this.maxFontSize = defaultTo(options.maxFontSize, 18);
 		this.fontFamily = defaultTo(options.fontFamily, '\'Helvetica Neue\',sans-serif');
+		this.fontColor = options.color
 		this.minOpacity = defaultTo(options.minOpacity, 0.6);
 		this.maxOpacity = defaultTo(options.maxOpacity, 1.0);
 		this.labelMaxLength = defaultTo(options.labelMaxLength, 256);
@@ -170,6 +194,7 @@ class CommunityLabel extends HTMLRenderer {
 			const opacity = this.minOpacity + (rnval * (this.maxOpacity - this.minOpacity));
 			const height = fontSize + HEIGHT_BUFFER; // add buffer to prevent cutoff of some letters
 			const width = Math.min(getTextWidth(label, fontSize, this.fontFamily, 10), this.labelMaxLength);
+			const fontColor = getColorString(this.fontColor);
 
 			// get position
 			const x = points[i*2] - (width / 2);
@@ -185,6 +210,7 @@ class CommunityLabel extends HTMLRenderer {
 					height: ${height}pt;
 					font-size: ${fontSize}pt;
 					font-family: ${this.fontFamily};
+                    color: ${fontColor};
 					line-height: ${fontSize}pt;">${label}</div>
 				`);
 
