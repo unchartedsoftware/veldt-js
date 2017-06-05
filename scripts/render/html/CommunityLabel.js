@@ -94,7 +94,7 @@ class CommunityLabel extends HTMLRenderer {
 		this.minFontSize = defaultTo(options.minFontSize, 10);
 		this.maxFontSize = defaultTo(options.maxFontSize, 18);
 		this.fontFamily = defaultTo(options.fontFamily, '\'Helvetica Neue\',sans-serif');
-		this.fontColor = options.color
+		this.fontColor = options.color;
 		this.minOpacity = defaultTo(options.minOpacity, 0.6);
 		this.maxOpacity = defaultTo(options.maxOpacity, 1.0);
 		this.labelMaxLength = defaultTo(options.labelMaxLength, 256);
