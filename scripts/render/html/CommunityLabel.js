@@ -101,6 +101,7 @@ class CommunityLabel extends HTMLRenderer {
 		this.labelThreshold = defaultTo(options.labelThreshold, 0.6);
 		this.labelField = defaultTo(options.labelField, 'metadata');
 		this.labelDeconflict = defaultTo(options.labelDeconflict, true);
+		this.labelPosition = defaultTo(options.labelPosition, [0, 0]);
 		this[PICK] = null;
 		this[MOUSE_OVER] = null;
 		this[MOUSE_OUT] = null;
@@ -197,8 +198,8 @@ class CommunityLabel extends HTMLRenderer {
 			const fontColor = getColorString(this.fontColor);
 
 			// get position
-			const x = points[i*2] - (width / 2);
-			const y = points[i*2+1] - (height / 2);
+			const x = points[i*2] - (width / 2) + this.labelPosition[0] * (width / 2);
+			const y = points[i*2+1] - (height / 2) + this.labelPosition[1] * (height / 2);
 
 			const div = $(`
 				<div class="community-label" style="
