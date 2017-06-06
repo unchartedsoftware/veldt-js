@@ -9,5 +9,5 @@ An in-progress version being developed on the `master` branch.
 - This CHANGELOG file to help track changes and ease version migration.
 
 ### Changed
-  - `veldt.Requestor` accepts two separate URLs, one for the WebSocket endpoint and one for the HTTP endpoint.
-  - `veldt.Requestor` no longer prepends `ws/` in front of the provided WebSocket URL, it must be added explicitly.
+- `veldt.Requestor` accepts two separate URLs, one for the WebSocket endpoint and one for the HTTP endpoint.
+- `veldt.Requestor` no longer prepends `ws/` in front of the provided WebSocket URL, it must be added explicitly.
