@@ -156,18 +156,20 @@ class Swap extends EventEmitter {
 	show() {
 		this.hidden = false;
 
-		if (this.plot) {
-			this.plot.setDirty();
-		}
+		this.layers.forEach(layer => {
+			layer.show();
+		});
+
 		return this;
 	}
 
 	hide() {
 		this.hidden = true;
 
-		if (this.plot) {
-			this.plot.setDirty();
-		}
+		this.layers.forEach(layer => {
+			layer.hide();
+		});
+
 		return this;
 	}
 
