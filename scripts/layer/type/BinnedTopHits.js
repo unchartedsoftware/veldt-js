@@ -33,10 +33,6 @@ class BinnedTopHits extends Bivariate {
 		this.lod = lod;
 	}
 
-	setRequestor(requestor, xyz = false) {
-		this.requestTile = requestor.requestJSON(xyz);
-	}
-
 	setSortField(sortField) {
 		this.sortField = sortField;
 	}

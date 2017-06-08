@@ -6,8 +6,8 @@ const EventType = require('../event/EventType');
 const CELL_UPDATE = Symbol();
 const DRAW_TIMEOUT = Symbol();
 const ERASE_TIMEOUT = Symbol();
-const DRAW_DEBOUNCE_MS = 4000;
-const ERASE_DEBOUNCE_MS = 4000;
+const DRAW_DEBOUNCE_MS = 400;
+const ERASE_DEBOUNCE_MS = 400;
 const OPACITY_TIMEOUT_MS = 40;
 const OPACITY_FADE_IN_MS = 400;
 
@@ -119,7 +119,7 @@ const resetTileOffset = function(renderer, cell) {
 /**
  * Class representing a DOM renderer.
  */
-class DOMRenderer extends lumo.Renderer {
+class DOMRenderer extends lumo.TileRenderer {
 
 	/**
 	 * Instantiates a new DOMRenderer object.

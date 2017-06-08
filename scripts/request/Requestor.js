@@ -18,11 +18,11 @@ function getHost() {
 }
 
 function establishConnection(requestor, callback) {
-	requestor.socket = new WebSocket(`${getHost()}ws/${requestor.url}`);
+	requestor.socket = new WebSocket(`${getHost()}${requestor.websocketURL}`);
 	// on open
 	requestor.socket.onopen = function() {
 		requestor.isOpen = true;
-		console.log(`WebSocket connection established on /${requestor.url}`);
+		console.log(`WebSocket connection established on /${requestor.websocketURL}`);
 		callback(null, requestor);
 	};
 	// on message
@@ -35,11 +35,12 @@ function establishConnection(requestor, callback) {
 		const hash = requestor.getHash(res, false);
 		if (!requestor.requests.has(hash)) {
 			console.error('Unrecognized response: ', res,  ', discarding');
+			return;
 		}
 		const wrapped = requestor.requests.get(hash);
 		requestor.requests.delete(hash);
 		if (success) {
-			wrapped.resolve(requestor.getURL());
+			wrapped.resolve(requestor.httpURL);
 		} else {
 			wrapped.reject(new Error(error));
 		}
@@ -48,7 +49,7 @@ function establishConnection(requestor, callback) {
 	requestor.socket.onclose = function() {
 		// log close only if connection was ever open
 		if (requestor.isOpen) {
-			console.warn(`WebSocket connection on /${requestor.url} lost, attempting to reconnect in ${RETRY_INTERVAL_MS}ms`);
+			console.warn(`WebSocket connection on /${requestor.websocketURL} lost, attempting to reconnect in ${RETRY_INTERVAL_MS}ms`);
 		}
 		requestor.socket = null;
 		requestor.isOpen = false;
@@ -110,9 +111,21 @@ function wrappedPromise(hash, request) {
 	};
 }
 
+function stripURL(url) {
+	if (!url || !isString(url)) {
+		throw `Provided URL \`${url}\` is invalid`;
+	}
+	// strip leading `/`
+	url = (url[0] === '/') ? url.substring(1, url.length) : url;
+	// strip trailing `/`
+	url = (url[url.length - 1] === '/') ? url.substring(0, url.length - 1) : url;
+	return url;
+}
+
 class Requestor {
-	constructor(url, callback) {
-		this.url = (url[0] === '/') ? url.substring(1, url.length - 1) : url;
+	constructor(websocketURL, httpURL, callback) {
+		this.websocketURL = stripURL(websocketURL);
+		this.httpURL = stripURL(httpURL);
 		this.requests = new Map();
 		this.pending = new Map();
 		this.isOpen = false;
@@ -124,9 +137,6 @@ class Requestor {
 		req.error = undefined;
 		req.success = undefined;
 		return stringify(pruneEmpty(req));
-	}
-	getURL() {
-		return this.url;
 	}
 	get(req) {
 		const hash = this.getHash(req, true);
@@ -156,7 +166,7 @@ class Requestor {
 		this.socket.onclose = null;
 		this.socket.close();
 		this.socket = null;
-		console.warn(`WebSocket connection on /${this.url} closed`);
+		console.warn(`WebSocket connection on /${this.websocketURL} closed`);
 	}
 }
 

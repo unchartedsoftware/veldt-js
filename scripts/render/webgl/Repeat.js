@@ -3,7 +3,6 @@
 const lumo = require('lumo');
 
 const TILE_ADD = Symbol();
-const TILE_REMOVE = Symbol();
 const SHADER_GLSL = {
 	vert:
 		`
@@ -70,7 +69,7 @@ const createQuad = function(gl, min, max) {
 		});
 };
 
-class Repeat extends lumo.WebGLRenderer {
+class Repeat extends lumo.WebGLTileRenderer {
 
 	constructor(options = {}) {
 		super(options);
@@ -88,22 +87,16 @@ class Repeat extends lumo.WebGLRenderer {
 				this.texture = new lumo.Texture(this.gl, event.tile.data);
 			}
 		};
-		this[TILE_REMOVE] = () => {
-			this.texture = null;
-		};
 		// attach handlers
 		this.layer.on(lumo.TILE_ADD, this[TILE_ADD]);
-		this.layer.on(lumo.TILE_REMOVE, this[TILE_REMOVE]);
 		return this;
 	}
 
 	onRemove(layer) {
 		// detach handlers
 		this.layer.removeListener(lumo.TILE_ADD, this[TILE_ADD]);
-		this.layer.removeListener(lumo.TILE_REMOVE, this[TILE_REMOVE]);
 		// delete handlers
 		this[TILE_ADD] = null;
-		this[TILE_REMOVE] = null;
 		this.texture = null;
 		this.quad = null;
 		this.shader = null;

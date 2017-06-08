@@ -22,6 +22,7 @@ const WebGL = {
 	Community: require('./webgl/Community'),
 	CommunityBucket: require('./webgl/CommunityBucket'),
 	Heatmap: require('./webgl/Heatmap'),
+	Image: require('./webgl/Image'),
 	Micro: require('./webgl/Micro'),
 	Macro: require('./webgl/Macro'),
 	MacroEdge: require('./webgl/MacroEdge'),

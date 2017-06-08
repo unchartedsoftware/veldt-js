@@ -17,12 +17,12 @@ class MacroEdge extends Edge {
 				const view = new DataView(data);
 				const edgesByteLength = view.getUint32(0, true /* little endian */);
 				const offsetsByteLength = view.getUint32(4, true  /* little endian */);
-				const numPoints = edgesByteLength / 4;
+				const numEdges = edgesByteLength / 4;
 				const numOffsets = offsetsByteLength / 4;
-				const points = new Float32Array(data, 8, numPoints);
+				const edges = new Float32Array(data, 8, numEdges);
 				const offsets = new Uint32Array(data, 8 + edgesByteLength, numOffsets);
 				return {
-					points: points,
+					edges: edges,
 					offsets: offsets
 				};
 			}
@@ -37,7 +37,7 @@ class MacroEdge extends Edge {
 	extractExtrema(data) {
 		let min = Infinity;
 		let max = -Infinity;
-		for (let i=0; i<data.length; i+=3) {
+		for (let i=2; i<data.length; i+=3) {
 			const weight = data[i];
 			if (weight < min) {
 				min = weight;
