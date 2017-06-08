@@ -4,6 +4,10 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.12.1 - June 8th, 2017
+### Fixed
+- Swap layer show/hide now also calls show/hide on its child layers.
+
 ## 0.12.0 - June 6th, 2017
 ### Added
 - This CHANGELOG file to help track changes and ease version migration.
