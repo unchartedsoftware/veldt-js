@@ -69,7 +69,7 @@ const getColorString = function (color) {
 		const green = Math.round(color[1] * 255);
 		const blue  = Math.round(color[2] * 255);
 		const alpha = (color.length > 3) ? color[3] : 1.0;
-		return 'rgba(${red},${blue},${green},${alpha})';
+		return `rgba(${red},${blue},${green},${alpha})`;
 	} else {
 		return 'white';
 	}
