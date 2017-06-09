@@ -68,11 +68,11 @@ const getColorString = function (color) {
 		const red   = Math.round(color[0] * 255);
 		const green = Math.round(color[1] * 255);
 		const blue  = Math.round(color[2] * 255);
-		return "rgb("+red+","+green+","+blue+")";
+		return 'rgb('+red+','+green+','+blue+')';
 	} else {
-		return "white";
+		return 'white';
 	}
-}
+};
 
 class CommunityLabel extends HTMLRenderer {
 
