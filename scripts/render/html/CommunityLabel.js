@@ -63,6 +63,18 @@ const createDeconflictionFunc = function($container) {
 	};
 };
 
+const getColorString = function (color) {
+	if (color) {
+		const red   = Math.round(color[0] * 255);
+		const green = Math.round(color[1] * 255);
+		const blue  = Math.round(color[2] * 255);
+		const alpha = (color.length > 3) ? color[3] : 1.0;
+		return `rgba(${red},${blue},${green},${alpha})`;
+	} else {
+		return 'white';
+	}
+};
+
 class CommunityLabel extends HTMLRenderer {
 
 	constructor(options = {}) {
@@ -71,12 +83,14 @@ class CommunityLabel extends HTMLRenderer {
 		this.minFontSize = defaultTo(options.minFontSize, 10);
 		this.maxFontSize = defaultTo(options.maxFontSize, 18);
 		this.fontFamily = defaultTo(options.fontFamily, '\'Helvetica Neue\',sans-serif');
+		this.fontColor = defaultTo(options.color, [1.0, 1.0, 1.0]);
 		this.minOpacity = defaultTo(options.minOpacity, 0.6);
 		this.maxOpacity = defaultTo(options.maxOpacity, 1.0);
 		this.labelMaxLength = defaultTo(options.labelMaxLength, 256);
 		this.labelThreshold = defaultTo(options.labelThreshold, 0.6);
 		this.labelField = defaultTo(options.labelField, 'metadata');
 		this.labelDeconflict = defaultTo(options.labelDeconflict, true);
+		this.labelOffset = defaultTo(options.labelOffset, [0, 0]);
 		this[PICK] = null;
 		this[MOUSE_OVER] = null;
 		this[MOUSE_OUT] = null;
@@ -170,10 +184,11 @@ class CommunityLabel extends HTMLRenderer {
 			const opacity = this.minOpacity + (rnval * (this.maxOpacity - this.minOpacity));
 			const height = fontSize + HEIGHT_BUFFER; // add buffer to prevent cutoff of some letters
 			const width = Math.min(getTextWidth(label, fontSize, this.fontFamily, 10), this.labelMaxLength);
+			const fontColor = getColorString(this.fontColor);
 
 			// get position
-			const x = points[i*2] - (width / 2);
-			const y = points[i*2+1] - (height / 2);
+			const x = points[i*2] - (width / 2) + this.labelOffset[0] * (width / 2);
+			const y = points[i*2+1] - (height / 2) + this.labelOffset[1] * (height / 2);
 
 			const div = $(`
 				<div class="community-label" style="
@@ -185,6 +200,7 @@ class CommunityLabel extends HTMLRenderer {
 					height: ${height}pt;
 					font-size: ${fontSize}pt;
 					font-family: ${this.fontFamily};
+                    color: ${fontColor};
 					line-height: ${fontSize}pt;">${label}</div>
 				`);
 
