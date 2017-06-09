@@ -65,14 +65,13 @@ const createDeconflictionFunc = function($container) {
 
 const getColorString = function (color) {
 	if (color) {
-		const red   = Math.round(color[0] * 255);
+		const red = Math.round(color[0] * 255);
 		const green = Math.round(color[1] * 255);
-		const blue  = Math.round(color[2] * 255);
+		const blue = Math.round(color[2] * 255);
 		const alpha = (color.length > 3) ? color[3] : 1.0;
-		return `rgba(${red},${blue},${green},${alpha})`;
-	} else {
-		return 'white';
+		return `rgba(${red},${green},${blue},${alpha})`;
 	}
+	return 'white';
 };
 
 class CommunityLabel extends HTMLRenderer {
@@ -200,7 +199,7 @@ class CommunityLabel extends HTMLRenderer {
 					height: ${height}pt;
 					font-size: ${fontSize}pt;
 					font-family: ${this.fontFamily};
-                    color: ${fontColor};
+					color: ${fontColor};
 					line-height: ${fontSize}pt;">${label}</div>
 				`);
 
