@@ -20,10 +20,10 @@ const addTile = function(atlas, tile) {
 			{ x: ax, y: ay, },
 			{ x: bx, y: by, }
 		]);
-		edges[i] = clipped.a.x;
-		edges[i+1] = clipped.a.y;
-		edges[i+3] = clipped.b.x;
-		edges[i+4] = clipped.b.y;
+		edges[i] = clipped[0].x;
+		edges[i+1] = clipped[0].y;
+		edges[i+3] = clipped[1].x;
+		edges[i+4] = clipped[1].y;
 	}
 	atlas.set(
 		tile.coord.hash,

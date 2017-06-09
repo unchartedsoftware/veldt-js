@@ -4,7 +4,7 @@
 
 An in-progress version being developed on the `master` branch.
 
-## 0.13.1 - June 9th, 2017
+## 0.13.2 - June 9th, 2017
 ### Fixed
 - Switch to newer `lumo` line clipping interface in `veldt.Renderer.WebGL.MacroEdge`.
 
