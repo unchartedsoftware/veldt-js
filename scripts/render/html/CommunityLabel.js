@@ -82,14 +82,14 @@ class CommunityLabel extends HTMLRenderer {
 		this.minFontSize = defaultTo(options.minFontSize, 10);
 		this.maxFontSize = defaultTo(options.maxFontSize, 18);
 		this.fontFamily = defaultTo(options.fontFamily, '\'Helvetica Neue\',sans-serif');
-		this.fontColor = options.color;
+		this.fontColor = defaultTo(options.color, [1.0, 1.0, 1.0]);
 		this.minOpacity = defaultTo(options.minOpacity, 0.6);
 		this.maxOpacity = defaultTo(options.maxOpacity, 1.0);
 		this.labelMaxLength = defaultTo(options.labelMaxLength, 256);
 		this.labelThreshold = defaultTo(options.labelThreshold, 0.6);
 		this.labelField = defaultTo(options.labelField, 'metadata');
 		this.labelDeconflict = defaultTo(options.labelDeconflict, true);
-		this.labelPosition = defaultTo(options.labelPosition, [0, 0]);
+		this.labelOffset = defaultTo(options.labelOffset, [0, 0]);
 		this[PICK] = null;
 		this[MOUSE_OVER] = null;
 		this[MOUSE_OUT] = null;
@@ -186,8 +186,8 @@ class CommunityLabel extends HTMLRenderer {
 			const fontColor = getColorString(this.fontColor);
 
 			// get position
-			const x = points[i*2] - (width / 2) + this.labelPosition[0] * (width / 2);
-			const y = points[i*2+1] - (height / 2) + this.labelPosition[1] * (height / 2);
+			const x = points[i*2] - (width / 2) + this.labelOffset[0] * (width / 2);
+			const y = points[i*2+1] - (height / 2) + this.labelOffset[1] * (height / 2);
 
 			const div = $(`
 				<div class="community-label" style="
