@@ -16,9 +16,10 @@ const addTile = function(atlas, tile) {
 		const ay = edges[i+1];
 		const bx = edges[i+3];
 		const by = edges[i+4];
-		const clipped = bounds.clipLine(
+		const clipped = bounds.clipLine([
 			{ x: ax, y: ay, },
-			{ x: bx, y: by, });
+			{ x: bx, y: by, }
+		]);
 		edges[i] = clipped.a.x;
 		edges[i+1] = clipped.a.y;
 		edges[i+3] = clipped.b.x;

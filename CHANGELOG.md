@@ -4,6 +4,10 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.13.1 - June 9th, 2017
+### Fixed
+- Switch to newer `lumo` line clipping interface in `veldt.Renderer.WebGL.MacroEdge`.
+
 ## 0.13.0 - June 9th, 2017
 ### Added
 - `package-lock.json` file to lock npm dependencies.
