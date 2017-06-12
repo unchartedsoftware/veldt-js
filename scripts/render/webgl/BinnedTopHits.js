@@ -17,6 +17,9 @@ class BinnedTopHits extends InteractiveRenderer {
 		this.quad = null;
 		this.color = defaultTo(options.color, [ 1.0, 0.4, 0.1, 0.8 ]);
 		this.radius = defaultTo(options.radius, POINT_RADIUS);
+
+		this.outlineColor = defaultTo(options.outlineColor, [ 0.0, 0.0, 0.0, 1.0 ]);
+		this.outlineWidth = defaultTo(options.outlineWidth, 2.0);
 		// this.jitter = defaultTo(options.radius, true);
 		// this.jitterDistance = defaultTo(options.jitterDistance, 10);
 	}
@@ -36,9 +39,8 @@ class BinnedTopHits extends InteractiveRenderer {
 
 		// const collisions = {};
 
-  	for (let i=0; i<vertices.length / 2; i++) {
-
-			const x = vertices[i*2]/* coord.x * tileSize/2*/;
+  	for (let i=0; i<vertices.length / 2; i++) {			
+			const x = vertices[i*2];
 			const y = vertices[i*2 + 1] /*coord.y * tileSize/2*/;
 
 			// add jitter if specified
@@ -118,7 +120,9 @@ class BinnedTopHits extends InteractiveRenderer {
 		this.point.drawInstanced(
 			this.atlas,
 			this.radius,
-			this.color);
+			this.color,
+			this.outlineWidth,
+			this.outlineColor);
 
 		// render selected
 		layer.selected.forEach(selected => {
@@ -133,7 +137,9 @@ class BinnedTopHits extends InteractiveRenderer {
 			this.point.drawIndividual(
 				layer.highlighted,
 				this.radius + POINT_RADIUS_INC,
-				this.color);
+				this.color,
+				this.outlineWidth,
+				this.outlineColor);
 		}
 
 		// unbind render target
