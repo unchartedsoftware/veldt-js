@@ -5,6 +5,7 @@ const EventEmitter = require('events');
 const defaultTo = require('lodash/defaultTo');
 const maxBy = require('lodash/maxBy');
 const reduce = require('lodash/reduce');
+const isEmpty = require('lodash/isEmpty');
 
 const broadcast = function(swap, type) {
 	const handler = event => {
@@ -220,19 +221,23 @@ class Swap extends EventEmitter {
 
 	highlight(data) {
 		this.layers.forEach(layer => {
-			layer.highlight(data);
+			if (layer.highlight) {
+				layer.highlight(data);
+			}
 		});
 	}
 
 	unhighlight() {
 		this.layers.forEach(layer => {
-			layer.unhighlight();
+			if (layer.unhighlight) {
+				layer.unhighlight();
+			}
 		});
 	}
 
 	getHighlighted() {
 		const top = getTopLayer(this);
-		if (top) {
+		if (top && top.getHighlighted) {
 			return top.getHighlighted();
 		}
 		return null;
@@ -244,32 +249,43 @@ class Swap extends EventEmitter {
 
 	select(data, multiSelect) {
 		this.layers.forEach(layer => {
-			layer.select(data, multiSelect);
+			if (layer.select) {
+				layer.select(data, multiSelect);
+			}
 		});
 	}
 
 	unselect(data) {
 		this.layers.forEach(layer => {
-			layer.unselect(data);
+			if (layer.unselect) {
+				layer.unselect(data);
+			}
 		});
 	}
 
 	unselectAll() {
 		this.layers.forEach(layer => {
-			layer.unselectAll();
+			if (layer.unselectAll) {
+				layer.unselectAll();
+			}
 		});
 	}
 
 	getSelected() {
 		const top = getTopLayer(this);
-		if (top) {
+		if (top && top.getSelected) {
 			return top.getSelected();
 		}
 		return null;
 	}
 
 	isSelected(data) {
-		return this.getSelected().indexOf(data) !== -1;
+		const selected = this.getSelected();
+		if (isEmpty(selected)) {
+			return false;
+		}
+
+		return selected.indexOf(data) !== -1;
 	}
 
 	clear() {
