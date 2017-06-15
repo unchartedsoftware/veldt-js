@@ -119,16 +119,16 @@ class BinnedTopHits extends WebGLRenderer {
 			this.outlineColor);
 
 		// render selected
-		//const selection = layer.getSelected();
-		//for (let i=0; i<selection.length; i++) {
-		//	const selected = selection[i];
-		//	this.point.drawIndividual(
-		//		selected,
-		//		this.radius + POINT_RADIUS_INC * 2,
-		//		this.color,
-		//		this.outlineWidth,
-		//		this.outlineColor);
-		//}
+		const selection = layer.getSelected();
+		for (let i=0; i<selection.length; i++) {
+			const selected = selection[i];
+			this.point.drawIndividual(
+				selected,
+				this.radius + POINT_RADIUS_INC * 2,
+				this.color,
+				this.outlineWidth,
+				this.outlineColor);
+		}
 
 		// render highlighted
 		if (layer.highlighted && !layer.isSelected(layer.highlighted)) {
