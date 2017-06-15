@@ -130,7 +130,9 @@ class Group extends EventEmitter {
 		let spread = 0;
 		this.layers.forEach(layer => {
 			layer.setZIndex(index + spread);
-			spread = spread + 1;
+			if (doSpread) {
+				spread = spread + 1;
+			}
 		});
 	}
 
