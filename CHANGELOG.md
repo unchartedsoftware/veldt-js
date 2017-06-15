@@ -4,6 +4,11 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.13.3 - June 14, 2017
+### Changed
+- Enhanced BinnedTopHits layer with gridMode layout of top hits, match latest veldt result format.
+- Swap layer more robust to missing functions on child layers.
+
 ## 0.13.2 - June 9th, 2017
 ### Fixed
 - Switch to newer `lumo` line clipping interface in `veldt.Renderer.WebGL.MacroEdge`.

@@ -26,7 +26,8 @@ const WebGL = {
 	Micro: require('./webgl/Micro'),
 	Macro: require('./webgl/Macro'),
 	MacroEdge: require('./webgl/MacroEdge'),
-	Repeat: require('./webgl/Repeat')
+	Repeat: require('./webgl/Repeat'),
+	BinnedTopHits: require('./webgl/BinnedTopHits')
 };
 
 module.exports = {

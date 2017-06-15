@@ -121,9 +121,18 @@ class Group extends EventEmitter {
 		return true;
 	}
 
-	setZIndex(index) {
+	/**
+	 *
+	 * @param index
+	 * @param doSpread - if true, increase the zIndex for each child.
+     */
+	setZIndex(index, doSpread) {
+		let spread = 0;
 		this.layers.forEach(layer => {
-			layer.setZIndex(index);
+			layer.setZIndex(index + spread);
+			if (doSpread) {
+				spread = spread + 1;
+			}
 		});
 	}
 
