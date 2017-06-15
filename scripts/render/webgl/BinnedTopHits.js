@@ -57,7 +57,7 @@ class BinnedTopHits extends WebGLRenderer {
 		this.point = new Point(this);
 		this.quad = new Quad(this);
 		this.atlas = this.createVertexAtlas({
-			chunkSize: this.layer.hitsCount * (this.layer.binResolution * this.layer.binResolution),
+			chunkSize: this.layer.hitsCount * (this.layer.resolution * this.layer.resolution),
 			attributePointers: {
 				// position
 				0: {
