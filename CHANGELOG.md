@@ -4,6 +4,13 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.13.4 - June 15, 2017
+### Fixed
+- Redraw occurring during HTML debounce when layer is hidden.
+
+### Changed
+- Bumped `lumo` dependency version from `0.18.0` to `0.19.0`.
+
 ## 0.13.3 - June 14, 2017
 ### Changed
 - Enhanced BinnedTopHits layer with gridMode layout of top hits, match latest veldt result format.

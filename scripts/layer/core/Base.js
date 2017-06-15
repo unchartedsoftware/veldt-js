@@ -88,7 +88,7 @@ class Base extends lumo.TileLayer {
 			if (updated && this.renderer && this.renderer.redraw) {
 				clearTimeout(this[REDRAW_DEBOUNCE]);
 				this[REDRAW_DEBOUNCE] = setTimeout(() => {
-					if (this.renderer && this.renderer.redraw) {
+					if (!this.isHidden() && this.renderer && this.renderer.redraw) {
 						this.renderer.redraw(true);
 					}
 					// clear debounce
