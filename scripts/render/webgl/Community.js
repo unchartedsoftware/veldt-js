@@ -14,13 +14,16 @@ const addTile = function(atlas, tile) {
 	const numPoints = points.length / 2;
 	const radiusField = this.radiusField;
 	const radiusScale = Math.pow(2, coord.z);
-	const ringOffset = this.ringOffset;
+	const totalOffset =
+		(this.ringWidth / 2) + // width
+		this.outlineWidth + // outline
+		this.ringOffset; // offset
 	const vertices = new Float32Array(numPoints * 3);
 	for (let i=0; i<numPoints; i++) {
 		const hit = hits[i];
 		const x = points[i*2];
 		const y = points[i*2+1];
-		const radius = get(hit, radiusField) * radiusScale + ringOffset;
+		const radius = get(hit, radiusField) * radiusScale + totalOffset;
 		vertices[i*3] = x;
 		vertices[i*3+1] = y;
 		vertices[i*3+2] = radius;
@@ -35,12 +38,15 @@ const createCollidables = function(tile, xOffset, yOffset) {
 	const numHits = hits ? hits.length : 0;
 	const radiusScale = Math.pow(2, tile.coord.z);
 	const radiusField = this.radiusField;
-	const radiusBuffer = this.radiusBuffer;
 	const totalOffset =
 		(this.ringWidth / 2) + // width
 		this.outlineWidth + // outline
 		this.ringOffset; // offset
 	const collidables = new Array(numHits);
+	const width =
+		this.ringWidth +
+		(this.outlineWidth * 2) +
+		(this.radiusCollisionTolerance * 2);
 	for (let i=0; i<numHits; i++) {
 		const hit = hits[i];
 		const x = points[i*2];
@@ -50,7 +56,7 @@ const createCollidables = function(tile, xOffset, yOffset) {
 			x,
 			y,
 			radius,
-			radiusBuffer * 2, // width
+			width,
 			xOffset,
 			yOffset,
 			tile,
@@ -75,8 +81,8 @@ class Community extends WebGLRenderer {
 		this.ringOffset = defaultTo(options.ringOffset, 0);
 		this.outlineWidth = defaultTo(options.outlineWidth, 1);
 		this.radiusField = defaultTo(options.radiusField, 'radius');
+		this.radiusCollisionTolerance = defaultTo(options.radiusCollisionTolerance, 4);
 		this.hideUntilHover = defaultTo(options.hideUntilHover, false);
-		this.radiusBuffer = defaultTo(options.radiusBuffer, 4);
 	}
 
 	onAdd(layer) {

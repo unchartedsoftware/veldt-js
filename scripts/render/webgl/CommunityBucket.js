@@ -19,7 +19,10 @@ const addTile = function(atlas, tile) {
 	const radiusField = this.radiusField;
 	const bucketsField = this.bucketsField;
 	const radiusScale = Math.pow(2, coord.z);
-	const ringOffset = this.ringOffset;
+	const totalOffset =
+		(this.ringWidth / 2) + // width
+		this.outlineWidth + // outline
+		this.ringOffset; // offset
 	const stride = atlas.stride;
 	const vertices = new Float32Array(numPoints * stride);
 
@@ -27,7 +30,7 @@ const addTile = function(atlas, tile) {
 		const hit = hits[i];
 		const x = points[i*2];
 		const y = points[i*2+1];
-		const radius = get(hit, radiusField) * radiusScale + ringOffset;
+		const radius = get(hit, radiusField) * radiusScale + totalOffset;
 		const buckets = get(hit, bucketsField);
 
 		// sum buckets
@@ -85,6 +88,10 @@ const createCollidables = function(tile, xOffset, yOffset) {
 		this.outlineWidth + // outline
 		this.ringOffset; // offset
 	const collidables = new Array(numHits);
+	const width =
+		this.ringWidth +
+		(this.outlineWidth * 2) +
+		(this.radiusCollisionTolerance * 2);
 	for (let i=0; i<numHits; i++) {
 		const hit = hits[i];
 		const x = points[i*2];
@@ -94,7 +101,7 @@ const createCollidables = function(tile, xOffset, yOffset) {
 			x,
 			y,
 			radius,
-			this.ringWidth,
+			width,
 			xOffset,
 			yOffset,
 			tile,
@@ -126,6 +133,7 @@ class CommunityBucket extends WebGLRenderer {
 		this.colors = flatten(buckets.slice(0, this.numBuckets));
 		this.highlightedColors = flatten(buckets.slice(1, this.numBuckets+1));
 		this.selectedColors = flatten(buckets.slice(2, this.numBuckets+2));
+		this.radiusCollisionTolerance = defaultTo(options.radiusCollisionTolerance, 4);
 	}
 
 	onAdd(layer) {

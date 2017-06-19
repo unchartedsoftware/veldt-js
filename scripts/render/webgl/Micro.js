@@ -106,7 +106,6 @@ class Micro extends WebGLRenderer {
 		// set blending func
 		gl.enable(gl.BLEND);
 		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-		//gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
 		// draw instances
 		this.point.drawInstanced(

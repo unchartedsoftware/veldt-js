@@ -61,7 +61,6 @@ class Macro extends WebGLRenderer {
 		// set blending func
 		gl.enable(gl.BLEND);
 		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-		//gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
 		// draw instanced points
 		this.point.drawInstanced(

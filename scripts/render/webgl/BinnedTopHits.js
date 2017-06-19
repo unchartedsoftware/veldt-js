@@ -9,11 +9,8 @@ const Quad = require('./shape/Quad');
 const POINT_RADIUS = 8;
 const POINT_RADIUS_INC = 4;
 
-const addTile = function(atlas, tile) {
-	atlas.set(
-		tile.coord.hash,
-		tile.data,
-		tile.data.length / atlas.stride);
+const addTile = function() {
+	// no-op
 };
 
 const createCollidables = function(tile, xOffset, yOffset) {
@@ -108,15 +105,6 @@ class BinnedTopHits extends WebGLRenderer {
 		// set blending func
 		gl.enable(gl.BLEND);
 		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-		//gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-
-		// draw instances
-		this.point.drawInstanced(
-			this.atlas,
-			this.radius,
-			this.color,
-			this.outlineWidth,
-			this.outlineColor);
 
 		// render selected
 		const selection = layer.getSelected();
@@ -124,7 +112,7 @@ class BinnedTopHits extends WebGLRenderer {
 			const selected = selection[i];
 			this.point.drawIndividual(
 				selected,
-				this.radius + POINT_RADIUS_INC * 2,
+				this.radius + POINT_RADIUS_INC,
 				this.color,
 				this.outlineWidth,
 				this.outlineColor);
@@ -134,7 +122,7 @@ class BinnedTopHits extends WebGLRenderer {
 		if (layer.highlighted && !layer.isSelected(layer.highlighted)) {
 			this.point.drawIndividual(
 				layer.highlighted,
-				this.radius + POINT_RADIUS_INC,
+				this.radius,
 				this.color,
 				this.outlineWidth,
 				this.outlineColor);
