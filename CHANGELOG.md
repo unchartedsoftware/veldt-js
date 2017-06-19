@@ -9,7 +9,7 @@ An in-progress version being developed on the `master` branch.
 - Swap layer now spreads out zIndex assignments to child Group layers.
 
 ### Changed
-- Use new CircleCollidable option to hit-test only the ring's perimeter.
+- Use new `lumo.RingCollidable` to hit-test only the ring's perimeter.
 
 ## 0.13.4 - June 15, 2017
 ### Fixed
