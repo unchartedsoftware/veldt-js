@@ -35,6 +35,7 @@ const createCollidables = function(tile, xOffset, yOffset) {
 	const numHits = hits ? hits.length : 0;
 	const radiusScale = Math.pow(2, tile.coord.z);
 	const radiusField = this.radiusField;
+	const radiusBuffer = this.radiusBuffer;
 	const totalOffset =
 		(this.ringWidth / 2) + // width
 		this.outlineWidth + // outline
@@ -49,10 +50,12 @@ const createCollidables = function(tile, xOffset, yOffset) {
 			x,
 			y,
 			radius,
+			radiusBuffer,
 			xOffset,
 			yOffset,
 			tile,
-			hit);
+			hit,
+			false); // Don't include inner area in the hit-testing.
 	}
 	return collidables;
 };
@@ -74,6 +77,7 @@ class Community extends WebGLRenderer {
 		this.outlineWidth = defaultTo(options.outlineWidth, 1);
 		this.radiusField = defaultTo(options.radiusField, 'radius');
 		this.hideUntilHover = defaultTo(options.hideUntilHover, false);
+		this.radiusBuffer = defaultTo(options.radiusBuffer, 4);
 	}
 
 	onAdd(layer) {

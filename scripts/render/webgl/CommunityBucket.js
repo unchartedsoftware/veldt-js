@@ -94,10 +94,12 @@ const createCollidables = function(tile, xOffset, yOffset) {
 			x,
 			y,
 			radius,
+			this.ringWidth/2,
 			xOffset,
 			yOffset,
 			tile,
-			hit);
+			hit,
+			false); // Don't include empty inner area of the ring in the hit-testing.
 	}
 	return collidables;
 };
