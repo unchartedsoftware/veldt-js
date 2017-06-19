@@ -90,10 +90,11 @@ const createCollidables = function(tile, xOffset, yOffset) {
 		const x = points[i*2];
 		const y = points[i*2+1];
 		const radius = get(hit, radiusField) * radiusScale + totalOffset;
-		collidables[i] = new lumo.CircleCollidable(
+		collidables[i] = new lumo.RingCollidable(
 			x,
 			y,
 			radius,
+			this.ringWidth,
 			xOffset,
 			yOffset,
 			tile,

@@ -298,10 +298,10 @@ class Swap extends EventEmitter {
 		return this.zIndex;
 	}
 
-	setZIndex(zIndex) {
+	setZIndex(zIndex, doSpread) {
 		this.zIndex = zIndex;
 		this.layers.forEach(layer => {
-			layer.setZIndex(zIndex);
+			layer.setZIndex(zIndex, doSpread); // Pass doSpread in case this is a Group layer.
 		});
 	}
 
