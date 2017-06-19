@@ -30,7 +30,6 @@ const createCollidables = function(tile, xOffset, yOffset) {
 			x,
 			y,
 			radius,
-			0, // no radius buffer.
 			xOffset,
 			yOffset,
 			tile,

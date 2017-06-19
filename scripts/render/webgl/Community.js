@@ -46,16 +46,15 @@ const createCollidables = function(tile, xOffset, yOffset) {
 		const x = points[i*2];
 		const y = points[i*2+1];
 		const radius = get(hit, radiusField) * radiusScale + totalOffset;
-		collidables[i] = new lumo.CircleCollidable(
+		collidables[i] = new lumo.RingCollidable(
 			x,
 			y,
 			radius,
-			radiusBuffer,
+			radiusBuffer * 2, // width
 			xOffset,
 			yOffset,
 			tile,
-			hit,
-			false); // Don't include inner area in the hit-testing.
+			hit);
 	}
 	return collidables;
 };
