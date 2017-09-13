@@ -66,8 +66,6 @@ class SVGRenderer extends DOMRenderer {
 	 * @param {Number} x - The x position of the tile, in pixels.
 	 * @param {Number} y - The y position of the tile, in pixels.
 	 * @param {Number} size - the size of the tile, in pixels.
-	 *
-	 * @returns {Element} The tile SVG element.
 	 */
 	positionTile(tile, x, y, size) {
 		tile.setAttribute('transform', `translate(${x},${-y - size})`);

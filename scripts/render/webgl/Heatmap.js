@@ -100,7 +100,6 @@ const addTile = function(array, tile) {
 class Heatmap extends WebGLRenderer {
 
 	constructor(options = {}) {
-		options.filter = 'NEAREST'; // texture array filtering
 		super(options);
 		this.transform = defaultTo(options.transform, 'log10');
 		this.range = defaultTo(options.range, [0, 1]);
@@ -110,12 +109,14 @@ class Heatmap extends WebGLRenderer {
 		this.array = null;
 		this.ramp = null;
 	}
+
 	onAdd(layer) {
 		super.onAdd(layer);
 		this.quad = createQuad(this.gl, 0, layer.plot.tileSize);
 		this.array = this.createTextureArray({
 			chunkSize: layer.resolution,
-			onAdd: addTile.bind(this)
+			onAdd: addTile.bind(this),
+			filter: 'NEAREST'
 		});
 		this.setTransform(this.transform);
 		this.setColorRamp(this.colorRamp);

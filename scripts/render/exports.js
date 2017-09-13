@@ -7,6 +7,7 @@ const Core = {
 	DOM: require('./dom/DOMRenderer'),
 	HTML: require('./dom/HTMLRenderer'),
 	SVG: require('./dom/SVGRenderer'),
+	Canvas: require('./dom/CanvasRenderer'),
 	WebGL: lumo.WebGLRenderer
 };
 
@@ -15,6 +16,11 @@ const HTML = {
 	CommunityLabel: require('./html/CommunityLabel'),
 	Debug: require('./html/Debug'),
 	WordCloud: require('./html/WordCloud')
+};
+
+// canvas renderers
+const Canvas = {
+	Heatmap: require('./canvas/Heatmap')
 };
 
 // webgl renderers
@@ -32,6 +38,7 @@ const WebGL = {
 
 module.exports = {
 	Core: Core,
+	Canvas: Canvas,
 	HTML: HTML,
 	WebGL: WebGL
 };
