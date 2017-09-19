@@ -7,18 +7,24 @@ const isEmpty = require('lodash/isEmpty');
 const isObject = require('lodash/isObject');
 const isString = require('lodash/isString');
 const pull = require('lodash/pull');
+const startsWith = require('lodash/startsWith');
 const stringify = require('json-stable-stringify');
 
 const RETRY_INTERVAL_MS = 5000;
 
-function getHost() {
+function getWebSocketURL(requestor) {
 	const loc = window.location;
 	const new_uri = (loc.protocol === 'https:') ? 'wss:' : 'ws:';
-	return `${new_uri}//${loc.host}${loc.pathname}`;
+	if (startsWith(requestor.websocketURL, '//')) {
+		return `${new_uri}${requestor.websocketURL}`;
+	} else {
+		return `${new_uri}//${loc.host}${loc.pathname}${requestor.websocketURL}`;
+	}
 }
 
 function establishConnection(requestor, callback) {
-	requestor.socket = new WebSocket(`${getHost()}${requestor.websocketURL}`);
+	requestor.socket = new WebSocket(getWebSocketURL(requestor));
+
 	// on open
 	requestor.socket.onopen = function() {
 		requestor.isOpen = true;
@@ -115,8 +121,12 @@ function stripURL(url) {
 	if (!url || !isString(url)) {
 		throw `Provided URL \`${url}\` is invalid`;
 	}
-	// strip leading `/`
-	url = (url[0] === '/') ? url.substring(1, url.length) : url;
+
+	// strip leading `/`, but assume `//` specifies the host name
+	if (startsWith(url, '/') && !startsWith(url, '//')) {
+		url = url.substring(1, url.length);
+	}
+
 	// strip trailing `/`
 	url = (url[url.length - 1] === '/') ? url.substring(0, url.length - 1) : url;
 	return url;
