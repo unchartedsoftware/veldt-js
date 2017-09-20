@@ -1,5 +1,6 @@
 'use strict';
 
+const clamp = require('lodash/clamp');
 const defaultTo = require('lodash/defaultTo');
 const ColorRamp = require('../color/ColorRamp');
 const Transform = require('../transform/Transform');
@@ -59,6 +60,56 @@ class Heatmap extends CanvasRenderer {
 		this.transform = defaultTo(options.transform, 'log10');
 		this.range = defaultTo(options.range, { min: 0, max: 1 });
 		this.colorRamp = defaultTo(options.colorRamp, 'verdant');
+	}
+
+	setTransform(transform) {
+		if (this.transform !== transform) {
+			this.transform = transform;
+			if (this.plot) {
+				this.renderer.redraw(true);
+			}
+		}
+	}
+
+	getTransform() {
+		return this.transform;
+	}
+
+	setValueRange(min, max) {
+		if (this.range.min !== min ||
+			this.range.max !== max) {
+			this.range = {
+				min: clamp(min, 0, 1),
+				max: clamp(max, 0, 1)
+			};
+			if (this.plot) {
+				this.renderer.redraw(true);
+			}
+		}
+	}
+
+	getValueRange() {
+		return [
+			this.range[0],
+			this.range[1]
+		];
+	}
+
+	setColorRamp(colorRamp) {
+		if (this.colorRamp !== colorRamp) {
+			this.colorRamp = colorRamp;
+			if (this.plot) {
+				this.renderer.redraw(true);
+			}
+		}
+	}
+
+	getColorRamp() {
+		return this.colorRamp;
+	}
+
+	getColorRampFunc() {
+		return ColorRamp.getFunc(this.colorRamp);
 	}
 
 	drawTile(element, tile) {

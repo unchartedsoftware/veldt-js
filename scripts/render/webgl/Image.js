@@ -121,7 +121,7 @@ class Image extends lumo.WebGLTileRenderer {
 		return this;
 	}
 
-	brightness(brightness) {
+	setBrightness(brightness) {
 		this.brightness = brightness;
 		if (this.plot) {
 			this.layer.plot.setDirty();

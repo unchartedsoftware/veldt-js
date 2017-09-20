@@ -4,6 +4,21 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.13.8 - Sept 20, 2017
+### Fixed
+- `veldt.Requestor` no longer appends the host to the URL if prefixed with `//`.
+- Update interface on `veldt.Canvas.Heatmap` to match `veldt.WebGL.Heatmap` renderer.
+- `brightness` method correctly renamed to `setBrightness` on `veldt.WebGL.Image` renderer.
+
+## 0.13.7 - Sept 17, 2017
+### Added
+- `CanvasRenderer` implementation to the `DomRenderer` class.
+- `veldt.Canvas.Heatmap` renderer implementation.
+
+## 0.13.6 - June 19, 2017
+### Changed
+- Bumped `lumo` dependency version from `0.18.0` to `0.19.0`.
+
 ## 0.13.5 - June 19, 2017
 ### Fixed
 - Swap layer now spreads out zIndex assignments to child Group layers.
