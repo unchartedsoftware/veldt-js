@@ -4,36 +4,40 @@
 
 An in-progress version being developed on the `master` branch.
 
-## 0.13.8 - Sept 20, 2017
+## 0.13.9 - Oct 3rd, 2017
+### Changed
+- Bumped `lumo` dependency version from `0.20.1` to `0.20.3`.
+
+## 0.13.8 - Sept 20th, 2017
 ### Fixed
 - `veldt.Requestor` no longer appends the host to the URL if prefixed with `//`.
 - Update interface on `veldt.Canvas.Heatmap` to match `veldt.WebGL.Heatmap` renderer.
 - `brightness` method correctly renamed to `setBrightness` on `veldt.WebGL.Image` renderer.
 
-## 0.13.7 - Sept 17, 2017
+## 0.13.7 - Sept 17th, 2017
 ### Added
 - `CanvasRenderer` implementation to the `DomRenderer` class.
 - `veldt.Canvas.Heatmap` renderer implementation.
 
-## 0.13.6 - June 19, 2017
+## 0.13.6 - June 19th, 2017
 ### Changed
 - Bumped `lumo` dependency version from `0.18.0` to `0.19.0`.
 
-## 0.13.5 - June 19, 2017
+## 0.13.5 - June 19th, 2017
 ### Fixed
 - Swap layer now spreads out zIndex assignments to child Group layers.
 
 ### Changed
 - Use new `lumo.RingCollidable` to hit-test only the ring's perimeter.
 
-## 0.13.4 - June 15, 2017
+## 0.13.4 - June 15th, 2017
 ### Fixed
 - Redraw occurring during HTML debounce when layer is hidden.
 
 ### Changed
 - Bumped `lumo` dependency version from `0.18.0` to `0.19.0`.
 
-## 0.13.3 - June 14, 2017
+## 0.13.3 - June 14th, 2017
 ### Changed
 - Enhanced BinnedTopHits layer with gridMode layout of top hits, match latest veldt result format.
 - Swap layer more robust to missing functions on child layers.
