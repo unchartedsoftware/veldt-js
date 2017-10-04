@@ -4,6 +4,10 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.13.10 - Oct 4th, 2017
+### Changed
+- Bumped `lumo` dependency version from `0.20.3` to `0.20.4` to fix issue with pixel offsets in DOMHandler.
+
 ## 0.13.9 - Oct 3rd, 2017
 ### Changed
 - Bumped `lumo` dependency version from `0.20.1` to `0.20.3`.
