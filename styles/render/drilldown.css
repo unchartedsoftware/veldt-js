@@ -1,0 +1,56 @@
+.drilldown-box {
+	position: absolute;
+	cursor: pointer;
+	background-color: rgba(30,144,255, 0.2);
+	border: 2px solid #1E90FF;
+}
+
+.drilldown-box:hover {
+	background-color: rgba(30,144,255, 0.35);
+}
+
+.drilldown-temporary {
+	background-color: rgba(30,144,255, 0.2);
+	border: 2px dashed #1E90FF;
+}
+
+.drilldown-editable {
+	background-color: rgba(30,144,255, 0.2);
+	border: 2px dashed #1E90FF;
+}
+
+.drilldown-handle {
+	position: absolute;
+	width: 12px;
+	height: 12px;
+	background-color: #1E90FF;
+	z-index: 1;
+}
+
+.drilldown-handle.left {
+	left: -6px;
+}
+
+.drilldown-handle.right {
+	right: -6px;
+}
+
+.drilldown-handle.bottom {
+	bottom: -6px;
+}
+
+.drilldown-handle.top {
+	top: -6px;
+}
+
+.drilldown-handle.center {
+	top: calc(50% - 6px);
+	left: calc(50% - 6px);
+	z-index: 0;
+}
+
+.drilldown-handle.remove {
+	background-color: #ff4c4c;
+	top: -20px;
+	right: -20px;
+}

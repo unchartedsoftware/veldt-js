@@ -3,6 +3,8 @@
 module.exports = {
 	// debug
 	Debug: require('./core/Debug'),
+	// drilldown
+	Drilldown: require('./core/Drilldown'),
 	// base
 	Base: require('./core/Base'),
 	// live

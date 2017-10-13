@@ -15,7 +15,8 @@ const Core = {
 const HTML = {
 	CommunityLabel: require('./html/CommunityLabel'),
 	Debug: require('./html/Debug'),
-	WordCloud: require('./html/WordCloud')
+	WordCloud: require('./html/WordCloud'),
+	Drilldown: require('./html/Drilldown')
 };
 
 // canvas renderers
