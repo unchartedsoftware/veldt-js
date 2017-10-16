@@ -15,10 +15,6 @@ const clipBounds = function(cell, bounds) {
 	return clipped;
 };
 
-const isLeftButton = function(event) {
-	return (event.which) ? event.which === 1 : event.button === 0;
-};
-
 /**
  * Drilldown TileLayer class.
  */
@@ -32,7 +28,6 @@ class Drilldown extends lumo.Overlay {
 	constructor(options = {}) {
 		super(options);
 		this.bounds = new Map();
-		this.mode = 'read';
 	}
 
 	/**
@@ -58,40 +53,7 @@ class Drilldown extends lumo.Overlay {
 	 */
 	enableDrawing() {
 		if (this.plot) {
-			this.mode = 'write';
-			this.renderer.redraw();
-			this.plot.disablePanning();
-			this.plot.disableZooming();
-			let down = false;
-			let currentBox = null;
-			let origin = null;
-			this.mousedown = event => {
-				if (isLeftButton(event.originalEvent)) {
-					down = true;
-					origin = event.pos;
-					currentBox = new lumo.Bounds(origin.x, origin.x, origin.y, origin.y);
-					this.renderer.drawTempBounds(currentBox);
-				}
-
-			};
-			this.mousemove = event => {
-				if (down) {
-					currentBox = new lumo.Bounds(origin.x, origin.x, origin.y, origin.y);
-					currentBox.extend(event.pos);
-					this.renderer.drawTempBounds(currentBox);
-				}
-			};
-			this.mouseup = event => {
-				if (isLeftButton(event.originalEvent) && down) {
-					down = false;
-					this.renderer.eraseTempBounds();
-					this.addBounds(this.bounds.size, currentBox);
-					currentBox = null;
-				}
-			};
-			this.plot.on('mousedown', this.mousedown);
-			this.plot.on('mousemove', this.mousemove);
-			this.plot.on('mouseup', this.mouseup);
+			this.renderer.enableDrawing();
 		}
 	}
 
@@ -100,16 +62,7 @@ class Drilldown extends lumo.Overlay {
 	 */
 	disableDrawing() {
 		if (this.plot) {
-			this.mode = 'read';
-			this.renderer.redraw();
-			this.plot.removeListener('mousedown', this.mousedown);
-			this.plot.removeListener('mousemove', this.mousemove);
-			this.plot.removeListener('mouseup', this.mouseup);
-			this.mousedown = null;
-			this.mousemove = null;
-			this.mouseup = null;
-			this.plot.enablePanning();
-			this.plot.enableZooming();
+			this.renderer.disableDrawing();
 		}
 	}
 

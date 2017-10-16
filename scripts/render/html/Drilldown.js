@@ -14,8 +14,14 @@ const RESIZE_ENABLED = Symbol();
 const RESIZE_ORIGIN = Symbol();
 const CURRENT_EDITING = Symbol();
 const TEMPORARY_ELEM = Symbol();
-const MOUSE_MOVE = Symbol();
-const MOUSE_UP = Symbol();
+const EDIT_MOUSE_MOVE = Symbol();
+const EDIT_MOUSE_UP = Symbol();
+const DRAW_MOUSE_DOWN = Symbol();
+const DRAW_MOUSE_MOVE = Symbol();
+const DRAW_MOUSE_UP = Symbol();
+const READ_MODE = Symbol();
+const WRITE_MODE = Symbol();
+const ID = Symbol();
 
 const getStaleBounds = function(overlay, bounds) {
 	const clipped = overlay.getClippedGeometry();
@@ -42,9 +48,9 @@ const getPixelBounds = function(bounds, cell) {
 };
 
 
-const createBoundsElement = function(bounds) {
+const createBoundsElement = function(id, bounds) {
 	const elem = document.createElement('div');
-	elem.className += ' drilldown-box';
+	elem.className += ` drilldown-box drilldown-${id}`;
 	elem.style.position = 'absolute';
 	elem.style.left = `${bounds.left}px`;
 	elem.style.bottom = `${bounds.bottom}px`;
@@ -64,9 +70,9 @@ const drawAllBounds = function(renderer, container, plot, overlay, bounds) {
 		if (!bounds.has(id)) {
 			const pixels = getPixelBounds(bound, cell);
 			// create the bounds element
-			const elem = createBoundsElement(pixels);
+			const elem = createBoundsElement(bound.id, pixels);
 			// render to it
-			if (renderer.overlay.mode === 'read') {
+			if (renderer.mode === READ_MODE) {
 				renderer.drawBounds(elem, bound);
 			} else {
 				drawBoundsEditable(renderer, elem, bound, true);
@@ -122,6 +128,7 @@ const addEditHandlers = function(renderer, bounds, topLeft, bottomLeft, topRight
 			renderer[CURRENT_EDITING] = bounds;
 			renderer.overlay.removeBounds(bounds.id);
 			renderer.drawTempBounds(bounds);
+			renderer.emit(EventType.DRILLDOWN_EDIT, new lumo.Event(bounds));
 			event.stopPropagation();
 		}
 	});
@@ -135,6 +142,7 @@ const addEditHandlers = function(renderer, bounds, topLeft, bottomLeft, topRight
 			renderer[CURRENT_EDITING] = bounds;
 			renderer.overlay.removeBounds(bounds.id);
 			renderer.drawTempBounds(bounds);
+			renderer.emit(EventType.DRILLDOWN_EDIT, new lumo.Event(bounds));
 			event.stopPropagation();
 		}
 	});
@@ -148,6 +156,7 @@ const addEditHandlers = function(renderer, bounds, topLeft, bottomLeft, topRight
 			renderer[CURRENT_EDITING] = bounds;
 			renderer.overlay.removeBounds(bounds.id);
 			renderer.drawTempBounds(bounds);
+			renderer.emit(EventType.DRILLDOWN_EDIT, new lumo.Event(bounds));
 			event.stopPropagation();
 		}
 	});
@@ -161,6 +170,7 @@ const addEditHandlers = function(renderer, bounds, topLeft, bottomLeft, topRight
 			renderer[CURRENT_EDITING] = bounds;
 			renderer.overlay.removeBounds(bounds.id);
 			renderer.drawTempBounds(bounds);
+			renderer.emit(EventType.DRILLDOWN_EDIT, new lumo.Event(bounds));
 			event.stopPropagation();
 		}
 	});
@@ -170,12 +180,14 @@ const addEditHandlers = function(renderer, bounds, topLeft, bottomLeft, topRight
 			renderer[CURRENT_EDITING] = bounds;
 			renderer.overlay.removeBounds(bounds.id);
 			renderer.drawTempBounds(bounds);
+			renderer.emit(EventType.DRILLDOWN_EDIT, new lumo.Event(bounds));
 			event.stopPropagation();
 		}
 	});
 	$(remove).on('mousedown', event => {
 		if (isLeftButton(event)) {
 			renderer.overlay.removeBounds(bounds.id);
+			renderer.emit(EventType.DRILLDOWN_EDIT, new lumo.Event(bounds));
 			event.stopPropagation();
 		}
 	});
@@ -229,11 +241,13 @@ class Drilldown extends lumo.OverlayRenderer {
 	 */
 	constructor() {
 		super();
+		this.mode = READ_MODE;
 		this.bounds = new Map();
 		this.container = null;
 		this[DRAW_TIMEOUT] = null;
 		this[ERASE_TIMEOUT] = null;
 		this[CELL_UPDATE] = null;
+		this[ID] = 0;
 	}
 
 	/**
@@ -254,7 +268,7 @@ class Drilldown extends lumo.OverlayRenderer {
 		this.container = this.createContainer();
 		this.overlay.plot.container.appendChild(this.container);
 		// add editing handlers
-		this[MOUSE_MOVE] = event => {
+		this[EDIT_MOUSE_MOVE] = event => {
 			if (isLeftButton(event) && (this[TRANSLATE_ENABLED] || this[RESIZE_ENABLED])) {
 				const pos = this.overlay.plot.mouseToPlotCoord(event);
 				if (this[TRANSLATE_ENABLED]) {
@@ -274,20 +288,23 @@ class Drilldown extends lumo.OverlayRenderer {
 					this[CURRENT_EDITING].extend(pos);
 				}
 				this.drawTempBounds(this[CURRENT_EDITING]);
+				this.emit(EventType.DRILLDOWN_EDIT, new lumo.Event(this[CURRENT_EDITING]));
 				event.stopPropagation();
 			}
 		};
-		this[MOUSE_UP] = event => {
+		this[EDIT_MOUSE_UP] = event => {
 			if (isLeftButton(event) && (this[TRANSLATE_ENABLED] || this[RESIZE_ENABLED])) {
 				this[TRANSLATE_ENABLED] = false;
 				this[RESIZE_ENABLED] = false;
 				this.eraseTempBounds();
 				this.overlay.addBounds(this[CURRENT_EDITING].id, this[CURRENT_EDITING]);
+				this.emit(EventType.DRILLDOWN_EDIT_END, new lumo.Event(this[CURRENT_EDITING]));
+				this[CURRENT_EDITING] = null;
 				event.stopPropagation();
 			}
 		};
-		this.overlay.plot.getContainer().addEventListener('mousemove', this[MOUSE_MOVE]);
-		this.overlay.plot.getContainer().addEventListener('mouseup', this[MOUSE_UP]);
+		document.addEventListener('mousemove', this[EDIT_MOUSE_MOVE]);
+		document.addEventListener('mouseup', this[EDIT_MOUSE_UP]);
 		return this;
 	}
 
@@ -300,10 +317,10 @@ class Drilldown extends lumo.OverlayRenderer {
 	 */
 	onRemove(overlay) {
 		// remove dom handlers
-		this.overlay.plot.getContainer().removeEventListener('mousemove', this[MOUSE_MOVE]);
-		this.overlay.plot.getContainer().removeEventListener('mouseup', this[MOUSE_UP]);
-		this[MOUSE_MOVE] = null;
-		this[MOUSE_UP] = null;
+		document.removeEventListener('mousemove', this[EDIT_MOUSE_MOVE]);
+		document.removeEventListener('mouseup', this[EDIT_MOUSE_UP]);
+		this[EDIT_MOUSE_MOVE] = null;
+		this[EDIT_MOUSE_UP] = null;
 		// detach and destroy handlers
 		this.overlay.plot.removeListener(lumo.CELL_UPDATE, this[CELL_UPDATE]);
 		this[CELL_UPDATE] = null;
@@ -325,6 +342,69 @@ class Drilldown extends lumo.OverlayRenderer {
 		container.style.left = 0;
 		container.style.bottom = 0;
 		return container;
+	}
+
+	enableDrawing() {
+		// set state
+		this.mode = WRITE_MODE;
+		this.redraw();
+		this.overlay.plot.disablePanning();
+		this.overlay.plot.disableZooming();
+
+		// add handlers
+		let down = false;
+		let currentBox = null;
+		let origin = null;
+		this[DRAW_MOUSE_DOWN] = event => {
+			if (isLeftButton(event)) {
+				down = true;
+				origin = this.overlay.plot.mouseToPlotCoord(event);
+				currentBox = new lumo.Bounds(origin.x, origin.x, origin.y, origin.y);
+				currentBox.id = this[ID]++;
+				this.drawTempBounds(currentBox);
+				this.emit(EventType.DRILLDOWN_EDIT_START, new lumo.Event(currentBox));
+				event.stopPropagation();
+			}
+		};
+		this[DRAW_MOUSE_MOVE] = event => {
+			if (down) {
+				currentBox.left = origin.x;
+				currentBox.right = origin.x;
+				currentBox.bottom = origin.y;
+				currentBox.top = origin.y;
+				const pos = this.overlay.plot.mouseToPlotCoord(event);
+				currentBox.extend(pos);
+				this.drawTempBounds(currentBox);
+				this.emit(EventType.DRILLDOWN_EDIT, new lumo.Event(currentBox));
+				event.stopPropagation();
+			}
+		};
+		this[DRAW_MOUSE_UP] = event => {
+			if (isLeftButton(event) && down) {
+				down = false;
+				this.eraseTempBounds();
+				this.overlay.addBounds(currentBox.id, currentBox);
+				this.emit(EventType.DRILLDOWN_EDIT_END, new lumo.Event(currentBox));
+				currentBox = null;
+				event.stopPropagation();
+			}
+		};
+		this.overlay.plot.getContainer().addEventListener('mousedown', this[DRAW_MOUSE_DOWN]);
+		document.addEventListener('mousemove', this[DRAW_MOUSE_MOVE]);
+		document.addEventListener('mouseup', this[DRAW_MOUSE_UP]);
+	}
+
+	disableDrawing() {
+		this.mode = READ_MODE;
+		this.overlay.plot.getContainer().removeEventListener('mousedown', this[DRAW_MOUSE_DOWN]);
+		document.removeEventListener('mousemove', this[DRAW_MOUSE_MOVE]);
+		document.removeEventListener('mouseup', this[DRAW_MOUSE_UP]);
+		this[DRAW_MOUSE_DOWN] = null;
+		this[DRAW_MOUSE_MOVE] = null;
+		this[DRAW_MOUSE_UP] = null;
+		this.overlay.plot.enablePanning();
+		this.overlay.plot.enableZooming();
+		this.redraw();
 	}
 
 	/**
@@ -458,7 +538,7 @@ class Drilldown extends lumo.OverlayRenderer {
 		const cell = this.overlay.plot.cell;
 		const pixels = getPixelBounds(bounds, cell);
 		this.eraseTempBounds();
-		this[TEMPORARY_ELEM] = createBoundsElement(pixels);
+		this[TEMPORARY_ELEM] = createBoundsElement(bounds.id, pixels);
 		this[TEMPORARY_ELEM].className += ' drilldown-temporary';
 		drawBoundsEditable(this, this[TEMPORARY_ELEM], bounds, false);
 		this.container.appendChild(this[TEMPORARY_ELEM]);
