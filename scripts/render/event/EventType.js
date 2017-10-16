@@ -7,17 +7,17 @@ module.exports = {
 	DOM_POST_DRAW: 'postdraw',
 
 	/**
-	 * Emitted when a Drilldown layer starts editting.
+	 * Emitted when a Drilldown layer starts editing.
 	 */
 	DRILLDOWN_EDIT_START: 'drilldowneditstart',
 
 	/**
-	 * Emitted when a Drilldown layer is editting.
+	 * Emitted when a Drilldown layer is editing.
 	 */
 	DRILLDOWN_EDIT: 'drilldownedit',
 
 	/**
-	 * Emitted when a Drilldown layer stops editting.
+	 * Emitted when a Drilldown layer stops editing.
 	 */
 	DRILLDOWN_EDIT_END: 'drilldowneditend'
 };
