@@ -20,7 +20,7 @@ const DRAW_MOUSE_DOWN = Symbol();
 const DRAW_MOUSE_MOVE = Symbol();
 const DRAW_MOUSE_UP = Symbol();
 const READ_MODE = Symbol();
-const WRITE_MODE = Symbol();
+const WRITE_MODE = Symbol();  // Edit existing or add new
 const ID = Symbol();
 
 const getStaleBounds = function(overlay, bounds) {
@@ -184,6 +184,9 @@ const addEditHandlers = function(renderer, bounds, topLeft, bottomLeft, topRight
 			event.stopPropagation();
 		}
 	});
+	$(remove).on('mousedown', event => {
+		event.stopPropagation();
+	});
 	$(remove).on('click', event => {
 		if (isLeftButton(event)) {
 			renderer.overlay.removeBounds(bounds.id);
@@ -244,10 +247,20 @@ class Drilldown extends lumo.OverlayRenderer {
 		this.mode = READ_MODE;
 		this.bounds = new Map();
 		this.container = null;
+		this.boundsLimit = null;
 		this[DRAW_TIMEOUT] = null;
 		this[ERASE_TIMEOUT] = null;
 		this[CELL_UPDATE] = null;
 		this[ID] = 0;
+	}
+
+	/**
+	 * Sets the maximum number of bounds that can be added to the plot.
+	 *
+	 * @param {integer} boundsLimit - The maximum number of bounds to add to the plot.
+	 */
+	setBoundsLimit(boundsLimit) {
+		this.boundsLimit = boundsLimit;
 	}
 
 	/**
@@ -356,7 +369,7 @@ class Drilldown extends lumo.OverlayRenderer {
 		let currentBox = null;
 		let origin = null;
 		this[DRAW_MOUSE_DOWN] = event => {
-			if (isLeftButton(event)) {
+			if (isLeftButton(event) && (!this.boundsLimit || (this.bounds.size < this.boundsLimit))) {
 				down = true;
 				origin = this.overlay.plot.mouseToPlotCoord(event);
 				currentBox = new lumo.Bounds(origin.x, origin.x, origin.y, origin.y);
@@ -367,7 +380,7 @@ class Drilldown extends lumo.OverlayRenderer {
 			}
 		};
 		this[DRAW_MOUSE_MOVE] = event => {
-			if (down) {
+			if (down && currentBox) {
 				currentBox.left = origin.x;
 				currentBox.right = origin.x;
 				currentBox.bottom = origin.y;
@@ -380,7 +393,7 @@ class Drilldown extends lumo.OverlayRenderer {
 			}
 		};
 		this[DRAW_MOUSE_UP] = event => {
-			if (isLeftButton(event) && down) {
+			if (isLeftButton(event) && down && currentBox) {
 				down = false;
 				this.eraseTempBounds();
 				this.overlay.addBounds(currentBox.id, currentBox);

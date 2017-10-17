@@ -1,6 +1,7 @@
 'use strict';
 
 const lumo = require('lumo');
+const defaultTo = require('lodash/defaultTo');
 
 const clipBounds = function(cell, bounds) {
 	const clipped = new Map();
@@ -24,9 +25,11 @@ class Drilldown extends lumo.Overlay {
 	 * Instantiates a drilldown layer.
 	 *
 	 * @param {Object} options - The options parameter.
+	 * @param {number} options.boundsLimit - The maximum number of bounds that can be added.
 	 */
 	constructor(options = {}) {
 		super(options);
+		this.boundsLimit = defaultTo(options.boundsLimit, null);
 		this.bounds = new Map();
 	}
 
@@ -53,6 +56,7 @@ class Drilldown extends lumo.Overlay {
 	 */
 	enableDrawing() {
 		if (this.plot) {
+			this.renderer.setBoundsLimit(this.boundsLimit);
 			this.renderer.enableDrawing();
 		}
 	}
