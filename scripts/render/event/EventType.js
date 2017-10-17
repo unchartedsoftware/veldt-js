@@ -19,5 +19,10 @@ module.exports = {
 	/**
 	 * Emitted when a Drilldown layer stops editing.
 	 */
-	DRILLDOWN_EDIT_END: 'drilldowneditend'
+	DRILLDOWN_EDIT_END: 'drilldowneditend',
+
+	/**
+	 * Emitted when a Drilldown layer stops editing.
+	 */
+	DRILLDOWN_REMOVE: 'drilldownremove'
 };

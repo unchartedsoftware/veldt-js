@@ -184,10 +184,10 @@ const addEditHandlers = function(renderer, bounds, topLeft, bottomLeft, topRight
 			event.stopPropagation();
 		}
 	});
-	$(remove).on('mousedown', event => {
+	$(remove).on('click', event => {
 		if (isLeftButton(event)) {
 			renderer.overlay.removeBounds(bounds.id);
-			renderer.emit(EventType.DRILLDOWN_EDIT, new lumo.Event(bounds));
+			renderer.emit(EventType.DRILLDOWN_REMOVE, new lumo.Event(bounds));
 			event.stopPropagation();
 		}
 	});

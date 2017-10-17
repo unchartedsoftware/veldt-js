@@ -4,6 +4,13 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.14.1 - Oct 16th, 2017
+### Added
+- `drilldowneditstart`, `drilldownedit`, and `drilldowneditend` events to `veldt.Renderer.HTML.Drilldown`.
+
+### Fixed
+- Fix `veldt.Layer.Drilldown` and `veldt.Renderer.HTML.Drilldown` mouse event issues.
+
 ## 0.14.0 - Oct 13th, 2017
 ### Added
 - `veldt.Layer.Drilldown` and `veldt.Renderer.HTML.Drilldown` types.
