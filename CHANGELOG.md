@@ -4,6 +4,13 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.14.2 - Oct 17th, 2017
+### Added
+- `limitBounds` option to `veldt.Layer.Drilldown` and `veldt.Renderer.HTML.Drilldown` to allow a limit to be set on the number of bounds that can be added.
+
+### Fixed
+- Fix `veldt.Renderer.HTML.Drilldown` mouse event issue on Linux only.
+
 ## 0.14.1 - Oct 16th, 2017
 ### Added
 - `drilldowneditstart`, `drilldownedit`, and `drilldowneditend` events to `veldt.Renderer.HTML.Drilldown`.
