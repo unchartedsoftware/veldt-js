@@ -1,16 +1,14 @@
 'use strict';
 
 const values = require('lodash/values');
-const defaultTo = require('lodash/defaultTo');
 const Bivariate = require('./Bivariate');
 
-class TopTermCount extends Bivariate {
+class TermsFrequencyCount extends Bivariate {
 
 	constructor(options = {}) {
 		super(options);
 		this.termsField = options.termsField;
-		this.termsCount = defaultTo(options.termsCount, 10);
-		this.fieldType = options.fieldType;
+		this.fieldType =  options.fieldType;
 	}
 
 	extractExtrema(data) {
@@ -36,15 +34,11 @@ class TopTermCount extends Bivariate {
 		this.termsField = field;
 	}
 
-	setTermsCount(count) {
-		this.termsCount = count;
-	}
-
 	setFieldType(fieldType) {
 		this.fieldType = fieldType;
 	}
 
-	getTile(name = 'top-term-count') {
+	getTile(name = 'terms-frequency-count') {
 		return {
 			[name]: {
 				xField: this.xField,
@@ -54,11 +48,11 @@ class TopTermCount extends Bivariate {
 				bottom: this.bottom,
 				top: this.top,
 				termsField: this.termsField,
-				termsCount: this.termsCount,
+				terms: this.terms,
 				fieldType: this.fieldType
 			}
 		};
 	}
 }
 
-module.exports = TopTermCount;
+module.exports = TermsFrequencyCount;
