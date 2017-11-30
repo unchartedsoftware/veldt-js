@@ -24,5 +24,6 @@ module.exports = {
 	MacroEdge: require('./type/MacroEdge'),
 	Rest: require('./type/Rest'),
 	TopTermCount: require('./type/TopTermCount'),
+	TermsFrequencyCount: require('./type/TermsFrequencyCount'),
 	BinnedTopHits: require('./type/BinnedTopHits')
 };
