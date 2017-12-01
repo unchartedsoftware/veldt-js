@@ -11,6 +11,8 @@ module.exports = {
 	Live: require('./core/Live'),
 	// group
 	Group: require('./core/Group'),
+	// stub
+	Stub: require('./core/Stub'),
 	// swap
 	Swap: require('./core/Swap'),
 	// live-result pair

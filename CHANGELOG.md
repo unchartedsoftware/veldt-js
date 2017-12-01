@@ -4,6 +4,10 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.14.5 - Nov 30, 2017
+### Added
+- `veldt.Layer.Stub` - a simple stubbed-out tile layer that can be extended.
+
 ## 0.14.4 - Nov 30, 2017
 ### Added
 - `veldt.Layer.TermsFrequencyCount` to access counts of all terms in a given field
