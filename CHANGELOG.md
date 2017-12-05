@@ -4,6 +4,10 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.14.6 - Dec 5, 2017
+### Changed
+- the heatmap renderer exposes blitCanvas to make it easier to subclass.
+
 ## 0.14.5 - Nov 30, 2017
 ### Added
 - `veldt.Layer.Stub` - a simple stubbed-out tile layer that can be extended.
