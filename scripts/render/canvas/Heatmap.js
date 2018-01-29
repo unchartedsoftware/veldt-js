@@ -69,10 +69,10 @@ class Heatmap extends CanvasRenderer {
 
 	blitCanvas(canvas, bins, resolution, transform, extrema, range, colorRamp) {
 		if (!canvasMap[resolution]) {
-			canvas = document.createElement('canvas');
-			canvas.height = resolution;
-			canvas.width = resolution;
-			canvasMap[resolution] = canvas;
+			const swap = document.createElement('canvas');
+			swap.height = resolution;
+			swap.width = resolution;
+			canvasMap[resolution] = swap;
 		}
 
 		const swapCanvas = canvasMap[resolution];
