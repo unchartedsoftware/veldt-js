@@ -6,7 +6,7 @@ const ColorRamp = require('../color/ColorRamp');
 const Transform = require('../transform/Transform');
 const CanvasRenderer = require('../dom/CanvasRenderer');
 
-let swapCanvas = null;
+let canvasMap = {};
 
 class Heatmap extends CanvasRenderer {
 
@@ -68,11 +68,14 @@ class Heatmap extends CanvasRenderer {
 	}
 
 	blitCanvas(canvas, bins, resolution, transform, extrema, range, colorRamp) {
-		if (!swapCanvas) {
-			swapCanvas = document.createElement('canvas');
-			swapCanvas.height = resolution;
-			swapCanvas.width = resolution;
+		if (!canvasMap[resolution]) {
+			canvas = document.createElement('canvas');
+			canvas.height = resolution;
+			canvas.width = resolution;
+			canvasMap[resolution] = canvas;
 		}
+
+		const swapCanvas = canvasMap[resolution];
 		const swapCtx = swapCanvas.getContext('2d');
 		const imageData = swapCtx.getImageData(0, 0, resolution, resolution);
 		const data = imageData.data;
