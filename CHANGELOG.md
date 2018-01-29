@@ -4,6 +4,10 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.14.9 - Jan 29th, 2018
+### Changed
+- Cache a map of cavanses at different resolutions instead of just a single copy.
+
 ## 0.14.7 - Jan 16th, 2018
 ### Changed
 - Bump dependencies.
