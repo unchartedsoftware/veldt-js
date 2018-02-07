@@ -4,6 +4,10 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.14.4 - Feb 7th, 2018
+### Added
+- Bump dependencies.
+
 ## 0.14.3 - Nov 21, 2017
 ### Added
 - Bumped `lumo` dependency version from `0.20.6` to `0.20.7` to be able to zoom and position at the same time.
