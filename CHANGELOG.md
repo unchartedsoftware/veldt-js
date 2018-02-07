@@ -4,6 +4,13 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.14.10 - Feb 7th, 2018
+### Added
+- `package-lock.json` file.
+
+### Changed
+- Bump dependencies.
+
 ## 0.14.9 - Jan 29th, 2018
 ### Changed
 - Cache a map of cavanses at different resolutions instead of just a single copy.
