@@ -1,6 +1,6 @@
 {
   "name": "veldt",
-  "version": "0.14.9",
+  "version": "0.14.10",
   "author": "Kevin Birk <kbirk@uncharted.software>",
   "main": "scripts/exports.js",
   "style": "styles/**/*.css",
