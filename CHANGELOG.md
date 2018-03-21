@@ -4,9 +4,20 @@
 
 An in-progress version being developed on the `master` branch.
 
-## 0.14.9 - Mar 20th, 2018
+## 0.14.11 - Mar 20th, 2018
 ### Changed
 - Expose lumo interface.
+
+## 0.14.10 - Feb 7th, 2018
+### Added
+- `package-lock.json` file.
+
+### Changed
+- Bump dependencies.
+
+## 0.14.9 - Jan 29th, 2018
+### Changed
+- Cache a map of cavanses at different resolutions instead of just a single copy.
 
 ## 0.14.7 - Jan 16th, 2018
 ### Changed
