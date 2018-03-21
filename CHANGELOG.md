@@ -4,6 +4,10 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.14.9 - Mar 20th, 2018
+### Changed
+- Expose lumo interface.
+
 ## 0.14.7 - Jan 16th, 2018
 ### Changed
 - Bump dependencies.
