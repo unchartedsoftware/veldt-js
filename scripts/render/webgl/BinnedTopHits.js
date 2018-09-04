@@ -9,10 +9,6 @@ const Quad = require('./shape/Quad');
 const POINT_RADIUS = 8;
 const POINT_RADIUS_INC = 4;
 
-const addTile = function() {
-	// no-op
-};
-
 const createCollidables = function(tile, xOffset, yOffset) {
 	const data = tile.data;
 	const points = data.points;
@@ -61,8 +57,7 @@ class BinnedTopHits extends WebGLRenderer {
 					size: 2,
 					type: 'FLOAT'
 				}
-			},
-			onAdd: addTile.bind(this)
+			}
 		});
 		this.tree = this.createRTreePyramid({
 			createCollidables: createCollidables.bind(this)
