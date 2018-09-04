@@ -42,6 +42,16 @@ class LivePair extends Group {
 		return this;
 	}
 
+	disable() {
+		this.hidden = true;
+		this.muted = true;
+		this.parent.hide();
+		this.parent.mute();
+		this.child.hide();
+		this.child.mute();
+		return this;
+	}
+
 	addFilter(id, filter, isTemporary = false) {
 		if (!isTemporary) {
 			super.addFilter(id, filter);

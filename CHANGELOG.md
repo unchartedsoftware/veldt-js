@@ -4,6 +4,12 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.15.0 - Sept 4th, 2018
+### Changed
+- Removed unused `gridmode` argument to `veldt.Layer.BinnedTopHits` layer.
+- Added `setActiveLayer` method to `veldt.Layer.Swap`.
+- Fixed propagation of `enable` / `disable`, `show` / `hide`, and `mute` / `unmute` methods in `veldt.Layer.Group`, `veldt.Layer.LivePair`, and `veldt.Layer.Swap`.
+
 ## 0.14.10 - Feb 7th, 2018
 ### Added
 - `package-lock.json` file.
