@@ -55,6 +55,9 @@ class Swap extends EventEmitter {
 		this.zIndex = defaultTo(options.zIndex, 0);
 		this.layers = defaultTo(options.layers, []);
 		this.layers.unshift(swap);
+
+		this.activeLayer = null;
+
 		this.broadcasts = new Map();
 	}
 
@@ -137,6 +140,17 @@ class Swap extends EventEmitter {
 		return this;
 	}
 
+	setActiveLayer(layer) {
+		if (this.activeLayer) {
+			this.activeLayer.disable();
+			this.activeLayer = null;
+		}
+		if (layer) {
+			this.activeLayer = layer;
+			this.activeLayer.enable();
+		}
+	}
+
 	setSwapFunc(func) {
 		if (this.swapFunc) {
 			this.swap.removeListener('load', this.swapFunc);
@@ -180,11 +194,23 @@ class Swap extends EventEmitter {
 
 	mute() {
 		this.muted = true;
+
+		this.swap.mute();
+
+		if (this.activeLayer) {
+			this.activeLayer.mute();
+		}
 	}
 
 	unmute() {
 		if (this.muted) {
 			this.muted = false;
+
+			this.swap.unmute();
+			if (this.activeLayer) {
+				this.activeLayer.unmute();
+			}
+
 			if (this.plot) {
 				// get visible coords
 				const coords = this.plot.getTargetVisibleCoords();
@@ -353,6 +379,9 @@ class Swap extends EventEmitter {
 	}
 
 	draw(timestamp) {
+		if (this.hidden) {
+			return this;
+		}
 		this.layers.forEach(layer => {
 			if (!layer.isHidden()) {
 				layer.draw(timestamp);
