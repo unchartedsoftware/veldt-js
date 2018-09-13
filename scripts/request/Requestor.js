@@ -84,7 +84,6 @@ function prune(current) {
 	forIn(current, (value, key) => {
 		if (value === undefined ||
 			value == null ||
-			(isString(value) && isEmpty(value)) ||
 			(isObject(value) && isEmpty(prune(value)))) {
 			delete current[key];
 		}
