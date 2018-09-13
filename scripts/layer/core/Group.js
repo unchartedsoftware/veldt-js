@@ -14,8 +14,9 @@ const defaultTo = require('lodash/defaultTo');
  */
 class Group extends EventEmitter {
 
-	constructor(options = {}) {
+	constructor(delegate, options = {}) {
 		super();
+		this.delegate = delegate;
 		this.layers = defaultTo(options.layers, []);
 	}
 
@@ -88,7 +89,7 @@ class Group extends EventEmitter {
 	}
 
 	isHidden() {
-		return true;
+		return this.delegate.isHidden();
 	}
 
 	mute() {
@@ -104,7 +105,7 @@ class Group extends EventEmitter {
 	}
 
 	isMuted() {
-		return true;
+		return this.delegate.isMuted();
 	}
 
 	enable() {
@@ -118,7 +119,7 @@ class Group extends EventEmitter {
 	}
 
 	isDisabled() {
-		return true;
+		return this.delegate.isDisabled();
 	}
 
 	/**
@@ -137,7 +138,7 @@ class Group extends EventEmitter {
 	}
 
 	getZIndex() {
-		return 0.0;
+		return this.delegate.getZIndex();
 	}
 
 	setOpacity(opacity) {
@@ -147,11 +148,11 @@ class Group extends EventEmitter {
 	}
 
 	getOpacity() {
-		return 0.0;
+		return this.delegate.getOpacity();
 	}
 
 	isFiltered() {
-		return false;
+		return this.delegate.isFiltered();
 	}
 
 	addFilter(id, filter) {

@@ -4,6 +4,10 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.16.0 - Sept 13th, 2018
+### Changed
+- `veldt.Layer.Group` now has a `delegate` layer property to use to return getter values.
+
 ## 0.15.0 - Sept 4th, 2018
 ### Changed
 - Removed unused `gridmode` argument to `veldt.Layer.BinnedTopHits` layer.
