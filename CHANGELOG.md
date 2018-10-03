@@ -4,6 +4,10 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.17.0 - October 3rd, 2018
+### Changed
+- the layer request includes credentials for cross-origin requests.
+
 ## 0.16.0 - Sept 13th, 2018
 ### Changed
 - `veldt.Layer.Group` now has a `delegate` layer property to use to return getter values.

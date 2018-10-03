@@ -76,7 +76,10 @@ function liveRequest(requestor, type) {
 					method: 'POST',
 					contentType: 'application/json',
 					data: JSON.stringify(req),
-					dataType: type
+					dataType: type,
+					xhrFields: {
+						withCredentials: true
+					}
 				}).done(buffer => {
 					done(null, buffer);
 				}).fail((xhr) => {
