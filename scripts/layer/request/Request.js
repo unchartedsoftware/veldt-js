@@ -29,6 +29,7 @@ $.ajaxTransport('+arraybuffer', options => {
 				xhr.setRequestHeader(key, header);
 			});
 			xhr.responseType = dataType;
+			xhr.withCredentials = true;
 			xhr.send(data);
 		},
 		abort: () => {

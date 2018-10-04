@@ -4,6 +4,10 @@
 
 An in-progress version being developed on the `master` branch.
 
+## 0.17.1 - October 4th, 2018
+### Changed
+- add withCredentials to ajaxTransport xhr request.
+
 ## 0.17.0 - October 3rd, 2018
 ### Changed
 - the layer request includes credentials for cross-origin requests.
