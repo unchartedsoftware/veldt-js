@@ -64,3 +64,10 @@ const requestor = new veldt.Requestor(WS_ENDPOINT, HTTP_ENDPOINT, err => {
 	map.add(macro);
 });
 ```
+
+## Building
+
+Note: currently, `veldt-js` requires node 8.x to build. It will not build in 10.x.
+```javascript
+npm run build
+```

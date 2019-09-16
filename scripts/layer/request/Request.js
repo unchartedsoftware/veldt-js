@@ -80,6 +80,12 @@ function liveRequest(requestor, type) {
 					dataType: type,
 					xhrFields: {
 						withCredentials: true
+					},
+					beforeSend: function(xhr) {
+						if (requestor.httpAuthentication) {
+							xhr.setRequestHeader('Authorization', requestor.httpAuthentication);
+						}
+						return true;
 					}
 				}).done(buffer => {
 					done(null, buffer);
