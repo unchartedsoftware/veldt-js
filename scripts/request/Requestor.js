@@ -23,7 +23,7 @@ function getWebSocketURL(requestor) {
 }
 
 function establishConnection(requestor, callback) {
-	requestor.socket = new WebSocket(getWebSocketURL(requestor));
+	requestor.socket = new WebSocket(getWebSocketURL(requestor), requestor.wsAuthentication);
 
 	// on open
 	requestor.socket.onopen = function() {
@@ -132,13 +132,36 @@ function stripURL(url) {
 	return url;
 }
 
+/**
+ * A callback function called after the connection is established.
+ *
+ * @callback postConnectionCallback
+ * @param {Error} err - An error detected during connection.
+ * @param {Requestor} requestor - The requestor object used to create the connection.
+ */
+
+/**
+ * Class managing a websocket connection for tile-fetch operations.
+ */
 class Requestor {
-	constructor(websocketURL, httpURL, callback) {
+	/**
+	 * Construct a new Requestor, establishing a connection to the given websocket endpoint.
+	 *
+	 * @param {string} websocketURL - Full URL of the endpoint with which to establish a websocket connection.
+	 * @param {string} httpURL - Full URL of the endpoint from which to fetch request results.
+	 * @param {postConnectionCallback} callback - Called after the connection is established.
+	 * @param {Object} [options] - Options passed to the connection functions.
+	 * @param {[]string|string} [options.wsAuthentication] - String or array of strings to be passed in the Sec-WebSocket-Protocol header field when establishing a websocket connection.
+	 * @param {string} [options.httpAuthentication] - String to be assigned to all HTTP requests' Authorization header field.
+	 */
+	constructor(websocketURL, httpURL, callback, options = {}) {
 		this.websocketURL = stripURL(websocketURL);
 		this.httpURL = stripURL(httpURL);
 		this.requests = new Map();
 		this.pending = new Map();
 		this.isOpen = false;
+		this.wsAuthentication = options.wsAuthentication || [];
+		this.httpAuthentication = options.httpAuthentication;
 		establishConnection(this, callback);
 	}
 	getHash(req) {
