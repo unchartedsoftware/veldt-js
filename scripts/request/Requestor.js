@@ -26,13 +26,13 @@ function establishConnection(requestor, callback) {
 	requestor.socket = new WebSocket(getWebSocketURL(requestor), requestor.wsAuthentication);
 
 	// on open
-	requestor.socket.onopen = function() {
+	requestor.socket.onopen = function () {
 		requestor.isOpen = true;
 		console.log(`WebSocket connection established on /${requestor.websocketURL}`);
 		callback(null, requestor);
 	};
 	// on message
-	requestor.socket.onmessage = function(event) {
+	requestor.socket.onmessage = function (event) {
 		const res = JSON.parse(event.data);
 		// NOTE: save success and error here, as we need to remove them to hash
 		// correctly
@@ -40,7 +40,7 @@ function establishConnection(requestor, callback) {
 		const error = res.error;
 		const hash = requestor.getHash(res, false);
 		if (!requestor.requests.has(hash)) {
-			console.error('Unrecognized response: ', res,  ', discarding');
+			console.error('Unrecognized response: ', res, ', discarding');
 			return;
 		}
 		const wrapped = requestor.requests.get(hash);
@@ -52,7 +52,7 @@ function establishConnection(requestor, callback) {
 		}
 	};
 	// on close
-	requestor.socket.onclose = function() {
+	requestor.socket.onclose = function () {
 		// log close only if connection was ever open
 		if (requestor.isOpen) {
 			console.warn(`WebSocket connection on /${requestor.websocketURL} lost, attempting to reconnect in ${RETRY_INTERVAL_MS}ms`);
@@ -159,6 +159,7 @@ class Requestor {
 		this.httpURL = stripURL(httpURL);
 		this.requests = new Map();
 		this.pending = new Map();
+		this.xhr = new Map();
 		this.isOpen = false;
 		this.wsAuthentication = options.wsAuthentication || [];
 		this.httpAuthentication = options.httpAuthentication;
@@ -172,7 +173,7 @@ class Requestor {
 		return stringify(pruneEmpty(req));
 	}
 	get(req) {
-		const hash = this.getHash(req, true);
+		const hash = this.getHash(req);
 		if (!this.isOpen) {
 			// see if we already have a pending request
 			let pending = this.pending.get(hash);
@@ -189,16 +190,33 @@ class Requestor {
 		if (wrapped) {
 			return wrapped.promise;
 		}
-		// if no existing reuqest, create wrapped promise and add to map
+		// if no existing request, create wrapped promise and add to map
 		wrapped = wrappedPromise(hash, req);
 		this.requests.set(hash, wrapped);
 		this.socket.send(JSON.stringify(wrapped.request));
 		return wrapped.promise;
 	}
 	close() {
+		this.xhr.forEach(xhr => {
+			try {
+				xhr.abort();
+			} catch (e) {
+				console.warn(e);
+			}
+		});
+		this.xhr.clear();
+
+		// clean up all current requests
+		this.pending.forEach(wrapped => {
+			wrapped.reject();
+		});
+		this.requests.forEach(wrapped => {
+			wrapped.reject();
+		});
 		this.socket.onclose = null;
 		this.socket.close();
 		this.socket = null;
+		this.isOpen = false;
 		console.warn(`WebSocket connection on /${this.websocketURL} closed`);
 	}
 }

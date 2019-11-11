@@ -51,7 +51,7 @@ function isTileStale(layer, coord) {
 }
 
 function liveRequest(requestor, type) {
-	return function(coord, done) {
+	return function (coord, done) {
 		const req = {
 			pipeline: this.pipeline,
 			uri: this.uri,
@@ -66,13 +66,13 @@ function liveRequest(requestor, type) {
 		requestor
 			.get(req)
 			.then(url => {
-				// if stale is tile don't bother pulling it down
+				// if tile is stale don't bother pulling it down
 				if (isTileStale(this, coord)) {
 					done(new Error('stale tile'), null);
 					return;
 				}
 				// otherwise grab it
-				$.ajax({
+				const ajaxXhr = $.ajax({
 					url: url,
 					method: 'POST',
 					contentType: 'application/json',
@@ -81,7 +81,7 @@ function liveRequest(requestor, type) {
 					xhrFields: {
 						withCredentials: true
 					},
-					beforeSend: function(xhr) {
+					beforeSend: function (xhr) {
 						if (requestor.httpAuthentication) {
 							xhr.setRequestHeader('Authorization', requestor.httpAuthentication);
 						}
@@ -89,6 +89,7 @@ function liveRequest(requestor, type) {
 					}
 				}).done(buffer => {
 					done(null, buffer);
+					requestor.xhr.delete(requestor.getHash(req));
 				}).fail((xhr) => {
 					let err;
 					if (xhr.responseText) {
@@ -101,7 +102,9 @@ function liveRequest(requestor, type) {
 					}
 					console.error(err.message);
 					done(err, null);
+					requestor.xhr.delete(requestor.getHash(req));
 				});
+				requestor.xhr.set(requestor.getHash(req), ajaxXhr);
 			})
 			.catch(err => {
 				console.error(err.message);
@@ -112,11 +115,11 @@ function liveRequest(requestor, type) {
 
 module.exports = {
 
-	requestJSON: function(requestor) {
+	requestJSON: function (requestor) {
 		return liveRequest(requestor, 'json');
 	},
 
-	requestArrayBuffer: function(requestor) {
+	requestArrayBuffer: function (requestor) {
 		return liveRequest(requestor, 'arraybuffer');
 	}
 
