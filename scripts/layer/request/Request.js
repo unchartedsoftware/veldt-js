@@ -66,13 +66,13 @@ function liveRequest(requestor, type) {
 		requestor
 			.get(req)
 			.then(url => {
-				// if stale is tile don't bother pulling it down
+				// if tile is stale don't bother pulling it down
 				if (isTileStale(this, coord)) {
 					done(new Error('stale tile'), null);
 					return;
 				}
 				// otherwise grab it
-				$.ajax({
+				const ajaxXhr = $.ajax({
 					url: url,
 					method: 'POST',
 					contentType: 'application/json',
@@ -88,6 +88,7 @@ function liveRequest(requestor, type) {
 						return true;
 					}
 				}).done(buffer => {
+					requestor.xhr.delete(requestor.getHash(req));
 					done(null, buffer);
 				}).fail((xhr) => {
 					let err;
@@ -99,12 +100,14 @@ function liveRequest(requestor, type) {
 					} else {
 						err = new Error('Request failed');
 					}
-					console.error(err.message);
+					console[err === 'abort' ? 'warn' : 'error'](err.message);
+					requestor.xhr.delete(requestor.getHash(req));
 					done(err, null);
 				});
+				requestor.xhr.set(requestor.getHash(req), ajaxXhr);
 			})
 			.catch(err => {
-				console.error(err.message);
+				err && console.error(err.message);
 				done(err, null);
 			});
 	};

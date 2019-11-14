@@ -159,6 +159,7 @@ class Requestor {
 		this.httpURL = stripURL(httpURL);
 		this.requests = new Map();
 		this.pending = new Map();
+		this.xhr = new Map();
 		this.isOpen = false;
 		this.wsAuthentication = options.wsAuthentication || [];
 		this.httpAuthentication = options.httpAuthentication;
@@ -172,7 +173,7 @@ class Requestor {
 		return stringify(pruneEmpty(req));
 	}
 	get(req) {
-		const hash = this.getHash(req, true);
+		const hash = this.getHash(req);
 		if (!this.isOpen) {
 			// see if we already have a pending request
 			let pending = this.pending.get(hash);
@@ -189,16 +190,39 @@ class Requestor {
 		if (wrapped) {
 			return wrapped.promise;
 		}
-		// if no existing reuqest, create wrapped promise and add to map
+		// if no existing request, create wrapped promise and add to map
 		wrapped = wrappedPromise(hash, req);
 		this.requests.set(hash, wrapped);
 		this.socket.send(JSON.stringify(wrapped.request));
 		return wrapped.promise;
 	}
-	close() {
+	abort() {
+		// forcefully cancel any requests in flight
+		this.xhr.forEach(xhr => {
+			try {
+				xhr.abort();
+			} catch (e) {
+				console.warn(e);
+			}
+		});
+		this.xhr.clear();
+
+		// clean up any pending requests
+		this.pending.forEach(wrapped => {
+			wrapped.reject();
+		});
+		// reject all current requests
+		this.requests.forEach(wrapped => {
+			wrapped.reject();
+		});
+
 		this.socket.onclose = null;
 		this.socket.close();
+		this.isOpen = false;
 		this.socket = null;
+	}
+	close() {
+		this.abort();
 		console.warn(`WebSocket connection on /${this.websocketURL} closed`);
 	}
 }
