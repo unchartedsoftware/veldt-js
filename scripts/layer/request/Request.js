@@ -88,8 +88,8 @@ function liveRequest(requestor, type) {
 						return true;
 					}
 				}).done(buffer => {
-					done(null, buffer);
 					requestor.xhr.delete(requestor.getHash(req));
+					done(null, buffer);
 				}).fail((xhr) => {
 					let err;
 					if (xhr.responseText) {
@@ -100,14 +100,14 @@ function liveRequest(requestor, type) {
 					} else {
 						err = new Error('Request failed');
 					}
-					console.error(err.message);
-					done(err, null);
+					console[err === 'abort' ? 'warn' : 'error'](err.message);
 					requestor.xhr.delete(requestor.getHash(req));
+					done(err, null);
 				});
 				requestor.xhr.set(requestor.getHash(req), ajaxXhr);
 			})
 			.catch(err => {
-				console.error(err.message);
+				err && console.error(err.message);
 				done(err, null);
 			});
 	};

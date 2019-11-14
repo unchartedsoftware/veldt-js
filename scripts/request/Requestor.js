@@ -196,7 +196,8 @@ class Requestor {
 		this.socket.send(JSON.stringify(wrapped.request));
 		return wrapped.promise;
 	}
-	close() {
+	abort() {
+		// forcefully cancel any requests in flight
 		this.xhr.forEach(xhr => {
 			try {
 				xhr.abort();
@@ -206,17 +207,22 @@ class Requestor {
 		});
 		this.xhr.clear();
 
-		// clean up all current requests
+		// clean up any pending requests
 		this.pending.forEach(wrapped => {
 			wrapped.reject();
 		});
+		// reject all current requests
 		this.requests.forEach(wrapped => {
 			wrapped.reject();
 		});
+
 		this.socket.onclose = null;
 		this.socket.close();
-		this.socket = null;
 		this.isOpen = false;
+		this.socket = null;
+	}
+	close() {
+		this.abort();
 		console.warn(`WebSocket connection on /${this.websocketURL} closed`);
 	}
 }
