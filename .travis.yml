@@ -2,10 +2,18 @@ language: node_js
 notifications:
   email: false
 node_js:
-  - "node"
-  - "10"
-  - "8"
+- node
+- '10'
+- '8'
 script:
-  - npm run build
-#  - npm run test
-# after_success: npm run coveralls
+- npm run build
+deploy:
+  provider: npm
+  email: kbirk@uncharted.software
+  api_key:
+    secure: BOU//jXlYto5jpDXHDD8Fesvpkg5zciDhGvgKuq2PUc8l01u163pj+IT/JBbu7p5HbBtEgapE7AhIhlWYQkJWJV+moddzm/rK7OtMrxNLe+elFYWmWaRnXFJsydwYi3kSg3r7qERXSKZDYhBCDDvNwZtiDXsGwbRCBEDmVOg5jRV8yv1N3UZFkGcS8eUGNjddcaSE7+burE/FQ21sLVjN0njSq3dGy10F1G0YQ7QZQBLaX0/Yh78SJHlaXriGr5Bv25Ld0hCpJ3vszR52MCgWi6hNPTUuEnaFRhVgq4E5Uaqc/tIM2vZb2q7xK0wN4xj+aJVVXZ7Z4ClGn080rvPathovTRSo5VCwTXk6I6eoRf+3HVQ0vyar9+9CnIs9o8xTUWw7r78W0KISA7oG3DTkZ5ibqLtNTNswUUvYGqaQTgvsuOgUBpP5rg+7xC4oE/S/tGXLvqYluwZaKcjKVUKQu7p0er3yrT2PpHQYQ3kKPnTSRVwlzRTZz4XdUsqgGSLOhpssAwvP6lC3FO+zj60Ee8vnwFLt7CCy6Gx5l5Yr1DiZnGs0UaxHKXhgxmoImT34kLuraLknvfJy9OeMEztpaxAVePZNjxy+cRwdLsWCeUkQMdcxCydBn5qzLmUpp1T/CBj2GEsxJsnKNLLa+3aVmJoC5oVAAvWs6E9XTimY68=
+  on:
+    tags: true
+    repo: unchartedsoftware/veldt-js
+    branch: master
+
