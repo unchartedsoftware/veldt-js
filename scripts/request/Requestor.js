@@ -26,13 +26,13 @@ function establishConnection(requestor, callback) {
 	requestor.socket = new WebSocket(getWebSocketURL(requestor), requestor.wsAuthentication);
 
 	// on open
-	requestor.socket.onopen = function () {
+	requestor.socket.onopen = function() {
 		requestor.isOpen = true;
 		console.log(`WebSocket connection established on /${requestor.websocketURL}`);
 		callback(null, requestor);
 	};
 	// on message
-	requestor.socket.onmessage = function (event) {
+	requestor.socket.onmessage = function(event) {
 		const res = JSON.parse(event.data);
 		// NOTE: save success and error here, as we need to remove them to hash
 		// correctly
@@ -40,7 +40,7 @@ function establishConnection(requestor, callback) {
 		const error = res.error;
 		const hash = requestor.getHash(res, false);
 		if (!requestor.requests.has(hash)) {
-			console.error('Unrecognized response: ', res, ', discarding');
+			console.error('Unrecognized response: ', res,  ', discarding');
 			return;
 		}
 		const wrapped = requestor.requests.get(hash);
@@ -52,7 +52,7 @@ function establishConnection(requestor, callback) {
 		}
 	};
 	// on close
-	requestor.socket.onclose = function () {
+	requestor.socket.onclose = function() {
 		// log close only if connection was ever open
 		if (requestor.isOpen) {
 			console.warn(`WebSocket connection on /${requestor.websocketURL} lost, attempting to reconnect in ${RETRY_INTERVAL_MS}ms`);

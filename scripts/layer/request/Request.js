@@ -51,7 +51,7 @@ function isTileStale(layer, coord) {
 }
 
 function liveRequest(requestor, type) {
-	return function (coord, done) {
+	return function(coord, done) {
 		const req = {
 			pipeline: this.pipeline,
 			uri: this.uri,
@@ -81,7 +81,7 @@ function liveRequest(requestor, type) {
 					xhrFields: {
 						withCredentials: true
 					},
-					beforeSend: function (xhr) {
+					beforeSend: function(xhr) {
 						if (requestor.httpAuthentication) {
 							xhr.setRequestHeader('Authorization', requestor.httpAuthentication);
 						}
@@ -115,11 +115,11 @@ function liveRequest(requestor, type) {
 
 module.exports = {
 
-	requestJSON: function (requestor) {
+	requestJSON: function(requestor) {
 		return liveRequest(requestor, 'json');
 	},
 
-	requestArrayBuffer: function (requestor) {
+	requestArrayBuffer: function(requestor) {
 		return liveRequest(requestor, 'arraybuffer');
 	}
 
