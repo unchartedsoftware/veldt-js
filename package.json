@@ -1,6 +1,6 @@
 {
   "name": "veldt",
-  "version": "0.18.0",
+  "version": "0.18.1",
   "author": "Kevin Birk <kbirk@uncharted.software>",
   "main": "build/veldt.min.js",
   "style": "build/veldt.css",
